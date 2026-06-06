@@ -258,7 +258,7 @@ export function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                   onClick={() => {
                     setShowProfile(false);
                     logout();
-                    navigate('/');
+                    navigate('/admin/login');
                   }}
                   className="w-full flex items-center justify-center gap-2 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl transition-all cursor-pointer"
                 >
