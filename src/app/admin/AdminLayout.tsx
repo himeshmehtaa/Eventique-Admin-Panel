@@ -4,11 +4,18 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AdminSidebar } from './components/AdminSidebar';
 import { AdminHeader } from './components/AdminHeader';
+import { useAdmin } from './context/AdminContext';
+import AdminLogin from './pages/AdminLogin';
 import '../../styles/admin.css';
 
 export default function AdminLayout() {
+  const { isAuthenticated } = useAdmin();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  if (!isAuthenticated) {
+    return <AdminLogin />;
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>

@@ -32,7 +32,7 @@ interface AdminHeaderProps {
 export function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { state } = useAdmin();
+  const { state, logout } = useAdmin();
   const info = routeTitles[location.pathname] || { title: 'Admin', subtitle: '' };
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -257,7 +257,7 @@ export function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
                 <button
                   onClick={() => {
                     setShowProfile(false);
-                    alert('Logging out of admin session...');
+                    logout();
                     navigate('/');
                   }}
                   className="w-full flex items-center justify-center gap-2 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl transition-all cursor-pointer"

@@ -173,10 +173,8 @@ function StatusDonutChart({ data, total }: StatusDonutChartProps) {
 
 // ── SVG Target Progress Gauge Component ───────────────────────
 function TargetGaugeChart({ percent }: { percent: number }) {
-  const radius = 40;
   const strokeWidth = 8;
-  const circumference = Math.PI * radius; // 125.66
-  const strokeOffset = circumference - (Math.min(percent, 100) / 100) * circumference;
+  const targetPct = Math.min(Math.max(percent, 0), 100);
 
   return (
     <div className="relative w-44 h-24 flex items-end justify-center overflow-hidden">
@@ -188,23 +186,25 @@ function TargetGaugeChart({ percent }: { percent: number }) {
           stroke="#f5f0e8"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
+          pathLength="100"
         />
         {/* Progress Arc */}
         <path
           d="M 10 50 A 40 40 0 0 1 90 50"
           fill="none"
-          stroke="#8B4949" // Burgundy target color matching brand
+          stroke="#8B4949"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeOffset}
+          strokeDasharray="100"
+          strokeDashoffset={100 - targetPct}
+          pathLength="100"
           className="transition-all duration-700 ease-out"
         />
       </svg>
       {/* Center Label */}
-      <div className="absolute inset-0 flex flex-col items-center justify-end text-center pb-2 pointer-events-none">
-        <span className="text-2xl font-black text-[#1a1410]">{percent.toFixed(2)}%</span>
-        <span className="text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full mt-1 flex items-center gap-0.5">
+      <div className="absolute inset-0 flex flex-col items-center justify-end text-center pb-1 pointer-events-none">
+        <span className="text-xl font-black text-[#1a1410]">{percent.toFixed(1)}%</span>
+        <span className="text-[9px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full mt-0.5 flex items-center gap-0.5">
           ↗ +12%
         </span>
       </div>
@@ -348,6 +348,15 @@ export default function AnalyticsPage() {
   const targetPercentage = useMemo(() => {
     return (totalRevenue / monthlyTarget) * 100;
   }, [totalRevenue, monthlyTarget]);
+
+  const targetMessage = useMemo(() => {
+    if (targetPercentage >= 100) {
+      return `Target achieved! You've exceeded your monthly goal of ₹${monthlyTarget.toLocaleString('en-IN')} by ${Math.max(0, targetPercentage - 100).toFixed(1)}%.`;
+    } else {
+      const remaining = Math.max(0, monthlyTarget - totalRevenue);
+      return `You've completed ${targetPercentage.toFixed(1)}% of your target. You need ₹${remaining.toLocaleString('en-IN')} more to hit this month's goal.`;
+    }
+  }, [targetPercentage, monthlyTarget, totalRevenue]);
 
   // ── Digital vs Physical Channel Split Analysis ──────────────
   const channelData = useMemo(() => {
@@ -697,13 +706,13 @@ export default function AnalyticsPage() {
               {/* Subtitle Message */}
               <div className="text-center px-2 mb-3">
                 <p className="text-[11px] text-gray-500 leading-relaxed font-semibold">
-                  You earned <span className="text-[#8B4949] font-bold">₹{avgOrderValue.toLocaleString('en-IN')}</span> today, it's higher than last month. Keep up your good trends!
+                  {targetMessage}
                 </p>
               </div>
             </>
           )}
 
-          {/* Target / Revenue / Today footer row */}
+          {/* Target / Revenue / AOV footer row */}
           <div className="grid grid-cols-3 gap-2 border-t border-[#f0ece4] pt-4 mt-auto">
             <div className="text-center cursor-pointer" onClick={() => {
               setTempTarget(monthlyTarget.toString());
@@ -725,7 +734,7 @@ export default function AnalyticsPage() {
             </div>
             
             <div className="text-center">
-              <p className="text-[9px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">Today</p>
+              <p className="text-[9px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">AOV</p>
               <div className="flex items-center justify-center gap-0.5 text-xs font-black text-green-600">
                 <span>₹{(avgOrderValue / 1000).toFixed(1)}k</span>
                 <ArrowUpRight size={11} className="flex-shrink-0" />

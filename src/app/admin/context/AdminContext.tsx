@@ -646,6 +646,10 @@ interface AdminContextType {
   addActivityLog: (action: string, detail: string, severity?: 'info' | 'success' | 'warning' | 'danger') => void;
   purgeActivityLogs: () => void;
   resetToDefaults: () => void;
+  // Auth
+  isAuthenticated: boolean;
+  login: (password: string) => boolean;
+  logout: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | null>(null);
@@ -801,6 +805,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => { saveToStorage(state); }, [state]);
 
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('eventique-admin-authenticated') === 'true';
+  });
+
   const set = useCallback(<K extends keyof AdminState>(key: K, updater: (prev: AdminState[K]) => AdminState[K]) => {
     setState(prev => ({ ...prev, [key]: updater(prev[key]) }));
   }, []);
@@ -810,8 +818,28 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     set('activityLogs', prev => [log, ...(prev as ActivityLog[]).slice(0, 99)]);
   }, [set]);
 
+  const login = useCallback((password: string) => {
+    if (password === 'eventique123') {
+      sessionStorage.setItem('eventique-admin-authenticated', 'true');
+      setIsAuthenticated(true);
+      addActivityLog('Admin Login', 'Super Admin logged in successfully', 'success');
+      return true;
+    }
+    addActivityLog('Admin Login Failed', 'Invalid password attempt', 'danger');
+    return false;
+  }, [addActivityLog]);
+
+  const logout = useCallback(() => {
+    sessionStorage.removeItem('eventique-admin-authenticated');
+    setIsAuthenticated(false);
+    addActivityLog('Admin Logout', 'Super Admin logged out', 'info');
+  }, [addActivityLog]);
+
   const value: AdminContextType = {
     state,
+    isAuthenticated,
+    login,
+    logout,
     addProduct: (p) => {
       const newProduct = { ...p, createdAt: p.createdAt || new Date().toISOString().split('T')[0] };
       set('products', prev => [...prev as Product[], newProduct]);
