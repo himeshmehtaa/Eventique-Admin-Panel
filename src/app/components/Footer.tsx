@@ -197,6 +197,9 @@ export function Footer() {
               <Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Refund Policy
               </Link>
+              <Link to="/admin" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                Admin Portal
+              </Link>
             </div>
           </div>
         </div>

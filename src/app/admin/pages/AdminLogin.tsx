@@ -1,15 +1,20 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router';
 import { useAdmin } from '../context/AdminContext';
 import { Lock, Mail, Eye, EyeOff, Sparkles, AlertCircle, HelpCircle, User } from 'lucide-react';
 
 export default function AdminLogin() {
-  const { login } = useAdmin();
+  const { login, isAuthenticated } = useAdmin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showHelper, setShowHelper] = useState(false);
+
+  if (isAuthenticated) {
+    return <Navigate to="/admin" replace />;
+  }
 
   const testAccounts = [
     { name: 'Amit (Super Admin)', email: 'amit@eventique.in', pass: 'amit123', role: 'Super Admin' },

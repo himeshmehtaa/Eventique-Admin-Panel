@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, useLocation, Link } from 'react-router';
+import { Outlet, useLocation, Link, Navigate } from 'react-router';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AdminSidebar } from './components/AdminSidebar';
@@ -42,6 +42,10 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+
+  if (location.pathname === '/admin/login' && isAuthenticated) {
+    return <Navigate to="/admin" replace />;
+  }
 
   if (!isAuthenticated) {
     return <AdminLogin />;

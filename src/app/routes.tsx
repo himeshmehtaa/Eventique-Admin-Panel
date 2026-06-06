@@ -30,6 +30,7 @@ import LaunchPage from './pages/LaunchPage';
 
 // ── Admin Panel ─────────────────────────────────────────────
 import AdminLayout from './admin/AdminLayout';
+import AdminLogin from './admin/pages/AdminLogin';
 
 // Dashboard & Overview
 import Dashboard from './admin/pages/Dashboard';
@@ -95,11 +96,18 @@ export const router = createBrowserRouter([
       { path: '*', Component: NotFound },
     ],
   },
+  // ── Top-level Login Redirect ──────────────────────────────
+  {
+    path: '/login',
+    Component: AdminLogin,
+  },
   // ── Admin Panel ──────────────────────────────────────────
   {
     path: '/admin',
     Component: AdminLayout,
     children: [
+      // Login
+      { path: 'login', Component: AdminLogin },
       // Dashboard
       { index: true, Component: Dashboard },
       // Commerce
