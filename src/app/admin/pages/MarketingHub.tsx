@@ -1,1061 +1,1603 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
-  Megaphone, MessageSquare, Mail, BarChart3, Plus, Send,
-  Smartphone, Check, Facebook, Instagram, Tag, HelpCircle,
-  Eye, Trash2, Sparkles, Upload, Users, Globe, Play, Info
+  Megaphone, Users, MessageSquare, Calendar, BarChart3,
+  Search, Plus, Trash2, Edit2, Check, X, Play, Copy,
+  LayoutGrid, List, Sparkles, Smartphone, Eye, Send, Info, ArrowUpRight
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { StatsCard } from '../components/StatsCard';
 
+// ── Lead Interface ──────────────────────────────────────────
+interface Lead {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  eventType: 'Wedding' | 'Birthday' | 'Corporate' | 'Anniversary' | 'Other';
+  interestedProduct: string;
+  budget: number;
+  source: 'Website Form' | 'WhatsApp' | 'Instagram' | 'Facebook' | 'Referral' | 'Direct Call';
+  status: 'New' | 'Contacted' | 'Follow-up' | 'Converted' | 'Lost';
+  assignedTo: string;
+  notes: string;
+  createdAt: string;
+}
+
+// ── WhatsApp Campaign Interface ──────────────────────────────
 interface WhatsAppCampaign {
   id: string;
   name: string;
-  template: string;
-  status: 'Sent' | 'Scheduled' | 'Draft';
-  targetGroup: string;
-  size: number;
-  sent: number;
-  read: number;
-  clicked: number;
-  mediaUrl?: string;
-  createdAt: string;
+  messageType: 'New Collection Launch' | 'Offer Reminder' | 'Wedding Website Promotion' | 'Custom Invite Follow-up' | 'Festival Campaign' | 'Abandoned Inquiry Follow-up';
+  targetAudience: 'All Leads' | 'New Leads' | 'Converted Customers' | 'Wedding Customers' | 'Website Inquiry Customers' | 'High Budget Leads';
+  messageText: string;
+  status: 'Draft' | 'Scheduled' | 'Sent' | 'Paused';
+  scheduledDate: string;
+  sentCount: number;
+  clickCount: number;
 }
 
-interface EmailCampaign {
+// ── Social Post Interface ────────────────────────────────────
+interface SocialPost {
   id: string;
-  subject: string;
-  previewText: string;
-  body: string;
-  status: 'Sent' | 'Draft' | 'Scheduled';
-  sent: number;
-  openRate: number;
-  clickRate: number;
-  couponCode?: string;
-  headerImage?: string;
-  createdAt: string;
+  title: string;
+  platform: 'Instagram' | 'Facebook' | 'Pinterest' | 'YouTube Shorts';
+  contentType: 'Reel' | 'Carousel' | 'Story' | 'Static Post' | 'Product Showcase' | 'Testimonial' | 'Offer Post';
+  caption: string;
+  designStatus: 'Idea' | 'Design Pending' | 'In Design' | 'Ready' | 'Posted';
+  assignedDesigner: string;
+  postingDate: string;
+  mediaPlaceholder?: string;
 }
 
-interface MetaAdCampaign {
-  id: string;
-  name: string;
-  campaignTarget: string;
-  status: 'Active' | 'Paused' | 'Pending';
-  budget: number;
-  spend: number;
-  impressions: number;
-  clicks: number;
-  leads: number;
-  roas: number;
-  startDate: string;
-}
+// ── Templates Mappings ──────────────────────────────────────
+const WHATSAPP_TEMPLATES = [
+  {
+    name: 'New Collection Launch',
+    text: 'Pranam {{name}}! 🪷 We are delighted to share the exclusive premiere of our new Ganesh Chaturthi video invitation collection. Click below to view the catalog: {{link}}'
+  },
+  {
+    name: 'Wedding Season Offer',
+    text: 'Hello {{name}}! ✨ Celebrate your special moments with luxury. Get flat 15% off on all printed invitations and websites for this wedding season. Use code: WEDDING15. Order now: {{link}}'
+  },
+  {
+    name: 'Wedding Website Promotion',
+    text: 'Hi {{name}}! 💍 Make your wedding announcement unforgettable. Launch a custom interactive website for your guests with RSVP forms, directions, and galleries. View templates: {{link}}'
+  },
+  {
+    name: 'Custom Invitation Follow-up',
+    text: 'Dear {{name}}, we hope you liked the custom invitation layouts we shared on WhatsApp. Please let us know your feedback or if you need any text corrections. Regards, Eventique.'
+  },
+  {
+    name: 'Final Reminder',
+    text: 'Hello {{name}}, this is a final reminder that your wedding invitation draft approval is pending. Please review and approve the draft by tonight to avoid shipping delays. Link: {{link}}'
+  }
+];
 
 export default function MarketingHub() {
   const { state, addActivityLog } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'whatsapp' | 'email' | 'meta-ads' | 'analytics'>('whatsapp');
+  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'whatsapp' | 'social' | 'analytics'>('overview');
 
-  // WhatsApp States
-  const [whatsappCampaigns, setWhatsappCampaigns] = useState<WhatsAppCampaign[]>([
-    {
-      id: 'wa-1',
-      name: 'Ganesh Chaturthi Launch Invite',
-      template: 'Pranam {{name}}! 🪷 We are delighted to share the exclusive premiere of our new Ganesh Chaturthi video invitation collection. Click below to view the catalog and secure early booking discounts: {{link}}',
-      status: 'Sent',
-      targetGroup: 'Premium Leads',
-      size: 450,
-      sent: 450,
-      read: 395,
-      clicked: 215,
-      mediaUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=300&auto=format&fit=crop',
-      createdAt: '2026-05-15'
-    },
-    {
-      id: 'wa-2',
-      name: 'Wedding RSVP Follow-up Reminder',
-      template: 'Dear {{name}}, we hope you are doing well. This is a gentle reminder to please confirm your attendance RSVP for the upcoming celebration of {{couple}}. Click to RSVP: {{link}}',
-      status: 'Scheduled',
-      targetGroup: 'RSVP Pending',
-      size: 125,
-      sent: 0,
-      read: 0,
-      clicked: 0,
-      createdAt: '2026-06-12'
-    }
-  ]);
-  const [showNewWaModal, setShowNewWaModal] = useState(false);
+  // ── 1. Local Storage Hook States ────────────────────────────
+  const [leads, setLeads] = useState<Lead[]>(() => {
+    const saved = localStorage.getItem('eventique_leads');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'L-101', name: 'Amit Sharma', phone: '+91 98765 43210', email: 'amit@gmail.com', eventType: 'Wedding', interestedProduct: 'Premium Video Invite', budget: 25000, source: 'Website Form', status: 'Converted', assignedTo: 'Rohan Verma', notes: 'Shared design drafts. Coupon applied.', createdAt: '2026-06-01' },
+      { id: 'L-102', name: 'Neha Gupta', phone: '+91 99999 88888', email: 'neha@yahoo.com', eventType: 'Wedding', interestedProduct: 'Printed Luxury Box Set', budget: 65000, source: 'Instagram', status: 'New', assignedTo: 'Pooja Mehta', notes: 'Requested premium gold theme options.', createdAt: '2026-06-06' },
+      { id: 'L-103', name: 'Vikram Singh', phone: '+91 91234 56789', email: 'vikram@outlook.com', eventType: 'Anniversary', interestedProduct: 'Interactive Website', budget: 15000, source: 'WhatsApp', status: 'Contacted', assignedTo: 'Rohan Verma', notes: 'Sent domain mapping pricing list.', createdAt: '2026-06-04' },
+      { id: 'L-104', name: 'Priya Patel', phone: '+91 88888 77777', email: 'priya@gmail.com', eventType: 'Corporate', interestedProduct: 'E-Stationery Designs', budget: 30000, source: 'Referral', status: 'Follow-up', assignedTo: 'Pooja Mehta', notes: 'Call scheduled on Monday at 3PM.', createdAt: '2026-06-03' },
+      { id: 'L-105', name: 'Rohan Deshmukh', phone: '+91 77777 66666', email: 'rohan@gmail.com', eventType: 'Birthday', interestedProduct: 'E-Card Template', budget: 5000, source: 'Facebook', status: 'Lost', assignedTo: 'Rohan Verma', notes: 'Budget too low for custom assets.', createdAt: '2026-06-02' },
+      { id: 'L-106', name: 'Kavita Rao', phone: '+91 98989 88888', email: 'kavita@gmail.com', eventType: 'Wedding', interestedProduct: 'Wedding Website Deluxe', budget: 18000, source: 'Direct Call', status: 'Converted', assignedTo: 'Pooja Mehta', notes: 'Payment confirmed. Live at kavita-wedding.in', createdAt: '2026-06-05' }
+    ];
+  });
+
+  const [whatsappCampaigns, setWhatsappCampaigns] = useState<WhatsAppCampaign[]>(() => {
+    const saved = localStorage.getItem('eventique_wa_campaigns');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'wa-1', name: 'Diwali Invite Promo 2026', messageType: 'Festival Campaign', targetAudience: 'Converted Customers', messageText: 'Pranam {{name}}! 🪷 We wish you a beautiful Diwali. View our collection: {{link}}', status: 'Sent', scheduledDate: '2026-05-10 12:00', sentCount: 480, clickCount: 215 },
+      { id: 'wa-2', name: 'Wedding Web Launch', messageType: 'Wedding Website Promotion', targetAudience: 'Wedding Customers', messageText: 'Hi {{name}}! 💍 Make your wedding announcement unforgettable: {{link}}', status: 'Scheduled', scheduledDate: '2026-06-15 10:00', sentCount: 0, clickCount: 0 }
+    ];
+  });
+
+  const [socialPosts, setSocialPosts] = useState<SocialPost[]>(() => {
+    const saved = localStorage.getItem('eventique_social_posts');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'sp-1', title: 'Ganesh Chaturthi Video Invite', platform: 'Instagram', contentType: 'Reel', caption: 'Elegant Ganesh Chaturthi collections are now live! Book today.', designStatus: 'Posted', assignedDesigner: 'Neha Sen', postingDate: '2026-06-05' },
+      { id: 'sp-2', title: 'Sharma Wedding Testimonial Card', platform: 'Pinterest', contentType: 'Testimonial', caption: '“Our guests loved the interactive maps!” - Priya & Amit.', designStatus: 'Ready', assignedDesigner: 'Neha Sen', postingDate: '2026-06-08' },
+      { id: 'sp-3', title: 'Floral Pastel Motif Showcase', platform: 'Instagram', contentType: 'Carousel', caption: 'Handcrafted floral details representing premium Indian tradition.', designStatus: 'In Design', assignedDesigner: 'Kabir Malhotra', postingDate: '2026-06-10' },
+      { id: 'sp-4', title: 'Wax Seal Custom Box Unboxing', platform: 'YouTube Shorts', contentType: 'Product Showcase', caption: 'Unboxing premium gold wax seal invitation sets.', designStatus: 'Idea', assignedDesigner: 'Neha Sen', postingDate: '2026-06-12' }
+    ];
+  });
+
+  // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('eventique_leads', JSON.stringify(leads));
+  }, [leads]);
+
+  useEffect(() => {
+    localStorage.setItem('eventique_wa_campaigns', JSON.stringify(whatsappCampaigns));
+  }, [whatsappCampaigns]);
+
+  useEffect(() => {
+    localStorage.setItem('eventique_social_posts', JSON.stringify(socialPosts));
+  }, [socialPosts]);
+
+  // ── 2. Modal Controls & Forms ──────────────────────────────
+  const [showAddLeadModal, setShowAddLeadModal] = useState(false);
+  const [showEditLeadModal, setShowEditLeadModal] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  // Form states for Leads
+  const [leadName, setLeadName] = useState('');
+  const [leadPhone, setLeadPhone] = useState('');
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadEventType, setLeadEventType] = useState<Lead['eventType']>('Wedding');
+  const [leadProduct, setLeadProduct] = useState('');
+  const [leadBudget, setLeadBudget] = useState(15000);
+  const [leadSource, setLeadSource] = useState<Lead['source']>('Website Form');
+  const [leadStatus, setLeadStatus] = useState<Lead['status']>('New');
+  const [leadAssigned, setLeadAssigned] = useState('Rohan Verma');
+  const [leadNotes, setLeadNotes] = useState('');
+
+  // Form states for WhatsApp Campaigns
+  const [showAddWaModal, setShowAddWaModal] = useState(false);
+  const [showWaPreview, setShowWaPreview] = useState(false);
+  const [selectedWaCampaign, setSelectedWaCampaign] = useState<WhatsAppCampaign | null>(null);
   const [waName, setWaName] = useState('');
-  const [waTemplate, setWaTemplate] = useState('Namaste {{name}}! ✨ We invite you to view our luxury digital invitations. Tap the button below to view: {{link}}');
-  const [waTarget, setWaTarget] = useState('All Customers');
-  const [waMediaUrl, setWaMediaUrl] = useState('');
+  const [waType, setWaType] = useState<WhatsAppCampaign['messageType']>('New Collection Launch');
+  const [waAudience, setWaAudience] = useState<WhatsAppCampaign['targetAudience']>('All Leads');
+  const [waText, setWaText] = useState('');
+  const [waStatus, setWaStatus] = useState<WhatsAppCampaign['status']>('Draft');
+  const [waDate, setWaDate] = useState('2026-06-15 10:00');
+
+  // Form states for Social Media Planner
+  const [showAddSocialModal, setShowAddSocialModal] = useState(false);
+  const [selectedSocialPost, setSelectedSocialPost] = useState<SocialPost | null>(null);
+  const [postTitle, setPostTitle] = useState('');
+  const [postPlatform, setPostPlatform] = useState<SocialPost['platform']>('Instagram');
+  const [postType, setPostType] = useState<SocialPost['contentType']>('Reel');
+  const [postCaption, setPostCaption] = useState('');
+  const [postDesignStatus, setPostDesignStatus] = useState<SocialPost['designStatus']>('Idea');
+  const [postDesigner, setPostDesigner] = useState('Neha Sen');
+  const [postDate, setPostDate] = useState('2026-06-10');
+  const [socialView, setSocialView] = useState<'kanban' | 'list'>('kanban');
+
+  // ── 3. Filters & Searching ──────────────────────────────────
+  const [leadsSearch, setLeadsSearch] = useState('');
+  const [leadsStatusFilter, setLeadsStatusFilter] = useState<'All' | Lead['status']>('All');
+  const [leadsSourceFilter, setLeadsSourceFilter] = useState<'All' | Lead['source']>('All');
+  const [leadsEventFilter, setLeadsEventFilter] = useState<'All' | Lead['eventType']>('All');
+
+  const [socialPlatformFilter, setSocialPlatformFilter] = useState<'All' | SocialPost['platform']>('All');
+  const [socialStatusFilter, setSocialStatusFilter] = useState<'All' | SocialPost['designStatus']>('All');
+
+  // Filtered Leads
+  const filteredLeads = useMemo(() => {
+    return leads.filter(l => {
+      const matchSearch = l.name.toLowerCase().includes(leadsSearch.toLowerCase()) ||
+                          l.phone.includes(leadsSearch) ||
+                          l.email.toLowerCase().includes(leadsSearch.toLowerCase()) ||
+                          l.interestedProduct.toLowerCase().includes(leadsSearch.toLowerCase());
+      const matchStatus = leadsStatusFilter === 'All' || l.status === leadsStatusFilter;
+      const matchSource = leadsSourceFilter === 'All' || l.source === leadsSourceFilter;
+      const matchEvent = leadsEventFilter === 'All' || l.eventType === leadsEventFilter;
+      return matchSearch && matchStatus && matchSource && matchEvent;
+    });
+  }, [leads, leadsSearch, leadsStatusFilter, leadsSourceFilter, leadsEventFilter]);
+
+  // Filtered Social Posts
+  const filteredSocialPosts = useMemo(() => {
+    return socialPosts.filter(p => {
+      const matchPlatform = socialPlatformFilter === 'All' || p.platform === socialPlatformFilter;
+      const matchStatus = socialStatusFilter === 'All' || p.designStatus === socialStatusFilter;
+      return matchPlatform && matchStatus;
+    });
+  }, [socialPosts, socialPlatformFilter, socialStatusFilter]);
+
+  // ── 4. Analytics Data Calculations ──────────────────────────
+  const totalLeadsCount = leads.length;
+  const newLeadsCount = leads.filter(l => l.status === 'New').length;
+  const convertedLeadsCount = leads.filter(l => l.status === 'Converted').length;
+  const conversionRate = totalLeadsCount > 0 ? ((convertedLeadsCount / totalLeadsCount) * 100).toFixed(1) : '0';
+  const activeWhatsAppCampaignsCount = whatsappCampaigns.filter(c => c.status === 'Scheduled' || c.status === 'Sent').length;
+  const plannedSocialPostsCount = socialPosts.filter(p => p.designStatus !== 'Posted').length;
   
-  // Email States
-  const [emailCampaigns, setEmailCampaigns] = useState<EmailCampaign[]>([
-    {
-      id: 'em-1',
-      subject: '💍 Unveiling the 2026 Luxury Wedding Website Themes',
-      previewText: 'Discover the royal motifs and modern minimalist layouts that couples are loving this season.',
-      body: 'Hello {{name}},\n\nWedding preparations are in full swing! At Eventique, we are excited to showcase our newly launched interactive wedding website templates. From animations that reflect traditional Indian heritage to glassmorphic minimalist cards, your invitation will be the talk of the town.\n\nUse the coupon below to get flat 15% off on our Website + Video combo packages.',
-      status: 'Sent',
-      sent: 1250,
-      openRate: 48.2,
-      clickRate: 15.6,
-      couponCode: 'WEDDING15',
-      headerImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=400&auto=format&fit=crop',
-      createdAt: '2026-05-20'
+  const revenueFromLeads = useMemo(() => {
+    return leads.filter(l => l.status === 'Converted').reduce((acc, curr) => acc + curr.budget, 0);
+  }, [leads]);
+
+  // Leads by source calculations
+  const sourcePerformance = useMemo(() => {
+    const counts: Record<Lead['source'], number> = {
+      'Website Form': 0, 'WhatsApp': 0, 'Instagram': 0, 'Facebook': 0, 'Referral': 0, 'Direct Call': 0
+    };
+    leads.forEach(l => {
+      if (counts[l.source] !== undefined) counts[l.source]++;
+    });
+    return counts;
+  }, [leads]);
+
+  // Leads by status calculations
+  const statusPerformance = useMemo(() => {
+    const counts: Record<Lead['status'], number> = {
+      'New': 0, 'Contacted': 0, 'Follow-up': 0, 'Converted': 0, 'Lost': 0
+    };
+    leads.forEach(l => {
+      if (counts[l.status] !== undefined) counts[l.status]++;
+    });
+    return counts;
+  }, [leads]);
+
+  // Best performing source
+  const bestPerformingSource = useMemo(() => {
+    const sourceConversions: Record<string, number> = {};
+    leads.filter(l => l.status === 'Converted').forEach(l => {
+      sourceConversions[l.source] = (sourceConversions[l.source] || 0) + 1;
+    });
+    let best = 'Website Form';
+    let max = 0;
+    Object.entries(sourceConversions).forEach(([src, count]) => {
+      if (count > max) {
+        max = count;
+        best = src;
+      }
+    });
+    return { name: best, count: max };
+  }, [leads]);
+
+  // ── 5. Handler Operations (CRUD) ────────────────────────────
+  
+  // Leads Action Handlers
+  const handleAddLeadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leadName.trim()) return;
+
+    const newLead: Lead = {
+      id: `L-${Date.now().toString().slice(-3)}`,
+      name: leadName,
+      phone: leadPhone,
+      email: leadEmail,
+      eventType: leadEventType,
+      interestedProduct: leadProduct || 'Not Specified',
+      budget: Number(leadBudget),
+      source: leadSource,
+      status: leadStatus,
+      assignedTo: leadAssigned,
+      notes: leadNotes,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    setLeads([newLead, ...leads]);
+    addActivityLog('Lead Created', `Added lead for ${leadName} (Product: ${newLead.interestedProduct})`, 'success');
+    setShowAddLeadModal(false);
+    resetLeadForm();
+  };
+
+  const handleEditLeadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLead) return;
+
+    setLeads(leads.map(l => {
+      if (l.id === selectedLead.id) {
+        return {
+          ...l,
+          name: leadName,
+          phone: leadPhone,
+          email: leadEmail,
+          eventType: leadEventType,
+          interestedProduct: leadProduct,
+          budget: Number(leadBudget),
+          source: leadSource,
+          status: leadStatus,
+          assignedTo: leadAssigned,
+          notes: leadNotes
+        };
+      }
+      return l;
+    }));
+
+    addActivityLog('Lead Modified', `Updated lead profile for ${leadName}`, 'success');
+    setShowEditLeadModal(false);
+    setSelectedLead(null);
+    resetLeadForm();
+  };
+
+  const handleDeleteLead = (id: string) => {
+    if (confirm('Are you sure you want to delete this lead inquiry?')) {
+      setLeads(leads.filter(l => l.id !== id));
+      addActivityLog('Lead Removed', `Deleted lead record ${id}`, 'danger');
     }
-  ]);
-  const [showNewEmModal, setShowNewEmModal] = useState(false);
-  const [emSubject, setEmSubject] = useState('');
-  const [emPreview, setEmPreview] = useState('');
-  const [emBody, setEmBody] = useState('');
-  const [emCoupon, setEmCoupon] = useState('');
-  const [emHeaderImage, setEmHeaderImage] = useState('');
-  const [emailViewport, setEmailViewport] = useState<'desktop' | 'mobile'>('desktop');
+  };
 
-  // Ads States
-  const [metaAds, setMetaAds] = useState<MetaAdCampaign[]>([
-    {
-      id: 'ad-1',
-      name: 'Printed Invites - High Intent India',
-      campaignTarget: 'Printed Luxury Invites',
-      status: 'Active',
-      budget: 1500,
-      spend: 18450,
-      impressions: 142000,
-      clicks: 8400,
-      leads: 310,
-      roas: 4.8,
-      startDate: '2026-05-01'
-    },
-    {
-      id: 'ad-2',
-      name: 'Video Invites - Metro Cities Lookalikes',
-      campaignTarget: 'Video Invites',
-      status: 'Active',
-      budget: 800,
-      spend: 9600,
-      impressions: 98000,
-      clicks: 6100,
-      leads: 195,
-      roas: 5.2,
-      startDate: '2026-05-10'
-    }
-  ]);
-  const [showNewAdModal, setShowNewAdModal] = useState(false);
-  const [adName, setAdName] = useState('');
-  const [adTarget, setAdTarget] = useState('Video Invites');
-  const [adBudget, setAdBudget] = useState(1000);
-  const [adGender, setAdGender] = useState('All');
-  const [adAge, setAdAge] = useState('22-38');
-  const [adLocation, setAdLocation] = useState('Metro Cities');
+  const handleQuickStatusChange = (id: string, newStatus: Lead['status']) => {
+    setLeads(leads.map(l => {
+      if (l.id === id) {
+        addActivityLog('Lead Status Updated', `Lead ${l.name} updated to status ${newStatus}`);
+        return { ...l, status: newStatus };
+      }
+      return l;
+    }));
+  };
 
-  const mediaImages = state.mediaFiles.filter(f => f.type === 'image');
-  const activePromotions = state.promotions?.filter(p => p.status === 'Active') || [];
-  const launchCampaigns = state.launchCampaigns || [];
+  const openEditLead = (l: Lead) => {
+    setSelectedLead(l);
+    setLeadName(l.name);
+    setLeadPhone(l.phone);
+    setLeadEmail(l.email);
+    setLeadEventType(l.eventType);
+    setLeadProduct(l.interestedProduct);
+    setLeadBudget(l.budget);
+    setLeadSource(l.source);
+    setLeadStatus(l.status);
+    setLeadAssigned(l.assignedTo);
+    setLeadNotes(l.notes);
+    setShowEditLeadModal(true);
+  };
 
-  // WhatsApp Submit
-  const handleCreateWhatsAppCampaign = (e: React.FormEvent) => {
+  const resetLeadForm = () => {
+    setLeadName('');
+    setLeadPhone('');
+    setLeadEmail('');
+    setLeadEventType('Wedding');
+    setLeadProduct('');
+    setLeadBudget(15000);
+    setLeadSource('Website Form');
+    setLeadStatus('New');
+    setLeadAssigned('Rohan Verma');
+    setLeadNotes('');
+  };
+
+  // WhatsApp Campaign Handlers
+  const handleAddWaSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!waName.trim()) return;
 
-    const size = waTarget === 'All Customers' ? state.customers.length : waTarget === 'RSVP Pending' ? 45 : 120;
+    // Duplicate verification
+    const exists = whatsappCampaigns.some(c => c.name.trim().toLowerCase() === waName.trim().toLowerCase());
+    if (exists) {
+      alert('Error: A WhatsApp Campaign with this name already exists. Duplicate campaigns are not allowed.');
+      return;
+    }
+
     const newCamp: WhatsAppCampaign = {
       id: `wa-${Date.now()}`,
       name: waName,
-      template: waTemplate,
-      status: 'Draft',
-      targetGroup: waTarget,
-      size,
-      sent: 0,
-      read: 0,
-      clicked: 0,
-      mediaUrl: waMediaUrl || undefined,
-      createdAt: new Date().toISOString().split('T')[0]
+      messageType: waType,
+      targetAudience: waAudience,
+      messageText: waText,
+      status: waStatus,
+      scheduledDate: waDate,
+      sentCount: waStatus === 'Sent' ? 120 : 0,
+      clickCount: 0
     };
 
-    setWhatsappCampaigns([newCamp, ...whatsappCampaigns]);
-    addActivityLog('WhatsApp Campaign Created', `${waName} - Target: ${waTarget}`, 'success');
-    setShowNewWaModal(false);
+    setWhatsappCampaigns([...whatsappCampaigns, newCamp]);
+    addActivityLog('WhatsApp Campaign Saved', `Campaign ${waName} added as ${waStatus}`, 'success');
+    setShowAddWaModal(false);
+    resetWaForm();
+  };
+
+  const triggerMarkAsSent = (id: string) => {
+    setWhatsappCampaigns(whatsappCampaigns.map(c => {
+      if (c.id === id) {
+        addActivityLog('WhatsApp Campaign Dispatched', `Broadcasted campaign ${c.name} to all targets`);
+        return {
+          ...c,
+          status: 'Sent',
+          sentCount: c.targetAudience === 'All Leads' ? leads.length : 150,
+          clickCount: Math.floor(Math.random() * 50) + 10
+        };
+      }
+      return c;
+    }));
+  };
+
+  const resetWaForm = () => {
     setWaName('');
+    setWaType('New Collection Launch');
+    setWaAudience('All Leads');
+    setWaText(WHATSAPP_TEMPLATES[0].text);
+    setWaStatus('Draft');
+    setWaDate('2026-06-15 10:00');
   };
 
-  // WhatsApp Trigger Send Simulation
-  const triggerSendWhatsApp = (id: string) => {
-    setWhatsappCampaigns(prev => prev.map(c => {
-      if (c.id === id) {
-        addActivityLog('WhatsApp Campaign Broadcasted', `${c.name} sent to ${c.size} recipients.`, 'success');
-        return {
-          ...c,
-          status: 'Sent',
-          sent: c.size,
-          read: Math.floor(c.size * 0.88),
-          clicked: Math.floor(c.size * 0.45)
-        };
-      }
-      return c;
-    }));
-  };
-
-  // Email Submit
-  const handleCreateEmailCampaign = (e: React.FormEvent) => {
+  // Social Planner Handlers
+  const handleAddSocialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emSubject.trim()) return;
+    if (!postTitle.trim()) return;
 
-    const newCamp: EmailCampaign = {
-      id: `em-${Date.now()}`,
-      subject: emSubject,
-      previewText: emPreview,
-      body: emBody,
-      status: 'Draft',
-      sent: 0,
-      openRate: 0,
-      clickRate: 0,
-      couponCode: emCoupon || undefined,
-      headerImage: emHeaderImage || undefined,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
+    if (selectedSocialPost) {
+      // Edit Post
+      setSocialPosts(socialPosts.map(p => {
+        if (p.id === selectedSocialPost.id) {
+          return {
+            ...p,
+            title: postTitle,
+            platform: postPlatform,
+            contentType: postType,
+            caption: postCaption,
+            designStatus: postDesignStatus,
+            assignedDesigner: postDesigner,
+            postingDate: postDate
+          };
+        }
+        return p;
+      }));
+      addActivityLog('Social Plan Updated', `Edited content post: ${postTitle}`, 'success');
+    } else {
+      // Create Post
+      const newPost: SocialPost = {
+        id: `sp-${Date.now()}`,
+        title: postTitle,
+        platform: postPlatform,
+        contentType: postType,
+        caption: postCaption,
+        designStatus: postDesignStatus,
+        assignedDesigner: postDesigner,
+        postingDate: postDate
+      };
+      setSocialPosts([...socialPosts, newPost]);
+      addActivityLog('Social Plan Scheduled', `Added content idea: ${postTitle}`, 'success');
+    }
 
-    setEmailCampaigns([newCamp, ...emailCampaigns]);
-    addActivityLog('Email Campaign Created', emSubject, 'success');
-    setShowNewEmModal(false);
-    setEmSubject('');
-    setEmPreview('');
-    setEmBody('');
+    setShowAddSocialModal(false);
+    setSelectedSocialPost(null);
+    resetSocialForm();
   };
 
-  // Email Trigger Send Simulation
-  const triggerSendEmail = (id: string) => {
-    setEmailCampaigns(prev => prev.map(c => {
-      if (c.id === id) {
-        addActivityLog('Email Broadcast Sent', `${c.subject} sent to subscribers.`, 'success');
-        return {
-          ...c,
-          status: 'Sent',
-          sent: 1450,
-          openRate: 45.8,
-          clickRate: 12.4
-        };
+  const openEditSocial = (p: SocialPost) => {
+    setSelectedSocialPost(p);
+    setPostTitle(p.title);
+    setPostPlatform(p.platform);
+    setPostType(p.contentType);
+    setPostCaption(p.caption);
+    setPostDesignStatus(p.designStatus);
+    setPostDesigner(p.assignedDesigner);
+    setPostDate(p.postingDate);
+    setShowAddSocialModal(true);
+  };
+
+  const handleDeleteSocial = (id: string) => {
+    if (confirm('Delete this social media planner item?')) {
+      setSocialPosts(socialPosts.filter(p => p.id !== id));
+      addActivityLog('Social Item Deleted', 'Removed content board entry', 'danger');
+    }
+  };
+
+  const handleUpdateDesignStatus = (id: string, nextStatus: SocialPost['designStatus']) => {
+    setSocialPosts(socialPosts.map(p => {
+      if (p.id === id) {
+        addActivityLog('Social Design Status Updated', `Post "${p.title}" design status is now ${nextStatus}`);
+        return { ...p, designStatus: nextStatus };
       }
-      return c;
+      return p;
     }));
   };
 
-  // Meta Ad Submit
-  const handleLaunchMetaAd = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!adName.trim()) return;
-
-    const newAd: MetaAdCampaign = {
-      id: `ad-${Date.now()}`,
-      name: adName,
-      campaignTarget: adTarget,
-      status: 'Active',
-      budget: adBudget,
-      spend: 0,
-      impressions: 0,
-      clicks: 0,
-      leads: 0,
-      roas: 0,
-      startDate: new Date().toISOString().split('T')[0]
-    };
-
-    setMetaAds([newAd, ...metaAds]);
-    addActivityLog('Meta Ad Launched', `${adName} (Budget: ₹${adBudget}/day)`, 'success');
-    setShowNewAdModal(false);
-    setAdName('');
+  const resetSocialForm = () => {
+    setPostTitle('');
+    setPostPlatform('Instagram');
+    setPostType('Reel');
+    setPostCaption('');
+    setPostDesignStatus('Idea');
+    setPostDesigner('Neha Sen');
+    setPostDate('2026-06-10');
   };
-
-  const handleToggleAdStatus = (id: string) => {
-    setMetaAds(prev => prev.map(a => {
-      if (a.id === id) {
-        const nextStatus = a.status === 'Active' ? 'Paused' : 'Active';
-        addActivityLog('Meta Ad Status Changed', `${a.name} is now ${nextStatus}`);
-        return { ...a, status: nextStatus as any };
-      }
-      return a;
-    }));
-  };
-
-  // Parsing helper for preview
-  const parseWhatsAppPreview = (tmpl: string) => {
-    return tmpl
-      .replace(/{{name}}/g, 'Neha Sen')
-      .replace(/{{couple}}/g, 'Rohan & Ananya')
-      .replace(/{{link}}/g, 'eventique.in/l/royal')
-      .replace(/{{campaign_name}}/g, 'Ganesh Chaturthi Collection');
-  };
-
-  // Count active stats
-  const totalLeads = metaAds.reduce((acc, curr) => acc + curr.leads, 0);
-  const totalAdSpend = metaAds.reduce((acc, curr) => acc + curr.spend, 0);
-  const avgRoas = (metaAds.reduce((acc, curr) => acc + curr.roas, 0) / metaAds.length).toFixed(1);
 
   return (
     <div className="space-y-6 admin-animate-in">
-      {/* Header */}
+      {/* Header Panel */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#1a1410]" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
-            Marketing & Automation Hub
+            Marketing Hub
           </h1>
-          <p className="text-sm text-gray-400 mt-0.5 font-medium">Create WhatsApp broadcasts, construct newsletter campaigns, and configure paid social ads</p>
+          <p className="text-sm text-gray-400 mt-0.5 font-medium">Orchestrate Leads, WhatsApp broadcasting, social media posting queues, and performance metrics</p>
         </div>
 
         <div className="flex items-center gap-2">
+          {activeTab === 'leads' && (
+            <button
+              onClick={() => { resetLeadForm(); setShowAddLeadModal(true); }}
+              className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer shadow-sm"
+            >
+              <Plus size={15} />
+              <span>Add Lead Inquiry</span>
+            </button>
+          )}
           {activeTab === 'whatsapp' && (
             <button
-              onClick={() => setShowNewWaModal(true)}
-              className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer shadow-sm hover:shadow"
+              onClick={() => { resetWaForm(); setShowAddWaModal(true); }}
+              className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer shadow-sm"
             >
               <Plus size={15} />
-              <span>New Broadcast</span>
+              <span>Create Campaign</span>
             </button>
           )}
-          {activeTab === 'email' && (
+          {activeTab === 'social' && (
             <button
-              onClick={() => setShowNewEmModal(true)}
-              className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer shadow-sm hover:shadow"
+              onClick={() => { resetSocialForm(); setSelectedSocialPost(null); setShowAddSocialModal(true); }}
+              className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer shadow-sm"
             >
               <Plus size={15} />
-              <span>Create Newsletter</span>
-            </button>
-          )}
-          {activeTab === 'meta-ads' && (
-            <button
-              onClick={() => setShowNewAdModal(true)}
-              className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer shadow-sm hover:shadow"
-            >
-              <Plus size={15} />
-              <span>Launch Meta Ad</span>
+              <span>Add Content Post</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 bg-white border border-[#e5e5e5] rounded-xl p-1.5 w-fit shadow-sm">
-        <button
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-            activeTab === 'whatsapp'
-              ? 'bg-[#8B4949] text-white shadow-sm'
-              : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
-          }`}
-          onClick={() => setActiveTab('whatsapp')}
-        >
-          <MessageSquare size={15} />
-          <span>WhatsApp Broadcasts</span>
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-            activeTab === 'email'
-              ? 'bg-[#8B4949] text-white shadow-sm'
-              : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
-          }`}
-          onClick={() => setActiveTab('email')}
-        >
-          <Mail size={15} />
-          <span>Email Campaigns</span>
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-            activeTab === 'meta-ads'
-              ? 'bg-[#8B4949] text-white shadow-sm'
-              : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
-          }`}
-          onClick={() => setActiveTab('meta-ads')}
-        >
-          <Facebook size={15} />
-          <span>Meta Ads Integration</span>
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
-            activeTab === 'analytics'
-              ? 'bg-[#8B4949] text-white shadow-sm'
-              : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
-          }`}
-          onClick={() => setActiveTab('analytics')}
-        >
-          <BarChart3 size={15} />
-          <span>ROI Analytics</span>
-        </button>
+      {/* Luxury Tabs */}
+      <div className="flex gap-2 bg-white border border-[#e5e5e5] rounded-xl p-1.5 w-fit shadow-sm flex-wrap">
+        {[
+          { key: 'overview', label: 'Dashboard Overview', icon: Sparkles },
+          { key: 'leads', label: 'Leads / Inquiries', icon: Users },
+          { key: 'whatsapp', label: 'WhatsApp Campaigns', icon: MessageSquare },
+          { key: 'social', label: 'Social Media Planner', icon: Calendar },
+          { key: 'analytics', label: 'Marketing Analytics', icon: BarChart3 }
+        ].map(tab => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === tab.key
+                  ? 'bg-[#8B4949] text-white shadow-sm'
+                  : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
+              }`}
+              onClick={() => setActiveTab(tab.key as any)}
+            >
+              <Icon size={15} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── TAB 1: WHATSAPP BROADCASTS ────────────────────────────── */}
+      {/* ── VIEW 1: DASHBOARD SUMMARY OVERVIEW ────────────────────── */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          {/* Deck of Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            <StatsCard label="Total Leads" value={totalLeadsCount} icon={<Users size={16} />} color="primary" />
+            <StatsCard label="New Leads" value={newLeadsCount} icon={<Users size={16} />} color="blue" />
+            <StatsCard label="Converted Leads" value={convertedLeadsCount} icon={<Check size={16} />} color="green" />
+            <StatsCard label="Conversion Rate" value={`${conversionRate}%`} icon={<ArrowUpRight size={16} />} color="gold" />
+            <StatsCard label="Active WhatsApp" value={activeWhatsAppCampaignsCount} icon={<MessageSquare size={16} />} color="primary" />
+            <StatsCard label="Planned Socials" value={plannedSocialPostsCount} icon={<Calendar size={16} />} color="blue" />
+          </div>
+
+          {/* Grid Layout splits */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Left 2 Cols: Recent activity */}
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* Recent Leads */}
+              <div className="admin-card p-0 overflow-hidden shadow-xs">
+                <div className="px-5 py-3 border-b border-[#f0f0f0] flex justify-between items-center">
+                  <h3 className="font-bold text-[#1a1410] text-sm">Recent Leads Inquiries</h3>
+                  <button onClick={() => setActiveTab('leads')} className="text-xs font-bold text-[#8B4949] hover:underline flex items-center gap-0.5">
+                    View All Leads
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Lead ID</th>
+                        <th>Name</th>
+                        <th>Event</th>
+                        <th>Source</th>
+                        <th>Status</th>
+                        <th>Created Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leads.slice(0, 4).map(l => (
+                        <tr key={l.id}>
+                          <td><span className="font-mono font-bold text-[#8B4949]">{l.id}</span></td>
+                          <td><span className="font-bold text-[#1a1410]">{l.name}</span></td>
+                          <td><span className="text-xs font-semibold text-gray-500">{l.eventType}</span></td>
+                          <td>
+                            <span className="admin-badge admin-badge-info !text-[9px] !py-0.5">
+                              {l.source}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`admin-badge !text-[9px] !py-0.5 ${
+                              l.status === 'Converted' ? 'admin-badge-success' : l.status === 'Lost' ? 'admin-badge-danger' : 'admin-badge-warning'
+                            }`}>
+                              {l.status}
+                            </span>
+                          </td>
+                          <td><span className="text-xs text-gray-400 font-medium">{l.createdAt}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* WhatsApp Campaigns widget */}
+              <div className="admin-card p-0 overflow-hidden shadow-xs">
+                <div className="px-5 py-3 border-b border-[#f0f0f0] flex justify-between items-center">
+                  <h3 className="font-bold text-[#1a1410] text-sm">WhatsApp Campaigns</h3>
+                  <button onClick={() => setActiveTab('whatsapp')} className="text-xs font-bold text-[#8B4949] hover:underline">
+                    Manage Campaigns
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Campaign</th>
+                        <th>Audience</th>
+                        <th>Status</th>
+                        <th>Sent</th>
+                        <th>Clicks</th>
+                        <th>CTR</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {whatsappCampaigns.slice(0, 3).map(c => (
+                        <tr key={c.id}>
+                          <td>
+                            <span className="font-semibold text-gray-700 text-xs block">{c.name}</span>
+                            <span className="text-[9px] text-gray-400 block font-medium">{c.messageType}</span>
+                          </td>
+                          <td><span className="text-xs font-bold text-gray-500">{c.targetAudience}</span></td>
+                          <td>
+                            <span className={`admin-badge !text-[9px] !py-0.5 ${
+                              c.status === 'Sent' ? 'admin-badge-success' : c.status === 'Scheduled' ? 'admin-badge-warning' : 'admin-badge-info'
+                            }`}>
+                              {c.status}
+                            </span>
+                          </td>
+                          <td><span className="text-xs font-bold text-gray-700">{c.sentCount}</span></td>
+                          <td><span className="text-xs font-bold text-gray-700">{c.clickCount}</span></td>
+                          <td>
+                            <span className="text-xs font-bold text-[#8B4949]">
+                              {c.sentCount > 0 ? `${((c.clickCount/c.sentCount)*100).toFixed(0)}%` : '0%'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column details */}
+            <div className="space-y-6">
+              
+              {/* Upcoming Socials Posts */}
+              <div className="admin-card space-y-4">
+                <div className="flex justify-between items-center pb-2 border-b border-[#f0f0f0]">
+                  <h3 className="font-bold text-[#1a1410] text-sm">Upcoming Posts</h3>
+                  <button onClick={() => setActiveTab('social')} className="text-xs font-bold text-[#8B4949] hover:underline">
+                    Open Board
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {socialPosts.filter(p => p.designStatus !== 'Posted').slice(0, 3).map(post => (
+                    <div key={post.id} className="bg-[#faf8f5] border border-[#e5e5e5]/50 rounded-xl p-3 flex justify-between items-start gap-2">
+                      <div className="min-w-0">
+                        <span className="font-bold text-xs text-[#1a1410] truncate block">{post.title}</span>
+                        <span className="text-[10px] text-gray-400 font-semibold">{post.platform} • {post.contentType}</span>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-[10px] block font-bold text-gray-500">{post.postingDate}</span>
+                        <span className="admin-badge !text-[8px] !py-0 !px-1.5 mt-1 bg-[#d4af37]/10 text-[#c9a430] uppercase font-bold">
+                          {post.designStatus}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Lead Source performance progress bars */}
+              <div className="admin-card space-y-4">
+                <div>
+                  <h3 className="font-bold text-[#1a1410] text-sm">Lead Source Share</h3>
+                  <p className="text-[10px] text-gray-400">Total traffic and lead distributions</p>
+                </div>
+                <div className="space-y-2">
+                  {Object.entries(sourcePerformance).map(([source, count]) => {
+                    const pct = totalLeadsCount > 0 ? (count / totalLeadsCount) * 100 : 0;
+                    return (
+                      <div key={source} className="space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-semibold">
+                          <span className="text-gray-600">{source}</span>
+                          <span className="text-[#1a1410]">{count} ({pct.toFixed(0)}%)</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-[#f5f0e8] rounded-full overflow-hidden">
+                          <div className="h-full bg-[#8B4949] rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIEW 2: LEADS / INQUIRIES ────────────────────────────── */}
+      {activeTab === 'leads' && (
+        <div className="space-y-6">
+          {/* Filters Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-[#e5e5e5] rounded-xl p-4 shadow-sm">
+            <div className="relative flex-1 min-w-[240px]">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                className="admin-input"
+                style={{ paddingLeft: '2.5rem' }}
+                placeholder="Search leads by customer, contact, or interested product..."
+                value={leadsSearch}
+                onChange={(e) => setLeadsSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div>
+                <select
+                  className="admin-select !py-1.5 !px-3 text-xs w-[120px]"
+                  value={leadsStatusFilter}
+                  onChange={(e) => setLeadsStatusFilter(e.target.value as any)}
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="New">New</option>
+                  <option value="Contacted">Contacted</option>
+                  <option value="Follow-up">Follow-up</option>
+                  <option value="Converted">Converted</option>
+                  <option value="Lost">Lost</option>
+                </select>
+              </div>
+
+              <div>
+                <select
+                  className="admin-select !py-1.5 !px-3 text-xs w-[120px]"
+                  value={leadsSourceFilter}
+                  onChange={(e) => setLeadsSourceFilter(e.target.value as any)}
+                >
+                  <option value="All">All Sources</option>
+                  <option value="Website Form">Website Form</option>
+                  <option value="WhatsApp">WhatsApp</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Referral">Referral</option>
+                  <option value="Direct Call">Direct Call</option>
+                </select>
+              </div>
+
+              <div>
+                <select
+                  className="admin-select !py-1.5 !px-3 text-xs w-[120px]"
+                  value={leadsEventFilter}
+                  onChange={(e) => setLeadsEventFilter(e.target.value as any)}
+                >
+                  <option value="All">All Events</option>
+                  <option value="Wedding">Wedding</option>
+                  <option value="Birthday">Birthday</option>
+                  <option value="Corporate">Corporate</option>
+                  <option value="Anniversary">Anniversary</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Leads Table Card */}
+          <div className="admin-card p-0 overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Lead ID</th>
+                    <th>Customer</th>
+                    <th>Event Type</th>
+                    <th>Interested Product</th>
+                    <th>Budget</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Notes</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLeads.length === 0 ? (
+                    <tr>
+                      <td colSpan={10} className="text-center py-12 text-gray-400 font-medium">
+                        No leads found matching current filter settings.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredLeads.map(l => (
+                      <tr key={l.id}>
+                        <td><span className="font-mono font-bold text-[#8B4949] text-xs">{l.id}</span></td>
+                        <td>
+                          <div className="font-bold text-[#1a1410] text-sm">{l.name}</div>
+                          <div className="text-[10px] text-gray-400 font-medium">{l.phone} • {l.email}</div>
+                        </td>
+                        <td>
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            {l.eventType}
+                          </span>
+                        </td>
+                        <td><span className="text-xs text-gray-700 font-semibold">{l.interestedProduct}</span></td>
+                        <td><span className="text-xs font-bold text-gray-900">₹{l.budget.toLocaleString('en-IN')}</span></td>
+                        <td>
+                          <span className="admin-badge bg-[#f5f0e8] text-gray-600 font-semibold !text-[9px]">
+                            {l.source}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-1">
+                            <select
+                              value={l.status}
+                              onChange={(e) => handleQuickStatusChange(l.id, e.target.value as any)}
+                              className={`!py-0.5 !px-1.5 text-[10px] font-bold rounded-lg border-0 cursor-pointer ${
+                                l.status === 'Converted' ? 'bg-green-50 text-green-700' :
+                                l.status === 'Lost' ? 'bg-red-50 text-red-700' : 'bg-yellow-50 text-yellow-700'
+                              }`}
+                            >
+                              <option value="New">New</option>
+                              <option value="Contacted">Contacted</option>
+                              <option value="Follow-up">Follow-up</option>
+                              <option value="Converted">Converted</option>
+                              <option value="Lost">Lost</option>
+                            </select>
+                          </div>
+                        </td>
+                        <td><span className="text-xs text-gray-500 font-medium">{l.assignedTo}</span></td>
+                        <td>
+                          <p className="text-xs text-gray-405 truncate max-w-[150px]" title={l.notes}>
+                            {l.notes || 'No notes added'}
+                          </p>
+                        </td>
+                        <td className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => openEditLead(l)}
+                              className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-[#8B4949] cursor-pointer"
+                              title="Edit Lead"
+                            >
+                              <Edit2 size={13} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLead(l.id)}
+                              className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-red-500 cursor-pointer"
+                              title="Delete Lead"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIEW 3: WHATSAPP CAMPAIGNS ────────────────────────────── */}
       {activeTab === 'whatsapp' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Campaign table */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="admin-card p-0 overflow-hidden">
-              <div className="px-6 py-4 border-b border-[#f0f0f0]">
-                <h3 className="font-bold text-[#1a1410] text-sm">WhatsApp Campaign Logs</h3>
+            <div className="admin-card p-0 overflow-hidden shadow-xs">
+              <div className="px-6 py-4 border-b border-[#f0f0f0] flex justify-between items-center">
+                <h3 className="font-bold text-[#1a1410] text-sm">Campaigns List</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="admin-table">
                   <thead>
                     <tr>
                       <th>Campaign Name</th>
+                      <th>Type</th>
                       <th>Target Segment</th>
-                      <th>Audience</th>
-                      <th>Delivery / Reads</th>
-                      <th>CTR (Clicks)</th>
+                      <th>Scheduled Date</th>
                       <th>Status</th>
-                      <th className="text-right">Actions</th>
+                      <th>Sent</th>
+                      <th>Clicks</th>
+                      <th className="text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {whatsappCampaigns.map(c => (
                       <tr key={c.id}>
+                        <td><span className="font-bold text-[#1a1410] text-sm">{c.name}</span></td>
+                        <td><span className="text-xs text-gray-500 font-semibold">{c.messageType}</span></td>
                         <td>
-                          <div className="font-semibold text-[#1a1410] text-sm">{c.name}</div>
-                          <span className="text-[10px] text-gray-400 font-medium">Created: {c.createdAt}</span>
-                        </td>
-                        <td>
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 font-medium text-gray-600">
-                            {c.targetGroup}
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#f5f0e8] text-gray-600 font-bold">
+                            {c.targetAudience}
                           </span>
                         </td>
-                        <td><span className="text-sm font-semibold text-gray-700">{c.size}</span></td>
+                        <td><span className="text-xs text-gray-400 font-medium">{c.scheduledDate}</span></td>
                         <td>
-                          {c.status === 'Sent' ? (
-                            <div className="space-y-0.5">
-                              <div className="text-xs text-[#1a1410] font-medium">Sent: {c.sent}</div>
-                              <div className="text-[10px] text-[#4A7C59] font-bold">Read: {c.read} ({(c.read/c.sent*100).toFixed(0)}%)</div>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td>
-                          {c.status === 'Sent' ? (
-                            <div>
-                              <span className="text-sm font-semibold text-primary">{c.clicked} clicks</span>
-                              <span className="text-[10px] text-gray-400 block font-medium">({(c.clicked/c.read*100).toFixed(0)}% CTR)</span>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${
-                            c.status === 'Sent' ? 'bg-green-50 text-green-700' : c.status === 'Scheduled' ? 'bg-yellow-50 text-yellow-700' : 'bg-gray-100 text-gray-600'
+                          <span className={`admin-badge !text-[9px] !py-0.5 ${
+                            c.status === 'Sent' ? 'admin-badge-success' : c.status === 'Scheduled' ? 'admin-badge-warning' : 'admin-badge-info'
                           }`}>
                             {c.status}
                           </span>
                         </td>
+                        <td><span className="text-xs font-bold text-gray-700">{c.sentCount}</span></td>
+                        <td><span className="text-xs font-bold text-gray-700">{c.clickCount}</span></td>
                         <td className="text-right">
-                          {c.status !== 'Sent' ? (
+                          <div className="flex items-center justify-end gap-1.5">
+                            {c.status !== 'Sent' && (
+                              <button
+                                onClick={() => triggerMarkAsSent(c.id)}
+                                className="admin-btn admin-btn-outline !py-1 !px-2 text-[10px] flex items-center gap-1 cursor-pointer"
+                              >
+                                <Send size={9} /> Mark Sent
+                              </button>
+                            )}
                             <button
-                              onClick={() => triggerSendWhatsApp(c.id)}
-                              className="admin-btn admin-btn-primary !py-1 !px-2.5 text-xs flex items-center gap-1 cursor-pointer"
+                              onClick={() => { setSelectedWaCampaign(c); setShowWaPreview(true); }}
+                              className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 cursor-pointer"
+                              title="Preview Template"
                             >
-                              <Play size={10} />
-                              Send Now
+                              <Eye size={12} />
                             </button>
-                          ) : (
-                            <span className="text-xs text-gray-400 font-semibold flex items-center justify-end gap-1 text-[#4A7C59]">
-                              <Check size={12} /> Complete
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Setup Walkthrough Panel */}
-          <div className="space-y-6">
-            <div className="admin-card space-y-4">
-              <h3 className="font-bold text-[#1a1410] text-sm flex items-center gap-2">
-                <Info size={16} className="text-[#D4AF37]" /> WhatsApp API Connection
-              </h3>
-              <div className="bg-[#faf8f5] rounded-xl p-3 border border-[#e5e5e5]/50 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-600">API Gateway:</span>
-                  <span className="text-[#4A7C59] font-bold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#4A7C59] animate-pulse" /> Connected (Meta Cloud)
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-600">Sending Number:</span>
-                  <span className="text-gray-700 font-medium">+91 85912 00020</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-600">Monthly Usage:</span>
-                  <span className="text-gray-700 font-medium">1,820 / 10,000 free</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                Your WhatsApp Business Profile is verified. All messages use approved templates to prevent spam reports.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB 2: EMAIL NEWSLETTER CAMPAIGNS ─────────────────────── */}
-      {activeTab === 'email' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="admin-card p-0 overflow-hidden">
-              <div className="px-6 py-4 border-b border-[#f0f0f0]">
-                <h3 className="font-bold text-[#1a1410] text-sm">Newsletter & Email Logs</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Email Subject</th>
-                      <th>Date Sent</th>
-                      <th>Delivered</th>
-                      <th>Open Rate</th>
-                      <th>CTR</th>
-                      <th>Promo Code</th>
-                      <th className="text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {emailCampaigns.map(e => (
-                      <tr key={e.id}>
-                        <td>
-                          <div className="font-semibold text-[#1a1410] text-sm truncate max-w-[200px]">{e.subject}</div>
-                          <span className="text-[10px] text-gray-400 block font-medium">Preview: {e.previewText}</span>
-                        </td>
-                        <td><span className="text-xs text-gray-500 font-semibold">{e.createdAt}</span></td>
-                        <td><span className="text-sm font-semibold text-gray-700">{e.status === 'Sent' ? e.sent : 0}</span></td>
-                        <td>
-                          {e.status === 'Sent' ? (
-                            <span className="text-sm font-bold text-gray-700">{e.openRate}%</span>
-                          ) : (
-                            <span className="text-xs text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td>
-                          {e.status === 'Sent' ? (
-                            <span className="text-sm font-bold text-primary">{e.clickRate}%</span>
-                          ) : (
-                            <span className="text-xs text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td>
-                          {e.couponCode ? (
-                            <span className="text-[10px] font-bold bg-[#faf8f5] border border-[#d4af37]/30 text-[#8B4949] px-2 py-0.5 rounded">
-                              {e.couponCode}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-400">None</span>
-                          )}
-                        </td>
-                        <td className="text-right">
-                          {e.status !== 'Sent' ? (
-                            <button
-                              onClick={() => triggerSendEmail(e.id)}
-                              className="admin-btn admin-btn-primary !py-1 !px-2.5 text-xs flex items-center gap-1 cursor-pointer"
-                            >
-                              <Play size={10} />
-                              Send Now
-                            </button>
-                          ) : (
-                            <span className="text-xs text-gray-400 font-semibold flex items-center justify-end gap-1 text-[#4A7C59]">
-                              <Check size={12} /> Complete
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Email Integration Panel */}
-          <div className="space-y-6">
-            <div className="admin-card space-y-4">
-              <h3 className="font-bold text-[#1a1410] text-sm flex items-center gap-2">
-                <Globe size={16} className="text-[#8B4949]" /> SMTP & Mail Settings
-              </h3>
-              <div className="bg-[#faf8f5] rounded-xl p-3 border border-[#e5e5e5]/50 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-600">SMTP Server:</span>
-                  <span className="text-[#4A7C59] font-bold">Connected (AWS SES)</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-600">Sender Domain:</span>
-                  <span className="text-gray-700 font-semibold">newsletters.eventique.in</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-600">Spam Score:</span>
-                  <span className="text-[#4A7C59] font-bold">0.8 / 10 (Excellent)</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                All marketing emails include mandatory unsubscribe headers to comply with CAN-SPAM regulations and ensure maximum inbox delivery rates.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB 3: META ADS & SOCIAL INTEGRATIONS ─────────────────── */}
-      {activeTab === 'meta-ads' && (
-        <div className="space-y-6">
-          {/* Spend Summary Row */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <StatsCard label="Daily Ads Budget" value={`₹${metaAds.reduce((acc, c) => acc + (c.status === 'Active' ? c.budget : 0), 0)}`} icon={<Facebook size={18} />} color="primary" />
-            <StatsCard label="Total Spent" value={`₹${totalAdSpend.toLocaleString('en-IN')}`} icon={<Sparkles size={18} />} color="gold" />
-            <StatsCard label="Leads Generated" value={totalLeads} icon={<Users size={18} />} color="green" trend={{ value: 18, label: 'vs last week' }} />
-            <StatsCard label="Avg ROAS" value={`${avgRoas}x`} icon={<Tag size={18} />} color="blue" />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Meta Ad Campaigns */}
-            <div className="lg:col-span-2 admin-card p-0 overflow-hidden">
-              <div className="px-6 py-4 border-b border-[#f0f0f0]">
-                <h3 className="font-bold text-[#1a1410] text-sm">Active Meta Ad Campaigns</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Ad Campaign Name</th>
-                      <th>Target Theme</th>
-                      <th>Daily Budget</th>
-                      <th>Spend</th>
-                      <th>Clicks</th>
-                      <th>Leads</th>
-                      <th>ROAS</th>
-                      <th className="text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {metaAds.map(a => (
-                      <tr key={a.id}>
-                        <td>
-                          <div className="font-semibold text-[#1a1410] text-sm">{a.name}</div>
-                          <span className="text-[10px] text-gray-400 block font-medium">Started: {a.startDate}</span>
-                        </td>
-                        <td>
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#f5f0e8] text-[#8B4949]">
-                            {a.campaignTarget}
-                          </span>
-                        </td>
-                        <td><span className="text-sm font-semibold text-gray-700">₹{a.budget}/day</span></td>
-                        <td><span className="text-sm font-semibold text-gray-700">₹{a.spend.toLocaleString('en-IN')}</span></td>
-                        <td>
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-semibold text-gray-700">{a.clicks} clicks</span>
-                            <span className="text-[10px] text-gray-400 block">({((a.clicks/a.impressions)*100).toFixed(1)}% CTR)</span>
                           </div>
                         </td>
-                        <td><span className="text-sm font-bold text-gray-700">{a.leads}</span></td>
-                        <td><span className="text-sm font-bold text-green-700">{a.roas}x</span></td>
-                        <td className="text-right">
-                          <button
-                            onClick={() => handleToggleAdStatus(a.id)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
-                              a.status === 'Active'
-                                ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                : 'bg-green-50 text-green-600 hover:bg-green-100'
-                            }`}
-                          >
-                            {a.status === 'Active' ? 'Pause' : 'Activate'}
-                          </button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
+          </div>
 
-            {/* Pixel Status Panel */}
-            <div className="space-y-6">
-              <div className="admin-card space-y-4">
-                <h3 className="font-bold text-[#1a1410] text-sm flex items-center gap-2">
-                  <Facebook size={16} className="text-blue-600" /> Tracking Pixels Status
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between bg-[#faf8f5] p-2.5 rounded-lg border border-[#e5e5e5]/50 text-xs">
-                    <span className="font-semibold text-gray-600">Meta Pixel Tag</span>
-                    <span className="text-[#4A7C59] font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#4A7C59] animate-pulse" /> Active
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between bg-[#faf8f5] p-2.5 rounded-lg border border-[#e5e5e5]/50 text-xs">
-                    <span className="font-semibold text-gray-600">Google Analytics (G4)</span>
-                    <span className="text-[#4A7C59] font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#4A7C59] animate-pulse" /> Active
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between bg-[#faf8f5] p-2.5 rounded-lg border border-[#e5e5e5]/50 text-xs">
-                    <span className="font-semibold text-gray-600">Pinterest Tag</span>
-                    <span className="text-[#4A7C59] font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#4A7C59] animate-pulse" /> Active
-                    </span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-gray-400 leading-relaxed">
-                  Pixels are tracking `Lead` registrations and `Purchase` completions on all customer invitation cards and wedding landing pages.
-                </p>
+          {/* Quick-send and guidelines */}
+          <div className="space-y-6">
+            <div className="admin-card space-y-4">
+              <h3 className="font-bold text-[#1a1410] text-sm flex items-center gap-2">
+                <Info size={16} className="text-[#D4AF37]" /> WhatsApp Campaign Setup
+              </h3>
+              <p className="text-xs text-gray-405 leading-relaxed">
+                Configure your broadcast templates with dynamic variables like `{"{{name}}"}`. When triggered, the system formats your text and dispatches personal WhatsApp notifications.
+              </p>
+              <div className="bg-[#faf8f5] border border-[#e5e5e5]/50 rounded-xl p-3 space-y-2">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Allowed Variables</span>
+                <ul className="text-[11px] text-gray-600 space-y-1.5 list-disc pl-4 font-medium">
+                  <li>`{"{{name}}"}`: Inserts Lead name</li>
+                  <li>`{"{{link}}"}`: Direct checkout link</li>
+                  <li>`{"{{couple}}"}`: RSVP couple names</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── TAB 4: MARKETING ANALYTICS GRAPHS ──────────────────────── */}
-      {activeTab === 'analytics' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Traffic Conversion Sources */}
-          <div className="admin-card space-y-5">
-            <div>
-              <h3 className="font-bold text-[#1a1410] text-sm">Traffic Acquisition Channels</h3>
-              <p className="text-xs text-gray-405 mt-0.5">Which platforms drive the most digital invite visits</p>
+      {/* ── VIEW 4: SOCIAL MEDIA CONTENT PLANNER ──────────────────── */}
+      {activeTab === 'social' && (
+        <div className="space-y-6">
+          {/* Planner filters */}
+          <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-[#e5e5e5] rounded-xl p-4 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3">
+              <select
+                className="admin-select !py-1.5 !px-3 text-xs w-[140px]"
+                value={socialPlatformFilter}
+                onChange={(e) => setSocialPlatformFilter(e.target.value as any)}
+              >
+                <option value="All">All Platforms</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Facebook">Facebook</option>
+                <option value="Pinterest">Pinterest</option>
+                <option value="YouTube Shorts">YouTube Shorts</option>
+              </select>
+
+              <select
+                className="admin-select !py-1.5 !px-3 text-xs w-[140px]"
+                value={socialStatusFilter}
+                onChange={(e) => setSocialStatusFilter(e.target.value as any)}
+              >
+                <option value="All">All Design Statuses</option>
+                <option value="Idea">Idea</option>
+                <option value="Design Pending">Design Pending</option>
+                <option value="In Design">In Design</option>
+                <option value="Ready">Ready</option>
+                <option value="Posted">Posted</option>
+              </select>
             </div>
 
-            <div className="space-y-4">
-              {[
-                { name: 'Instagram Ads', count: 680, pct: 42, color: 'linear-gradient(90deg, #EC4899, #8B5CF6)' },
-                { name: 'WhatsApp Invites', count: 480, pct: 30, color: 'linear-gradient(90deg, #10B981, #059669)' },
-                { name: 'Google Search (SEO)', count: 280, pct: 18, color: 'linear-gradient(90deg, #3B82F6, #1D4ED8)' },
-                { name: 'Email Newsletters', count: 160, pct: 10, color: 'linear-gradient(90deg, #F59E0B, #D97706)' }
-              ].map(src => (
-                <div key={src.name} className="space-y-1">
-                  <div className="flex justify-between items-center text-xs font-semibold">
-                    <span className="text-gray-700">{src.name}</span>
-                    <span className="text-gray-900">{src.count} inquiries ({src.pct}%)</span>
-                  </div>
-                  <div className="h-2.5 w-full bg-[#faf8f5] rounded-full overflow-hidden border border-[#e5e5e5]/40">
-                    <div
-                      className="h-full rounded-full transition-all duration-1000"
-                      style={{ width: `${src.pct}%`, background: src.color }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Marketing ROI comparison */}
-          <div className="admin-card space-y-5">
-            <div>
-              <h3 className="font-bold text-[#1a1410] text-sm">Channel Efficiency (Avg ROAS)</h3>
-              <p className="text-xs text-gray-405 mt-0.5">Return on investment per platform channel</p>
-            </div>
-
-            <div className="space-y-4">
-              {[
-                { name: 'WhatsApp broadcasts', roas: '5.6x', val: 93, color: '#10B981' },
-                { name: 'Meta Ads (Facebook/Insta)', roas: '4.8x', val: 80, color: '#3B82F6' },
-                { name: 'Email Newsletters', roas: '3.8x', val: 63, color: '#EC4899' },
-                { name: 'Google Ads', roas: '2.9x', val: 48, color: '#F59E0B' }
-              ].map(ch => (
-                <div key={ch.name} className="space-y-1">
-                  <div className="flex justify-between items-center text-xs font-semibold">
-                    <span className="text-gray-700">{ch.name}</span>
-                    <span className="text-gray-900 font-bold" style={{ color: ch.color }}>{ch.roas} Return</span>
-                  </div>
-                  <div className="h-2.5 w-full bg-[#faf8f5] rounded-full overflow-hidden border border-[#e5e5e5]/40">
-                    <div
-                      className="h-full rounded-full transition-all duration-1000"
-                      style={{ width: `${ch.val}%`, background: ch.color }}
-                    />
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center bg-[#faf8f5] border border-[#e5e5e5] rounded-lg p-0.5 text-xs">
+              <button
+                onClick={() => setSocialView('kanban')}
+                className={`p-1.5 rounded-md cursor-pointer transition-colors ${socialView === 'kanban' ? 'bg-[#8B4949] text-white' : 'text-gray-500'}`}
+                title="Board View"
+              >
+                <LayoutGrid size={14} />
+              </button>
+              <button
+                onClick={() => setSocialView('list')}
+                className={`p-1.5 rounded-md cursor-pointer transition-colors ${socialView === 'list' ? 'bg-[#8B4949] text-white' : 'text-gray-500'}`}
+                title="List View"
+              >
+                <List size={14} />
+              </button>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* ── NEW WHATSAPP CAMPAIGN MODAL ──────────────────────────── */}
-      {showNewWaModal && (
-        <>
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 admin-animate-in" onClick={() => setShowNewWaModal(false)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl bg-white rounded-3xl shadow-2xl z-50 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-[650px] admin-animate-in">
-            {/* Form Side */}
-            <form onSubmit={handleCreateWhatsAppCampaign} className="flex-1 p-6 space-y-4 overflow-y-auto admin-scrollbar">
-              <div className="flex items-center justify-between pb-3 border-b border-[#f0ece4]">
-                <h3 className="font-bold text-[#1a1410] text-base">New WhatsApp Campaign</h3>
-              </div>
+          {/* Kanban Board Layout */}
+          {socialView === 'kanban' ? (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {(['Idea', 'Design Pending', 'In Design', 'Ready', 'Posted'] as SocialPost['designStatus'][]).map(status => {
+                const postsInCol = filteredSocialPosts.filter(p => p.designStatus === status);
+                return (
+                  <div key={status} className="bg-[#faf8f5] border border-[#e5e5e5]/50 rounded-2xl p-4 flex flex-col min-h-[400px]">
+                    <div className="flex justify-between items-center pb-2 border-b border-[#e5e5e5] mb-4">
+                      <span className="font-bold text-xs text-[#1a1410] uppercase tracking-wider">{status}</span>
+                      <span className="bg-[#8B4949]/10 text-[#8B4949] text-[10px] font-bold px-1.5 py-0.5 rounded-full">{postsInCol.length}</span>
+                    </div>
 
-              <div>
-                <label className="admin-label">Campaign Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Diwali Video Card Launch"
-                  className="admin-input bg-[#faf8f5]"
-                  value={waName}
-                  onChange={(e) => setWaName(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="admin-label">Message Template Text</label>
-                <span className="text-[10px] text-gray-400 block mb-1">
-                  Use variables: `{"{{name}}"}` for recipient name, `{"{{link}}"}` for invitation link, `{"{{campaign_name}}"}` for campaign theme.
-                </span>
-                <textarea
-                  required
-                  rows={4}
-                  placeholder="e.g. Hello {{name}}! We are thrilled..."
-                  className="admin-textarea bg-[#faf8f5] text-xs"
-                  value={waTemplate}
-                  onChange={(e) => setWaTemplate(e.target.value)}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="admin-label">Target Audience Segment</label>
-                  <select
-                    className="admin-select bg-[#faf8f5]"
-                    value={waTarget}
-                    onChange={(e) => setWaTarget(e.target.value)}
-                  >
-                    <option value="All Customers">All Customers ({state.customers.length})</option>
-                    <option value="RSVP Pending">RSVP Pending (45)</option>
-                    <option value="Premium Leads">Premium Leads (120)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="admin-label">Attach Cover Graphic</label>
-                  <select
-                    className="admin-select bg-[#faf8f5]"
-                    value={waMediaUrl}
-                    onChange={(e) => setWaMediaUrl(e.target.value)}
-                  >
-                    <option value="">No Graphic Attachment</option>
-                    {mediaImages.map(img => (
-                      <option key={img.id} value={img.url}>{img.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f0ece4]">
-                <button
-                  type="button"
-                  onClick={() => setShowNewWaModal(false)}
-                  className="admin-btn admin-btn-outline cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="admin-btn admin-btn-primary cursor-pointer"
-                >
-                  Save as Draft
-                </button>
-              </div>
-            </form>
-
-            {/* Mobile Preview Side */}
-            <div className="w-full md:w-[320px] bg-[#f5f0e8] border-l border-[#e5e5e5] p-5 flex flex-col items-center justify-center relative flex-shrink-0">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest absolute top-4">Live WhatsApp Preview</span>
-
-              {/* Phone Frame */}
-              <div className="w-[260px] h-[480px] bg-black rounded-[32px] p-2.5 shadow-xl relative border-[4px] border-gray-800 mt-6 overflow-hidden flex flex-col">
-                {/* Speaker/Camera notch */}
-                <div className="w-20 h-4 bg-gray-900 rounded-full absolute top-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-900/60 mr-2" />
-                  <div className="w-6 h-1 bg-gray-800 rounded-full" />
-                </div>
-
-                {/* WhatsApp Chat Area */}
-                <div className="flex-1 bg-[#efeae2] rounded-[22px] p-2 pt-6 overflow-y-auto flex flex-col justify-end space-y-3 relative">
-                  {/* Chat Message Bubble */}
-                  <div className="bg-white rounded-xl rounded-tr-none p-2 shadow-sm max-w-[90%] self-end relative border-t-4 border-[#10B981]">
-                    {/* Media preview */}
-                    {waMediaUrl && (
-                      <img
-                        src={waMediaUrl}
-                        alt="attachment"
-                        className="w-full h-28 object-cover rounded-lg mb-2"
-                      />
-                    )}
-                    <p className="text-[10px] text-gray-800 whitespace-pre-wrap leading-tight">
-                      {parseWhatsAppPreview(waTemplate)}
-                    </p>
-                    <span className="text-[8px] text-gray-400 block text-right mt-1 font-semibold">12:30 PM ✓✓</span>
-
-                    {/* Action buttons */}
-                    <div className="border-t border-[#f0f0f0] mt-2 pt-1.5 space-y-1">
-                      <div className="w-full py-1 text-center bg-[#f0f9f4] hover:bg-[#e1f5e8] rounded-md text-[9px] font-bold text-[#059669] cursor-pointer flex items-center justify-center gap-1">
-                        View Invitation
-                      </div>
+                    <div className="space-y-3 flex-1 overflow-y-auto">
+                      {postsInCol.map(post => (
+                        <div key={post.id} className="bg-white border border-[#e5e5e5] rounded-xl p-3 shadow-xs space-y-2 relative group hover:shadow-md transition-shadow">
+                          <div className="flex justify-between items-start">
+                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
+                              {post.platform}
+                            </span>
+                            <span className="text-[9px] font-semibold text-gray-400">
+                              {post.postingDate}
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-xs text-[#1a1410] leading-snug">{post.title}</h4>
+                          <p className="text-[10px] text-gray-405 line-clamp-2">{post.caption}</p>
+                          
+                          <div className="border-t border-[#f0f0f0] pt-2 flex items-center justify-between">
+                            <span className="text-[9px] font-medium text-gray-400">By: {post.assignedDesigner}</span>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => openEditSocial(post)}
+                                className="w-5 h-5 rounded hover:bg-gray-100 flex items-center justify-center text-gray-500 cursor-pointer"
+                              >
+                                <Edit2 size={10} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSocial(post.id)}
+                                className="w-5 h-5 rounded hover:bg-red-50 flex items-center justify-center text-red-500 cursor-pointer"
+                              >
+                                <Trash2 size={10} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
-          </div>
-        </>
-      )}
-
-      {/* ── NEW EMAIL NEWSLETTER MODAL ────────────────────────────── */}
-      {showNewEmModal && (
-        <>
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 admin-animate-in" onClick={() => setShowNewEmModal(false)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl bg-white rounded-3xl shadow-2xl z-50 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-[680px] admin-animate-in">
-            {/* Form Side */}
-            <form onSubmit={handleCreateEmailCampaign} className="flex-1 p-6 space-y-4 overflow-y-auto admin-scrollbar">
-              <div className="flex items-center justify-between pb-3 border-b border-[#f0ece4]">
-                <h3 className="font-bold text-[#1a1410] text-base flex items-center gap-1.5">
-                  <Mail size={18} className="text-[#8B4949]" /> Create Newsletter Campaign
-                </h3>
-              </div>
-
-              <div>
-                <label className="admin-label">Subject Line *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 🌟 Exclusive Wedding Season Offer — Save 15%"
-                  className="admin-input bg-[#faf8f5]"
-                  value={emSubject}
-                  onChange={(e) => setEmSubject(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="admin-label">Pre-header Preview Text</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Claim your wedding package discount before slots fill up..."
-                  className="admin-input bg-[#faf8f5] text-xs"
-                  value={emPreview}
-                  onChange={(e) => setEmPreview(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="admin-label">Email Message Body (Plain Text / Paragraphs)</label>
-                <span className="text-[10px] text-gray-400 block mb-1">
-                  Use variable `{"{{name}}"}` to personalize the greeting.
-                </span>
-                <textarea
-                  required
-                  rows={5}
-                  placeholder="Dear {{name}},\n\nWe are excited to share..."
-                  className="admin-textarea bg-[#faf8f5] text-xs"
-                  value={emBody}
-                  onChange={(e) => setEmBody(e.target.value)}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="admin-label">Attached Promo Coupon</label>
-                  <select
-                    className="admin-select bg-[#faf8f5]"
-                    value={emCoupon}
-                    onChange={(e) => setEmCoupon(e.target.value)}
-                  >
-                    <option value="">No Coupon Attached</option>
-                    {activePromotions.map(promo => (
-                      <option key={promo.id} value={promo.code}>{promo.code} ({promo.discountValue}% Off)</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="admin-label">Select Header Banner Graphic</label>
-                  <select
-                    className="admin-select bg-[#faf8f5]"
-                    value={emHeaderImage}
-                    onChange={(e) => setEmHeaderImage(e.target.value)}
-                  >
-                    <option value="">No Header Banner</option>
-                    {mediaImages.map(img => (
-                      <option key={img.id} value={img.url}>{img.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f0ece4]">
-                <button
-                  type="button"
-                  onClick={() => setShowNewEmModal(false)}
-                  className="admin-btn admin-btn-outline cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="admin-btn admin-btn-primary cursor-pointer"
-                >
-                  Save Campaign
-                </button>
-              </div>
-            </form>
-
-            {/* Email Preview Frame */}
-            <div className="w-full md:w-[380px] bg-[#f5f0e8] border-l border-[#e5e5e5] p-5 flex flex-col relative flex-shrink-0">
-              <div className="flex justify-between items-center w-full mb-3">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Email Template Preview</span>
-                <div className="flex bg-white rounded-lg border border-[#e5e5e5] p-0.5 text-[10px]">
-                  <button
-                    type="button"
-                    onClick={() => setEmailViewport('desktop')}
-                    className={`px-2 py-0.5 rounded-md font-bold cursor-pointer ${emailViewport === 'desktop' ? 'bg-[#8B4949] text-white' : 'text-gray-500'}`}
-                  >
-                    Desktop
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEmailViewport('mobile')}
-                    className={`px-2 py-0.5 rounded-md font-bold cursor-pointer ${emailViewport === 'mobile' ? 'bg-[#8B4949] text-white' : 'text-gray-500'}`}
-                  >
-                    Mobile
-                  </button>
-                </div>
-              </div>
-
-              {/* Email Content Sandbox Container */}
-              <div className="flex-1 bg-white rounded-xl shadow-lg border border-[#e5e5e5] p-4 overflow-y-auto admin-scrollbar">
-                {/* Header graphic */}
-                {emHeaderImage ? (
-                  <img
-                    src={emHeaderImage}
-                    alt="banner"
-                    className="w-full h-24 object-cover rounded-lg mb-4"
-                  />
-                ) : (
-                  <div className="w-full h-12 bg-[#faf8f5] border border-dashed border-[#e5e5e5] rounded-lg mb-4 flex items-center justify-center text-[10px] text-gray-400">
-                    No Graphic Selected
-                  </div>
-                )}
-
-                {/* Email content */}
-                <div className="space-y-3">
-                  <div className="space-y-0.5 pb-2 border-b border-[#f0f0f0]">
-                    <div className="text-[10px] text-gray-400 font-bold">Subject: {emSubject || '(Enter subject)'}</div>
-                    <div className="text-[8px] text-gray-400">From: news@eventique.in</div>
-                  </div>
-
-                  <p className="text-[11px] text-gray-700 whitespace-pre-wrap leading-normal font-medium">
-                    {emBody ? emBody.replace(/{{name}}/g, 'Neha Sen') : 'Dear Neha Sen,\n\n(Write message body)'}
-                  </p>
-
-                  {/* Coupon card */}
-                  {emCoupon && (
-                    <div className="bg-[#faf8f5] border border-dashed border-[#d4af37]/40 rounded-xl p-3.5 text-center space-y-2">
-                      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Your Exclusive Promo Code</div>
-                      <div className="inline-block px-3 py-1 font-mono text-xs font-bold bg-[#8B4949] text-white rounded-md">
-                        {emCoupon}
-                      </div>
-                      <div className="text-[8px] text-gray-400">Apply at checkout to claim your discount.</div>
-                    </div>
+          ) : (
+            // List View Layout
+            <div className="admin-card p-0 overflow-hidden shadow-xs">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Post Title</th>
+                    <th>Platform</th>
+                    <th>Content Type</th>
+                    <th>Posting Date</th>
+                    <th>Designer</th>
+                    <th>Status</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSocialPosts.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-10 text-gray-400">No scheduled posts found.</td>
+                    </tr>
+                  ) : (
+                    filteredSocialPosts.map(post => (
+                      <tr key={post.id}>
+                        <td>
+                          <div className="font-semibold text-sm text-[#1a1410]">{post.title}</div>
+                          <span className="text-[10px] text-gray-405 block line-clamp-1">Caption: {post.caption}</span>
+                        </td>
+                        <td>
+                          <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 font-bold rounded">
+                            {post.platform}
+                          </span>
+                        </td>
+                        <td><span className="text-xs font-semibold text-gray-500">{post.contentType}</span></td>
+                        <td><span className="text-xs text-gray-400 font-medium">{post.postingDate}</span></td>
+                        <td><span className="text-xs text-gray-600 font-semibold">{post.assignedDesigner}</span></td>
+                        <td>
+                          <select
+                            value={post.designStatus}
+                            onChange={(e) => handleUpdateDesignStatus(post.id, e.target.value as any)}
+                            className="!py-0.5 !px-1.5 text-[10px] font-bold rounded-lg border-0 bg-yellow-50 text-yellow-700 cursor-pointer"
+                          >
+                            <option value="Idea">Idea</option>
+                            <option value="Design Pending">Design Pending</option>
+                            <option value="In Design">In Design</option>
+                            <option value="Ready">Ready</option>
+                            <option value="Posted">Posted</option>
+                          </select>
+                        </td>
+                        <td className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => openEditSocial(post)}
+                              className="w-7 h-7 hover:bg-gray-100 rounded flex items-center justify-center text-gray-500 cursor-pointer"
+                            >
+                              <Edit2 size={12} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteSocial(post.id)}
+                              className="w-7 h-7 hover:bg-red-50 rounded flex items-center justify-center text-red-500 cursor-pointer"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
-                  {/* Footer links */}
-                  <div className="text-[8px] text-gray-400 text-center pt-5 border-t border-[#f0f0f0]">
-                    © 2026 Eventique Design Studio. All rights reserved.<br />
-                    Want to change how you receive emails? <span className="underline cursor-pointer">Unsubscribe</span> here.
-                  </div>
+      {/* ── VIEW 5: MARKETING ANALYTICS ─────────────────────────── */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-6">
+          {/* Top Row Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            <StatsCard label="Total Leads" value={totalLeadsCount} icon={<Users size={16} />} color="primary" />
+            <StatsCard label="Converted Leads" value={convertedLeadsCount} icon={<Check size={16} />} color="green" />
+            <StatsCard label="Conversion Rate" value={`${conversionRate}%`} icon={<ArrowUpRight size={16} />} color="gold" />
+            <StatsCard label="WA Campaigns" value={whatsappCampaigns.length} icon={<MessageSquare size={16} />} color="primary" />
+            <StatsCard label="Posts Planned" value={socialPosts.length} icon={<Calendar size={16} />} color="blue" />
+            <StatsCard label="Leads Revenue" value={`₹${revenueFromLeads.toLocaleString('en-IN')}`} icon={<Sparkles size={16} />} color="green" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Leads by source progress bars */}
+            <div className="admin-card space-y-4">
+              <div>
+                <h3 className="font-bold text-[#1a1410] text-sm">Leads by Channel Source</h3>
+                <p className="text-xs text-gray-400">Volume and performance by customer origin</p>
+              </div>
+              <div className="space-y-3">
+                {Object.entries(sourcePerformance).map(([source, count]) => {
+                  const pct = totalLeadsCount > 0 ? (count / totalLeadsCount) * 100 : 0;
+                  return (
+                    <div key={source} className="space-y-1">
+                      <div className="flex justify-between items-center text-xs font-semibold">
+                        <span className="text-gray-700">{source}</span>
+                        <span className="text-gray-900">{count} inquiries ({pct.toFixed(0)}%)</span>
+                      </div>
+                      <div className="h-2 w-full bg-[#f5f0e8] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#8B4949] rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Leads by status progress bars */}
+            <div className="admin-card space-y-4">
+              <div>
+                <h3 className="font-bold text-[#1a1410] text-sm">Inquiry Stages (Sales Pipeline)</h3>
+                <p className="text-xs text-gray-400">Distribution of leads across statuses</p>
+              </div>
+              <div className="space-y-3">
+                {Object.entries(statusPerformance).map(([status, count]) => {
+                  const pct = totalLeadsCount > 0 ? (count / totalLeadsCount) * 100 : 0;
+                  return (
+                    <div key={status} className="space-y-1">
+                      <div className="flex justify-between items-center text-xs font-semibold">
+                        <span className="text-gray-700">{status}</span>
+                        <span className="text-gray-900">{count} leads ({pct.toFixed(0)}%)</span>
+                      </div>
+                      <div className="h-2 w-full bg-[#f5f0e8] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#D4AF37] rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Campaign Performance Table */}
+            <div className="admin-card p-0 overflow-hidden shadow-xs">
+              <div className="px-5 py-3 border-b border-[#f0f0f0]">
+                <h3 className="font-bold text-[#1a1410] text-sm">Campaign Click-Through Rates</h3>
+              </div>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Campaign</th>
+                    <th>Status</th>
+                    <th>Audience Size</th>
+                    <th>Clicks</th>
+                    <th>CTR %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {whatsappCampaigns.map(c => (
+                    <tr key={c.id}>
+                      <td><span className="font-semibold text-xs text-gray-700">{c.name}</span></td>
+                      <td>
+                        <span className={`admin-badge !text-[9px] !py-0.5 ${c.status === 'Sent' ? 'admin-badge-success' : 'admin-badge-warning'}`}>
+                          {c.status}
+                        </span>
+                      </td>
+                      <td><span className="text-xs font-semibold text-gray-500">{c.status === 'Sent' ? c.sentCount : '—'}</span></td>
+                      <td><span className="text-xs font-semibold text-gray-500">{c.status === 'Sent' ? c.clickCount : '—'}</span></td>
+                      <td>
+                        <span className="text-xs font-bold text-primary">
+                          {c.sentCount > 0 ? `${((c.clickCount / c.sentCount) * 100).toFixed(0)}%` : '0%'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Best performing conversion table */}
+            <div className="admin-card p-0 overflow-hidden shadow-xs">
+              <div className="px-5 py-3 border-b border-[#f0f0f0] flex justify-between items-center">
+                <h3 className="font-bold text-[#1a1410] text-sm">Lead Conversion Log</h3>
+                <span className="text-[10px] font-bold bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
+                  🏆 Top Channel: {bestPerformingSource.name}
+                </span>
+              </div>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Event</th>
+                    <th>Source</th>
+                    <th>Revenue Generated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.filter(l => l.status === 'Converted').map(l => (
+                    <tr key={l.id}>
+                      <td><span className="font-semibold text-xs text-gray-800">{l.name}</span></td>
+                      <td><span className="text-xs text-gray-500">{l.eventType}</span></td>
+                      <td><span className="text-xs text-gray-400 font-semibold">{l.source}</span></td>
+                      <td><span className="text-xs font-bold text-green-700">₹{l.budget.toLocaleString('en-IN')}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: ADD LEAD ──────────────────────────────────────── */}
+      {showAddLeadModal && (
+        <>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 admin-animate-in" onClick={() => setShowAddLeadModal(false)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-3xl shadow-2xl z-50 overflow-hidden admin-animate-in">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#f0ece4]">
+              <h3 className="font-bold text-[#1a1410] text-base">Add New Lead Inquiry</h3>
+              <button onClick={() => setShowAddLeadModal(false)} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleAddLeadSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto admin-scrollbar">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Customer Name *</label>
+                  <input type="text" required placeholder="e.g. Amit Sen" className="admin-input" value={leadName} onChange={e => setLeadName(e.target.value)} />
+                </div>
+                <div>
+                  <label className="admin-label">Phone Number *</label>
+                  <input type="text" required placeholder="e.g. +91 99999 11111" className="admin-input" value={leadPhone} onChange={e => setLeadPhone(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Email Address</label>
+                  <input type="email" placeholder="e.g. amit@gmail.com" className="admin-input" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} />
+                </div>
+                <div>
+                  <label className="admin-label">Event Type</label>
+                  <select className="admin-select" value={leadEventType} onChange={e => setLeadEventType(e.target.value as any)}>
+                    <option value="Wedding">Wedding</option>
+                    <option value="Birthday">Birthday</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Anniversary">Anniversary</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Interested Product</label>
+                  <input type="text" placeholder="e.g. Wedding Website Deluxe" className="admin-input" value={leadProduct} onChange={e => setLeadProduct(e.target.value)} />
+                </div>
+                <div>
+                  <label className="admin-label">Estimated Budget (₹)</label>
+                  <input type="number" className="admin-input" value={leadBudget} onChange={e => setLeadBudget(Number(e.target.value))} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="admin-label">Lead Source</label>
+                  <select className="admin-select" value={leadSource} onChange={e => setLeadSource(e.target.value as any)}>
+                    <option value="Website Form">Website Form</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Referral">Referral</option>
+                    <option value="Direct Call">Direct Call</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Status</label>
+                  <select className="admin-select" value={leadStatus} onChange={e => setLeadStatus(e.target.value as any)}>
+                    <option value="New">New</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Follow-up">Follow-up</option>
+                    <option value="Converted">Converted</option>
+                    <option value="Lost">Lost</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Assigned To</label>
+                  <select className="admin-select" value={leadAssigned} onChange={e => setLeadAssigned(e.target.value)}>
+                    <option value="Rohan Verma">Rohan Verma</option>
+                    <option value="Pooja Mehta">Pooja Mehta</option>
+                    <option value="Neha Sen">Neha Sen</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="admin-label">Follow-up Notes</label>
+                <textarea rows={3} placeholder="Add current details or inquiry requirements..." className="admin-textarea text-xs" value={leadNotes} onChange={e => setLeadNotes(e.target.value)} />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f0ece4]">
+                <button type="button" onClick={() => setShowAddLeadModal(false)} className="admin-btn admin-btn-outline cursor-pointer">Cancel</button>
+                <button type="submit" className="admin-btn admin-btn-primary cursor-pointer">Add Lead</button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {/* ── MODAL: EDIT LEAD ─────────────────────────────────────── */}
+      {showEditLeadModal && selectedLead && (
+        <>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 admin-animate-in" onClick={() => setShowEditLeadModal(false)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-3xl shadow-2xl z-50 overflow-hidden admin-animate-in">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#f0ece4]">
+              <h3 className="font-bold text-[#1a1410] text-base">Edit Lead Inquiry — {selectedLead.id}</h3>
+              <button onClick={() => setShowEditLeadModal(false)} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleEditLeadSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto admin-scrollbar">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Customer Name *</label>
+                  <input type="text" required className="admin-input" value={leadName} onChange={e => setLeadName(e.target.value)} />
+                </div>
+                <div>
+                  <label className="admin-label">Phone Number *</label>
+                  <input type="text" required className="admin-input" value={leadPhone} onChange={e => setLeadPhone(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Email Address</label>
+                  <input type="email" className="admin-input" value={leadEmail} onChange={e => setLeadEmail(e.target.value)} />
+                </div>
+                <div>
+                  <label className="admin-label">Event Type</label>
+                  <select className="admin-select" value={leadEventType} onChange={e => setLeadEventType(e.target.value as any)}>
+                    <option value="Wedding">Wedding</option>
+                    <option value="Birthday">Birthday</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Anniversary">Anniversary</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Interested Product</label>
+                  <input type="text" className="admin-input" value={leadProduct} onChange={e => setLeadProduct(e.target.value)} />
+                </div>
+                <div>
+                  <label className="admin-label">Estimated Budget (₹)</label>
+                  <input type="number" className="admin-input" value={leadBudget} onChange={e => setLeadBudget(Number(e.target.value))} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="admin-label">Lead Source</label>
+                  <select className="admin-select" value={leadSource} onChange={e => setLeadSource(e.target.value as any)}>
+                    <option value="Website Form">Website Form</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Referral">Referral</option>
+                    <option value="Direct Call">Direct Call</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Status</label>
+                  <select className="admin-select" value={leadStatus} onChange={e => setLeadStatus(e.target.value as any)}>
+                    <option value="New">New</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Follow-up">Follow-up</option>
+                    <option value="Converted">Converted</option>
+                    <option value="Lost">Lost</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Assigned To</label>
+                  <select className="admin-select" value={leadAssigned} onChange={e => setLeadAssigned(e.target.value)}>
+                    <option value="Rohan Verma">Rohan Verma</option>
+                    <option value="Pooja Mehta">Pooja Mehta</option>
+                    <option value="Neha Sen">Neha Sen</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="admin-label">Follow-up Notes / History</label>
+                <textarea rows={3} className="admin-textarea text-xs" value={leadNotes} onChange={e => setLeadNotes(e.target.value)} />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f0ece4]">
+                <button type="button" onClick={() => setShowEditLeadModal(false)} className="admin-btn admin-btn-outline cursor-pointer">Cancel</button>
+                <button type="submit" className="admin-btn admin-btn-primary cursor-pointer">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {/* ── MODAL: CREATE WHATSAPP CAMPAIGN ────────────────────────── */}
+      {showAddWaModal && (
+        <>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 admin-animate-in" onClick={() => setShowAddWaModal(false)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-3xl shadow-2xl z-50 overflow-hidden admin-animate-in">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#f0ece4]">
+              <h3 className="font-bold text-[#1a1410] text-base flex items-center gap-1">
+                <MessageSquare size={17} className="text-[#8B4949]" /> Create WhatsApp Campaign
+              </h3>
+              <button onClick={() => setShowAddWaModal(false)} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleAddWaSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto admin-scrollbar">
+              <div>
+                <label className="admin-label">Campaign Name *</label>
+                <input type="text" required placeholder="e.g. Wedding Season Sale" className="admin-input" value={waName} onChange={e => setWaName(e.target.value)} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Message Type</label>
+                  <select className="admin-select" value={waType} onChange={e => setWaType(e.target.value as any)}>
+                    <option value="New Collection Launch">New Collection Launch</option>
+                    <option value="Offer Reminder">Offer Reminder</option>
+                    <option value="Wedding Website Promotion">Wedding Website Promotion</option>
+                    <option value="Custom Invite Follow-up">Custom Invite Follow-up</option>
+                    <option value="Festival Campaign">Festival Campaign</option>
+                    <option value="Abandoned Inquiry Follow-up">Abandoned Inquiry Follow-up</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="admin-label">Target Audience</label>
+                  <select className="admin-select" value={waAudience} onChange={e => setWaAudience(e.target.value as any)}>
+                    <option value="All Leads">All Leads ({leads.length})</option>
+                    <option value="New Leads">New Leads ({newLeadsCount})</option>
+                    <option value="Converted Customers">Converted Customers ({convertedLeadsCount})</option>
+                    <option value="Wedding Customers">Wedding Customers</option>
+                    <option value="Website Inquiry Customers">Website Inquiry Customers</option>
+                    <option value="High Budget Leads">High Budget Leads</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="admin-label !mb-0">Message Text *</label>
+                  <select
+                    className="admin-select !py-0.5 !px-2 w-[160px] text-[10px] bg-transparent"
+                    onChange={(e) => {
+                      const idx = Number(e.target.value);
+                      if (!isNaN(idx)) setWaText(WHATSAPP_TEMPLATES[idx].text);
+                    }}
+                  >
+                    <option value="">Choose Ready Template</option>
+                    {WHATSAPP_TEMPLATES.map((tmpl, idx) => (
+                      <option key={tmpl.name} value={idx}>{tmpl.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <textarea rows={4} required placeholder="Template message details..." className="admin-textarea text-xs" value={waText} onChange={e => setWaText(e.target.value)} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Status</label>
+                  <select className="admin-select" value={waStatus} onChange={e => setWaStatus(e.target.value as any)}>
+                    <option value="Draft">Draft</option>
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Sent">Sent</option>
+                    <option value="Paused">Paused</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Scheduled Date/Time</label>
+                  <input type="text" className="admin-input text-xs" placeholder="YYYY-MM-DD HH:MM" value={waDate} onChange={e => setWaDate(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f0ece4]">
+                <button type="button" onClick={() => setShowAddWaModal(false)} className="admin-btn admin-btn-outline cursor-pointer">Cancel</button>
+                <button type="submit" className="admin-btn admin-btn-primary cursor-pointer">Create Campaign</button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {/* ── MODAL: WHATSAPP TEMPLATE PREVIEW ─────────────────────── */}
+      {showWaPreview && selectedWaCampaign && (
+        <>
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 admin-animate-in" onClick={() => setShowWaPreview(false)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-3xl shadow-2xl z-50 overflow-hidden flex flex-col items-center justify-center p-5 admin-animate-in">
+            <div className="flex justify-between items-center w-full pb-3 border-b border-[#f0f0f0] mb-4">
+              <span className="font-bold text-xs text-gray-500 uppercase tracking-wider">WhatsApp Template Preview</span>
+              <button onClick={() => setShowWaPreview(false)} className="w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 cursor-pointer">
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Phone Screen Mockup */}
+            <div className="w-[260px] h-[380px] bg-black rounded-[32px] p-2.5 shadow-xl relative border-[4px] border-gray-800 overflow-hidden flex flex-col">
+              <div className="w-20 h-4 bg-gray-900 rounded-full absolute top-1.5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
+                <div className="w-1 h-1 bg-blue-900/60 mr-2" />
+                <div className="w-6 h-0.5 bg-gray-800 rounded-full" />
+              </div>
+
+              <div className="flex-1 bg-[#efeae2] rounded-[22px] p-2 pt-6 overflow-y-auto flex flex-col justify-end space-y-3 relative">
+                <div className="bg-white rounded-xl rounded-tr-none p-2.5 shadow-sm max-w-[95%] self-end border-t-4 border-[#10B981] space-y-1">
+                  <span className="text-[8px] font-bold text-[#10B981] block">Template: {selectedWaCampaign.messageType}</span>
+                  <p className="text-[10px] text-gray-800 whitespace-pre-wrap leading-tight font-medium">
+                    {selectedWaCampaign.messageText
+                      .replace(/{{name}}/g, 'Amit Sharma')
+                      .replace(/{{link}}/g, 'eventique.in/launch/collection')}
+                  </p>
+                  <span className="text-[7px] text-gray-400 block text-right mt-1 font-bold">12:30 PM ✓✓</span>
                 </div>
               </div>
             </div>
@@ -1063,107 +1605,89 @@ export default function MarketingHub() {
         </>
       )}
 
-      {/* ── NEW META AD CAMPAIGN MODAL ───────────────────────────── */}
-      {showNewAdModal && (
+      {/* ── MODAL: SCHEDULE SOCIAL MEDIA POST ─────────────────────── */}
+      {showAddSocialModal && (
         <>
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 admin-animate-in" onClick={() => setShowNewAdModal(false)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-3xl shadow-2xl z-50 overflow-hidden admin-animate-in">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 admin-animate-in" onClick={() => setShowAddSocialModal(false)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-3xl shadow-2xl z-50 overflow-hidden admin-animate-in">
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#f0ece4]">
               <h3 className="font-bold text-[#1a1410] text-base flex items-center gap-1.5">
-                <Facebook size={18} className="text-blue-600" /> Launch Social Ad Campaign
+                <Calendar size={17} className="text-[#8B4949]" /> {selectedSocialPost ? 'Edit Scheduled Post' : 'Schedule Content Idea'}
               </h3>
+              <button onClick={() => setShowAddSocialModal(false)} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                <X size={16} />
+              </button>
             </div>
-            <form onSubmit={handleLaunchMetaAd} className="p-6 space-y-4">
+            <form onSubmit={handleAddSocialSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto admin-scrollbar">
               <div>
-                <label className="admin-label">Ad Campaign Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Luxury Wedding Stationery - Festive Target"
-                  className="admin-input bg-[#faf8f5]"
-                  value={adName}
-                  onChange={(e) => setAdName(e.target.value)}
-                />
+                <label className="admin-label">Post Title *</label>
+                <input type="text" required placeholder="e.g. Royal Gold Motif Showcase" className="admin-input" value={postTitle} onChange={e => setPostTitle(e.target.value)} />
               </div>
 
-              <div>
-                <label className="admin-label">Target Page Theme / Occasion</label>
-                <select
-                  className="admin-select bg-[#faf8f5]"
-                  value={adTarget}
-                  onChange={(e) => setAdTarget(e.target.value)}
-                >
-                  <option value="Printed Luxury Invites">Printed Luxury Invites</option>
-                  <option value="Video Invites">Video Invites</option>
-                  <option value="Event Websites">Event Websites</option>
-                  <option value="Stationery">Stationery</option>
-                  {launchCampaigns.map(lc => (
-                    <option key={lc.id} value={lc.title}>{lc.title}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="admin-label">Daily Budget (₹) *</label>
-                <div className="flex gap-4 items-center">
-                  <input
-                    type="range"
-                    min="500"
-                    max="10000"
-                    step="500"
-                    className="flex-grow accent-[#8B4949]"
-                    value={adBudget}
-                    onChange={(e) => setAdBudget(Number(e.target.value))}
-                  />
-                  <span className="text-sm font-bold text-gray-700 w-20 text-right">₹{adBudget}/day</span>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Platform</label>
+                  <select className="admin-select" value={postPlatform} onChange={e => setPostPlatform(e.target.value as any)}>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Pinterest">Pinterest</option>
+                    <option value="YouTube Shorts">YouTube Shorts</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Content Type</label>
+                  <select className="admin-select" value={postType} onChange={e => setPostType(e.target.value as any)}>
+                    <option value="Reel">Reel</option>
+                    <option value="Carousel">Carousel</option>
+                    <option value="Story">Story</option>
+                    <option value="Static Post">Static Post</option>
+                    <option value="Product Showcase">Product Showcase</option>
+                    <option value="Testimonial">Testimonial</option>
+                    <option value="Offer Post">Offer Post</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="border-t border-[#f0ece4] pt-3 mt-2 space-y-3">
-                <label className="admin-label block text-xs font-bold text-[#1a1410]">Audience Targeting</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[10px] font-bold text-gray-500 uppercase">Age Group</label>
-                    <select
-                      className="admin-select bg-[#faf8f5] mt-1 !text-xs"
-                      value={adAge}
-                      onChange={(e) => setAdAge(e.target.value)}
-                    >
-                      <option value="22-38">22 - 38 yrs (Couples)</option>
-                      <option value="25-50">25 - 50 yrs (Parents/Family)</option>
-                      <option value="18-50">18 - 50 yrs (Broad)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-gray-500 uppercase">Locations</label>
-                    <select
-                      className="admin-select bg-[#faf8f5] mt-1 !text-xs"
-                      value={adLocation}
-                      onChange={(e) => setAdLocation(e.target.value)}
-                    >
-                      <option value="Metro Cities">Top Metros (MUM/DEL/BLR)</option>
-                      <option value="All India">All India</option>
-                      <option value="Custom Zone">Custom High Net Worth Zones</option>
-                    </select>
-                  </div>
+              <div>
+                <label className="admin-label">Caption Text *</label>
+                <textarea rows={3} required placeholder="Post caption & hashtags..." className="admin-textarea text-xs" value={postCaption} onChange={e => setPostCaption(e.target.value)} />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="admin-label">Design Status</label>
+                  <select className="admin-select" value={postDesignStatus} onChange={e => setPostDesignStatus(e.target.value as any)}>
+                    <option value="Idea">Idea</option>
+                    <option value="Design Pending">Design Pending</option>
+                    <option value="In Design">In Design</option>
+                    <option value="Ready">Ready</option>
+                    <option value="Posted">Posted</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Designer</label>
+                  <select className="admin-select" value={postDesigner} onChange={e => setPostDesigner(e.target.value)}>
+                    <option value="Neha Sen">Neha Sen</option>
+                    <option value="Kabir Malhotra">Kabir Malhotra</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Posting Date</label>
+                  <input type="date" className="admin-input text-xs" value={postDate} onChange={e => setPostDate(e.target.value)} />
+                </div>
+              </div>
+
+              <div>
+                <label className="admin-label">Design File Upload Placeholder</label>
+                <div className="border-2 border-dashed border-[#e5e5e5] rounded-xl p-6 text-center bg-[#faf8f5] cursor-pointer hover:border-[#8B4949] transition-colors">
+                  <Plus size={20} className="text-gray-400 mx-auto mb-1" />
+                  <span className="text-xs text-gray-500 font-semibold">Select card graphic or video reel</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f0ece4]">
-                <button
-                  type="button"
-                  onClick={() => setShowNewAdModal(false)}
-                  className="admin-btn admin-btn-outline cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="admin-btn admin-btn-primary cursor-pointer flex items-center gap-1.5"
-                >
-                  <Send size={13} />
-                  Launch Ad Campaign
-                </button>
+                <button type="button" onClick={() => setShowAddSocialModal(false)} className="admin-btn admin-btn-outline cursor-pointer">Cancel</button>
+                <button type="submit" className="admin-btn admin-btn-primary cursor-pointer">Schedule Post</button>
               </div>
             </form>
           </div>
