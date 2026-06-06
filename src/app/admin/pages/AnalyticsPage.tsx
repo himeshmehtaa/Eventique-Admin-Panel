@@ -202,9 +202,9 @@ function TargetGaugeChart({ percent }: { percent: number }) {
         />
       </svg>
       {/* Center Label */}
-      <div className="absolute inset-0 flex flex-col items-center justify-end text-center pb-1 pointer-events-none">
-        <span className="text-xl font-black text-[#1a1410]">{percent.toFixed(1)}%</span>
-        <span className="text-[9px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full mt-0.5 flex items-center gap-0.5">
+      <div className="absolute inset-x-0 bottom-0.5 flex flex-col items-center justify-end text-center pointer-events-none">
+        <span className="text-[17px] font-black text-[#1a1410] leading-none">{percent.toFixed(1)}%</span>
+        <span className="text-[9px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full mt-1 flex items-center gap-0.5">
           ↗ +12%
         </span>
       </div>
