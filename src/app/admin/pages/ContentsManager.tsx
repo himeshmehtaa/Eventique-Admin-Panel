@@ -539,7 +539,7 @@ export default function ContentsManager() {
     }
   };
 
-  const isCarouselSection = ['Hero', 'Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection);
+  const isCarouselSection = selectedSection === 'Hero';
 
   // Section fields filter logic
   const hasTitle = selectedSection !== 'Footer';
