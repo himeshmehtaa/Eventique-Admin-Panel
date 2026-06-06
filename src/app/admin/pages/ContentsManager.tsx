@@ -38,6 +38,8 @@ export default function ContentsManager() {
   const {
     state,
     updateContentBlock,
+    addContentBlock,
+    deleteContentBlock,
     addBlogPost,
     updateBlogPost,
     deleteBlogPost,
@@ -83,6 +85,17 @@ export default function ContentsManager() {
   const [contactDetails, setContactDetails] = useState<{ type: string; title: string; subtitle: string; value: string; linkText?: string; linkUrl?: string }[]>([]);
   const [contactFaqs, setContactFaqs] = useState<{ q: string; a: string }[]>([]);
   const [contactCtaInfo, setContactCtaInfo] = useState({ title: '', subtitle: '', detail: '', whatsappNumber: '', whatsappText: '' });
+
+  // Footer Page Sub-states
+  const [footerBrandTagline, setFooterBrandTagline] = useState('');
+  const [footerPhone, setFooterPhone] = useState('');
+  const [footerEmail, setFooterEmail] = useState('');
+  const [footerSocials, setFooterSocials] = useState<{ platform: string; url: string }[]>([]);
+
+  // Create Custom Section Modal States
+  const [showCustomSectionModal, setShowCustomSectionModal] = useState(false);
+  const [newSectionName, setNewSectionName] = useState('');
+  const [newSectionTemplate, setNewSectionTemplate] = useState<'text' | 'hero' | 'grid' | 'faq'>('text');
 
   // ── LAUNCH CAMPAIGNS STATE ──────────────────────────────────
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
@@ -163,6 +176,29 @@ export default function ContentsManager() {
         whatsappNumber: currentBlock.contactCtaInfo?.whatsappNumber ?? '',
         whatsappText: currentBlock.contactCtaInfo?.whatsappText ?? '',
       });
+
+      // Populate Footer fields
+      if (selectedSection === 'Footer') {
+        setFooterBrandTagline(currentBlock.footerBrandTagline ?? '');
+        setFooterPhone(currentBlock.footerContactInfo?.phone ?? '');
+        setFooterEmail(currentBlock.footerContactInfo?.email ?? '');
+        
+        const defaultSocials = [
+          { platform: 'instagram', url: 'https://instagram.com' },
+          { platform: 'facebook', url: 'https://facebook.com' },
+          { platform: 'youtube', url: 'https://youtube.com' },
+          { platform: 'pinterest', url: 'https://pinterest.com' },
+          { platform: 'linkedin', url: 'https://linkedin.com' },
+          { platform: 'x', url: 'https://x.com' }
+        ];
+        const loadedSocials = currentBlock.footerSocialLinks ?? [];
+        const socialsMap = new Map(loadedSocials.map(s => [s.platform, s.url]));
+        const mergedSocials = defaultSocials.map(s => ({
+          platform: s.platform,
+          url: socialsMap.get(s.platform) ?? s.url
+        }));
+        setFooterSocials(mergedSocials);
+      }
     } else {
       setSectionTitle('');
       setSectionSubtitle('');
@@ -191,6 +227,12 @@ export default function ContentsManager() {
       setContactDetails([]);
       setContactFaqs([]);
       setContactCtaInfo({ title: '', subtitle: '', detail: '', whatsappNumber: '', whatsappText: '' });
+
+      // Reset Footer fields
+      setFooterBrandTagline('');
+      setFooterPhone('');
+      setFooterEmail('');
+      setFooterSocials([]);
     }
     setSectionDirty(false);
   }, [selectedSection, currentBlock?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -234,6 +276,16 @@ export default function ContentsManager() {
       updatedFields.contactDetails = contactDetails;
       updatedFields.contactFaqs = contactFaqs;
       updatedFields.contactCtaInfo = contactCtaInfo;
+    }
+
+    if (selectedSection === 'Footer') {
+      updatedFields.footerBrandTagline = footerBrandTagline;
+      updatedFields.footerContactInfo = { phone: footerPhone, email: footerEmail };
+      updatedFields.footerSocialLinks = footerSocials;
+    }
+
+    if (isCustom && customType === 'faq') {
+      updatedFields.contactFaqs = contactFaqs;
     }
 
     updateContentBlock(currentBlock.id, updatedFields);
@@ -542,13 +594,61 @@ export default function ContentsManager() {
   const isCarouselSection = selectedSection === 'Hero';
 
   // Section fields filter logic
+  const isCustom = !!currentBlock?.isCustomSection;
+  const customType = currentBlock?.customTemplateType;
+
   const hasTitle = selectedSection !== 'Footer';
   const hasSubtitle = !['Footer', 'Terms', 'Privacy Policy', 'Refund Policy'].includes(selectedSection);
-  const hasBody = ['Footer', 'About', 'Terms', 'Privacy Policy', 'Refund Policy', 'Printed Luxury Invites'].includes(selectedSection);
-  const hasImage = ['Video Invites', 'Event Websites', 'Stationery', 'About', 'Printed Luxury Invites'].includes(selectedSection);
-  const hasCta = ['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection);
+  const hasBody = isCustom 
+    ? (customType === 'text') 
+    : ['Footer', 'About', 'Terms', 'Privacy Policy', 'Refund Policy', 'Printed Luxury Invites'].includes(selectedSection);
+  const hasImage = isCustom 
+    ? (customType === 'hero') 
+    : ['Video Invites', 'Event Websites', 'Stationery', 'About', 'Printed Luxury Invites'].includes(selectedSection);
+  const hasCta = isCustom 
+    ? (customType === 'hero') 
+    : ['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection);
 
   const imagesInMedia = state.mediaFiles.filter(f => f.type === 'image');
+
+  const handleCreateCustomSection = () => {
+    if (!newSectionName.trim()) {
+      alert('Please enter a section name.');
+      return;
+    }
+    const cleanName = newSectionName.trim();
+    const exists = state.contentBlocks.some(b => b.sectionName.toLowerCase() === cleanName.toLowerCase());
+    if (exists) {
+      alert('A section with this name already exists.');
+      return;
+    }
+
+    const newBlock: ContentBlock = {
+      id: `custom-cb-${Date.now()}`,
+      sectionName: cleanName,
+      enabled: true,
+      lastUpdated: new Date().toLocaleDateString(),
+      isCustomSection: true,
+      customTemplateType: newSectionTemplate,
+      title: `${cleanName} Title`,
+      subtitle: `${cleanName} Subtitle or description`,
+      body: newSectionTemplate === 'text' ? 'Enter paragraph body content here...' : undefined,
+      features: newSectionTemplate === 'grid' ? [
+        { title: 'Feature 1', desc: 'Feature 1 details...' },
+        { title: 'Feature 2', desc: 'Feature 2 details...' },
+        { title: 'Feature 3', desc: 'Feature 3 details...' }
+      ] : undefined,
+      contactFaqs: newSectionTemplate === 'faq' ? [
+        { q: 'FAQ Question 1?', a: 'FAQ Answer details...' }
+      ] : undefined
+    };
+
+    addContentBlock(newBlock);
+    setSelectedSection(cleanName);
+    setShowCustomSectionModal(false);
+    setNewSectionName('');
+    alert(`Custom section "${cleanName}" added successfully!`);
+  };
 
   return (
     <div className="space-y-6 admin-animate-in">
@@ -619,40 +719,66 @@ export default function ContentsManager() {
               minWidth: '220px',
               background: '#fcfaf7',
               borderRight: '1px solid #e5e5e5',
-              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              height: 'auto',
+              minHeight: '560px'
             }}
             className="admin-scrollbar"
           >
-            <div style={{ padding: '1.25rem 1rem 0.5rem', borderBottom: '1px solid #f0ebe2' }}>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                Sections List
-              </p>
+            <div style={{ overflowY: 'auto', flexGrow: 1 }}>
+              <div style={{ padding: '1.25rem 1rem 0.5rem', borderBottom: '1px solid #f0ebe2' }}>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Sections List
+                </p>
+              </div>
+              <ul style={{ padding: '0.5rem' }} className="space-y-0.5">
+                {(() => {
+                  const ordered = [...state.contentBlocks].sort((a, b) => {
+                    const idxA = SECTION_NAMES.indexOf(a.sectionName as any);
+                    const idxB = SECTION_NAMES.indexOf(b.sectionName as any);
+                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if (idxA !== -1) return -1;
+                    if (idxB !== -1) return 1;
+                    return a.sectionName.localeCompare(b.sectionName);
+                  });
+                  return ordered.map((b) => {
+                    const name = b.sectionName;
+                    const isActive = selectedSection === name;
+                    return (
+                      <li key={b.id}>
+                        <button
+                          onClick={() => setSelectedSection(name)}
+                          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border-none cursor-pointer transition-all text-left text-xs font-semibold"
+                          style={{
+                            fontFamily: "'Bricolage Grotesque', 'Inter', system-ui, sans-serif",
+                            background: isActive ? '#8B4949' : 'transparent',
+                            color: isActive ? '#ffffff' : '#555',
+                          }}
+                        >
+                          <span className="truncate">{name}</span>
+                          <span
+                            className="w-2 h-2 rounded-full flex-shrink-0 ml-2"
+                            style={{ background: b.enabled ? '#4A7C59' : '#aaa' }}
+                          />
+                        </button>
+                      </li>
+                    );
+                  });
+                })()}
+              </ul>
             </div>
-            <ul style={{ padding: '0.5rem' }} className="space-y-0.5">
-              {SECTION_NAMES.map((name) => {
-                const b = state.contentBlocks.find((cb) => cb.sectionName === name);
-                const isActive = selectedSection === name;
-                return (
-                  <li key={name}>
-                    <button
-                      onClick={() => setSelectedSection(name)}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border-none cursor-pointer transition-all text-left text-xs font-semibold"
-                      style={{
-                        fontFamily: "'Bricolage Grotesque', 'Inter', system-ui, sans-serif",
-                        background: isActive ? '#8B4949' : 'transparent',
-                        color: isActive ? '#ffffff' : '#555',
-                      }}
-                    >
-                      <span className="truncate">{name}</span>
-                      <span
-                        className="w-2 h-2 rounded-full flex-shrink-0 ml-2"
-                        style={{ background: b?.enabled ? '#4A7C59' : '#aaa' }}
-                      />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+
+            <div style={{ padding: '0.75rem 0.5rem', borderTop: '1px solid #f0ebe2', background: '#faf8f5' }}>
+              <button
+                type="button"
+                onClick={() => setShowCustomSectionModal(true)}
+                className="w-full flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl bg-white border border-[#8B4949]/30 hover:border-[#8B4949] text-[#8B4949] hover:bg-[#8B4949]/5 text-xs font-semibold cursor-pointer transition-all shadow-sm"
+              >
+                <Plus size={12} /> Add Custom Section
+              </button>
+            </div>
           </aside>
 
           {/* Edit Panel */}
@@ -660,13 +786,30 @@ export default function ContentsManager() {
             {currentBlock ? (
               <>
                 {/* Panel Title & Visibility */}
-                <div className="flex items-center justify-between border-b border-[#f0f0f0] pb-4">
-                  <h2 className="text-lg font-bold text-[#1a1410] flex items-center gap-2">
-                    {selectedSection} Settings
-                    {sectionDirty && (
-                      <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" title="Unsaved changes" />
+                <div className="flex items-center justify-between border-b border-[#f0f0f0] pb-4 flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-bold text-[#1a1410] flex items-center gap-2">
+                      {selectedSection} Settings
+                      {sectionDirty && (
+                        <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" title="Unsaved changes" />
+                      )}
+                    </h2>
+                    {currentBlock.isCustomSection && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`Are you sure you want to delete the custom section "${selectedSection}"?`)) {
+                            deleteContentBlock(currentBlock.id);
+                            setSelectedSection(SECTION_NAMES[0]);
+                          }
+                        }}
+                        className="text-[10px] text-red-500 hover:text-white bg-red-50 hover:bg-red-600 px-2 py-1 rounded-lg border border-red-200 hover:border-red-600 cursor-pointer flex items-center gap-1 transition-all"
+                        title="Delete Custom Section"
+                      >
+                        <Trash2 size={10} /> Delete Section
+                      </button>
                     )}
-                  </h2>
+                  </div>
                   <div className="flex items-center gap-2.5 bg-[#faf8f5] px-3 py-1.5 rounded-xl border border-[#e5e5e5]/50">
                     <span className="text-xs text-gray-500 font-semibold select-none">
                       {currentBlock.enabled ? 'Section Visible' : 'Section Hidden'}
@@ -687,6 +830,69 @@ export default function ContentsManager() {
                 {/* Form Inputs (Show for non-carousel sections) */}
                 {!isCarouselSection && (
                   <div className="space-y-4">
+                    {selectedSection === 'Footer' && (
+                      <div className="space-y-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl p-5 shadow-sm">
+                        <h3 className="text-xs font-bold text-[#8B4949] uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                          <span className="w-1.5 h-3 rounded-full bg-[#8B4949]" /> Footer Design Content
+                        </h3>
+                        <div>
+                          <label className="admin-label">Brand Tagline</label>
+                          <textarea
+                            className="admin-textarea bg-white text-xs"
+                            rows={2}
+                            value={footerBrandTagline}
+                            onChange={(e) => { setFooterBrandTagline(e.target.value); setSectionDirty(true); }}
+                            placeholder="e.g. Personalized digital e-invites for every celebration..."
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="admin-label">Contact Phone</label>
+                            <input
+                              type="text"
+                              className="admin-input bg-white text-xs"
+                              value={footerPhone}
+                              onChange={(e) => { setFooterPhone(e.target.value); setSectionDirty(true); }}
+                              placeholder="e.g. +91 98765 43210"
+                            />
+                          </div>
+                          <div>
+                            <label className="admin-label">Contact Email</label>
+                            <input
+                              type="text"
+                              className="admin-input bg-white text-xs"
+                              value={footerEmail}
+                              onChange={(e) => { setFooterEmail(e.target.value); setSectionDirty(true); }}
+                              placeholder="e.g. hello@eventique.in"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="border-t border-[#f0ece4] pt-4 mt-3">
+                          <label className="admin-label block mb-2 text-xs font-bold text-[#1a1410]">Social Media Links</label>
+                          <div className="grid grid-cols-2 gap-3">
+                            {footerSocials.map((soc, idx) => (
+                              <div key={soc.platform} className="bg-white p-2 rounded-xl border border-[#e5e5e5] flex items-center gap-2 shadow-xs">
+                                <span className="text-[10px] font-bold capitalize text-gray-500 w-16">{soc.platform}</span>
+                                <input
+                                  type="text"
+                                  className="admin-input !border-none p-0 focus:ring-0 text-[11px] text-gray-600 bg-transparent flex-grow"
+                                  value={soc.url}
+                                  onChange={(e) => {
+                                    const updated = [...footerSocials];
+                                    updated[idx].url = e.target.value;
+                                    setFooterSocials(updated);
+                                    setSectionDirty(true);
+                                  }}
+                                  placeholder={`e.g. https://${soc.platform}.com/...`}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {hasTitle && (
                       <div>
                         <label className="admin-label">Section Title</label>
@@ -752,8 +958,8 @@ export default function ContentsManager() {
                       </div>
                     )}
 
-                    {/* Features list editor (only for sections that support features/badges) */}
-                    {['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection) && (
+                    {/* Features list editor */}
+                    {(['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection) || (isCustom && customType === 'grid')) && (
                       <div className="bg-[#faf8f5] border border-[#f0ece4] rounded-2xl p-5 space-y-4">
                         <div>
                           <label className="admin-label !mb-1 text-sm font-semibold text-[#1a1410]">Section Features List (Up to 3 Items)</label>
@@ -1482,6 +1688,70 @@ export default function ContentsManager() {
                       </div>
                     )}
 
+                    {isCustom && customType === 'faq' && (
+                      <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold text-xs text-gray-700">FAQ Accordion Items</h4>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setContactFaqs([...contactFaqs, { q: 'New Question?', a: 'New Answer content...' }]);
+                              setSectionDirty(true);
+                            }}
+                            className="admin-btn admin-btn-outline admin-btn-sm text-xs font-semibold px-3 py-1 flex items-center gap-1 cursor-pointer bg-transparent shadow-xs"
+                          >
+                            <Plus size={12} /> Add FAQ Item
+                          </button>
+                        </div>
+                        <div className="space-y-4">
+                          {contactFaqs.map((faq, idx) => (
+                            <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-3 relative shadow-sm">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setContactFaqs(contactFaqs.filter((_, i) => i !== idx));
+                                  setSectionDirty(true);
+                                }}
+                                className="absolute top-2 right-2 w-6 h-6 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors border-none cursor-pointer"
+                                title="Remove FAQ"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                              <p className="text-[10px] uppercase font-bold text-gray-400 font-mono">FAQ {idx + 1}</p>
+                              <div>
+                                <label className="text-[10px] font-semibold text-gray-500">Question</label>
+                                <input
+                                  type="text"
+                                  className="admin-input bg-white text-xs font-semibold"
+                                  value={faq.q}
+                                  onChange={(e) => {
+                                    const updated = [...contactFaqs];
+                                    updated[idx].q = e.target.value;
+                                    setContactFaqs(updated);
+                                    setSectionDirty(true);
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-semibold text-gray-500">Answer</label>
+                                <textarea
+                                  className="admin-textarea bg-white text-xs p-2.5"
+                                  rows={2}
+                                  value={faq.a}
+                                  onChange={(e) => {
+                                    const updated = [...contactFaqs];
+                                    updated[idx].a = e.target.value;
+                                    setContactFaqs(updated);
+                                    setSectionDirty(true);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Footer Save Operations */}
                     <div className="border-t border-[#f0f0f0] pt-5 flex items-center gap-3">
                       <button
@@ -2067,81 +2337,131 @@ export default function ContentsManager() {
                   </button>
                 </div>
 
-                <div className="space-y-5">
-                  {/* Basic Configurations */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="admin-label">Campaign Name *</label>
-                      <input
-                        type="text"
-                        className="admin-input"
-                        value={campTitle}
-                        onChange={(e) => { setCampTitle(e.target.value); setCampDirty(true); }}
-                        placeholder="e.g. Ganesh Chaturthi Launch Collection"
-                      />
-                    </div>
-                    <div>
-                      <label className="admin-label">URL Slug (Lowercase & Hyphenated) *</label>
-                      <input
-                        type="text"
-                        className="admin-input"
-                        value={campSlug}
-                        onChange={(e) => { setCampSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '-')); setCampDirty(true); }}
-                        placeholder="e.g. ganesh-chaturthi"
-                      />
-                    </div>
-                    <div>
-                      <label className="admin-label">Target Product Name</label>
-                      <input
-                        type="text"
-                        className="admin-input"
-                        value={campProductName}
-                        onChange={(e) => { setCampProductName(e.target.value); setCampDirty(true); }}
-                        placeholder="e.g. Vighnaharta Premium Video Invitation"
-                      />
-                    </div>
-                    <div>
-                      <label className="admin-label">Theme Template Style</label>
-                      <select
-                        className="admin-input"
-                        value={campTheme}
-                        onChange={(e) => { setCampTheme(e.target.value as any); setCampDirty(true); }}
-                      >
-                        <option value="Royal">Royal (Gold / Ivory Classic)</option>
-                        <option value="Modern">Modern (Clean / Bold Bento)</option>
-                        <option value="Minimalist">Minimalist (Sleek Typography)</option>
-                        <option value="Floral">Floral (Soft Pastel Handcrafted)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="admin-label">Accent Color Theme (Hex Code)</label>
-                      <div className="flex gap-2.5">
-                        <input
-                          type="color"
-                          className="w-10 h-10 rounded-xl border border-[#e5e5e5] p-0.5 cursor-pointer bg-white"
-                          value={campAccentColor}
-                          onChange={(e) => { setCampAccentColor(e.target.value); setCampDirty(true); }}
-                        />
+                <div className="space-y-6">
+                  {/* Card 1: Identity & Style */}
+                  <div className="bg-[#faf8f5] border border-[#e5e5e5]/60 rounded-3xl p-5 space-y-4 shadow-sm">
+                    <h4 className="font-bold text-[#1a1410] text-xs uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-1.5 h-3 rounded-full bg-[#8B4949]" /> Identity & Visual Style
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="admin-label">Campaign Name *</label>
                         <input
                           type="text"
-                          className="admin-input flex-grow font-mono text-xs uppercase"
-                          value={campAccentColor}
-                          onChange={(e) => { setCampAccentColor(e.target.value); setCampDirty(true); }}
-                          placeholder="#D4AF37"
+                          className="admin-input bg-white"
+                          value={campTitle}
+                          onChange={(e) => { 
+                            const val = e.target.value;
+                            setCampTitle(val); 
+                            setCampDirty(true); 
+                            // Auto-generate slug
+                            const generated = val.toLowerCase()
+                              .replace(/[^a-z0-9\s-]/g, '')
+                              .trim()
+                              .replace(/\s+/g, '-');
+                            setCampSlug(generated);
+                          }}
+                          placeholder="e.g. Ganesh Chaturthi Launch Collection"
                         />
                       </div>
+                      <div>
+                        <label className="admin-label">URL Slug (Lowercase & Hyphenated) *</label>
+                        <input
+                          type="text"
+                          className="admin-input bg-white"
+                          value={campSlug}
+                          onChange={(e) => { setCampSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '-')); setCampDirty(true); }}
+                          placeholder="e.g. ganesh-chaturthi"
+                        />
+                      </div>
+                      <div>
+                        <label className="admin-label">Target Product Name</label>
+                        <input
+                          type="text"
+                          className="admin-input bg-white"
+                          value={campProductName}
+                          onChange={(e) => { setCampProductName(e.target.value); setCampDirty(true); }}
+                          placeholder="e.g. Vighnaharta Premium Video Invitation"
+                        />
+                      </div>
+                      <div>
+                        <label className="admin-label">Campaign Status</label>
+                        <select
+                          className="admin-input bg-white"
+                          value={campStatus}
+                          onChange={(e) => { setCampStatus(e.target.value as any); setCampDirty(true); }}
+                        >
+                          <option value="Draft">Draft</option>
+                          <option value="Active">Active / Public</option>
+                          <option value="Archived">Archived</option>
+                        </select>
+                      </div>
                     </div>
-                    <div>
-                      <label className="admin-label">Campaign Status</label>
-                      <select
-                        className="admin-input"
-                        value={campStatus}
-                        onChange={(e) => { setCampStatus(e.target.value as any); setCampDirty(true); }}
-                      >
-                        <option value="Draft">Draft</option>
-                        <option value="Active">Active / Public</option>
-                        <option value="Archived">Archived</option>
-                      </select>
+
+                    <div className="border-t border-[#f0ece4] pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="admin-label block mb-2">Theme Template Style</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { value: 'Royal', title: 'Royal Classic', desc: 'Gold & Ivory accents', previewBg: 'from-[#fdf8f0] to-[#fff5f0] border-[#D4AF37]/30 text-[#8B4949]' },
+                            { value: 'Modern', title: 'Modern Bento', desc: 'Bold grid layouts', previewBg: 'from-slate-50 to-slate-100 border-slate-300 text-slate-800' },
+                            { value: 'Minimalist', title: 'Minimalist', desc: 'Refined typography', previewBg: 'from-white to-gray-50 border-gray-200 text-gray-900' },
+                            { value: 'Floral', title: 'Floral Pastel', desc: 'Handcrafted floral motifs', previewBg: 'from-rose-50/50 to-emerald-50/30 border-rose-200/40 text-emerald-800' }
+                          ].map((t) => {
+                            const isSelected = campTheme === t.value;
+                            return (
+                              <button
+                                key={t.value}
+                                type="button"
+                                onClick={() => { setCampTheme(t.value as any); setCampDirty(true); }}
+                                className={`p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer flex flex-col justify-between h-20 shadow-sm relative overflow-hidden ${
+                                  isSelected 
+                                    ? 'border-[#8B4949] bg-gradient-to-br from-[#8B4949]/5 to-[#8B4949]/10 ring-2 ring-[#8B4949]' 
+                                    : 'border-[#e5e5e5] bg-white hover:border-[#8B4949]/40'
+                                }`}
+                              >
+                                <div className="z-10">
+                                  <span className="text-[10px] font-bold block text-gray-800">
+                                    {t.title}
+                                  </span>
+                                  <span className="text-[9px] text-gray-400 block leading-tight mt-0.5">{t.desc}</span>
+                                </div>
+                                <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-tl-lg bg-gradient-to-br ${t.previewBg} flex items-center justify-center border-t border-l opacity-80`}>
+                                  <span className="text-[9px] font-serif italic">Aa</span>
+                                </div>
+                                {isSelected && (
+                                  <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-[#8B4949] rounded-full flex items-center justify-center text-white">
+                                    <Check size={8} strokeWidth={3} />
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="admin-label">Accent Color Theme</label>
+                        <div className="flex gap-2 bg-white p-2 rounded-2xl border border-[#e5e5e5] items-center h-[90px]">
+                          <input
+                            type="color"
+                            className="w-12 h-12 rounded-xl border border-[#e5e5e5] p-0.5 cursor-pointer bg-white flex-shrink-0"
+                            value={campAccentColor}
+                            onChange={(e) => { setCampAccentColor(e.target.value); setCampDirty(true); }}
+                          />
+                          <div className="flex-grow">
+                            <input
+                              type="text"
+                              className="admin-input !border-none font-mono text-xs uppercase p-0 focus:ring-0"
+                              value={campAccentColor}
+                              onChange={(e) => { setCampAccentColor(e.target.value); setCampDirty(true); }}
+                              placeholder="#D4AF37"
+                            />
+                            <p className="text-[9px] text-gray-400 mt-1">Accent lines & buttons color</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -2422,32 +2742,54 @@ export default function ContentsManager() {
                 {/* Hero Banner Image */}
                 <div className="bg-white border border-[#e5e5e5] rounded-3xl p-6 shadow-sm space-y-4 animate-fade-in">
                   <h4 className="font-bold text-[#1a1410] text-sm">Hero Banner Image</h4>
-                  <div className="border border-[#e5e5e5] rounded-2xl bg-[#faf8f5] p-3 flex items-center justify-center min-h-[160px] relative overflow-hidden">
+                  
+                  <div
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files?.[0];
+                      if (file && file.type.startsWith('image/')) {
+                        const url = URL.createObjectURL(file);
+                        setCampHeroImage(url);
+                        setCampDirty(true);
+                      }
+                    }}
+                    className="border-2 border-dashed border-[#e5e5e5] hover:border-[#8B4949] rounded-2xl bg-[#faf8f5] p-3 flex flex-col items-center justify-center min-h-[170px] relative overflow-hidden transition-all group"
+                  >
                     {campHeroImage ? (
                       <>
-                        <img src={campHeroImage} alt="Hero Preview" className="max-h-[140px] rounded-lg object-contain" />
-                        <button
-                          onClick={() => { setCampHeroImage(''); setCampDirty(true); }}
-                          className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black transition-colors"
-                        >
-                          <X size={13} />
-                        </button>
+                        <img src={campHeroImage} alt="Hero Preview" className="max-h-[140px] rounded-lg object-contain group-hover:scale-[1.02] transition-transform" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => { setCampHeroImage(''); setCampDirty(true); }}
+                            className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700 transition-colors shadow-lg cursor-pointer"
+                            title="Remove image"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </>
                     ) : (
-                      <div className="text-center text-gray-400 space-y-1 select-none">
-                        <ImageIcon size={26} className="mx-auto text-gray-300" />
-                        <p className="text-xs">No hero image selected</p>
+                      <div className="text-center text-gray-400 space-y-2 select-none pointer-events-none p-4">
+                        <div className="w-10 h-10 rounded-full bg-white border border-[#e5e5e5] flex items-center justify-center mx-auto text-gray-400 shadow-sm group-hover:scale-110 transition-transform">
+                          <Upload size={16} className="text-[#8B4949]" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-semibold text-gray-600">Drag & drop hero image</p>
+                          <p className="text-[9px] text-gray-400 mt-0.5">or drop file here</p>
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => campHeroFileInputRef.current?.click()}
-                      className="w-full admin-btn admin-btn-outline flex items-center justify-center gap-2 cursor-pointer"
+                      className="admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1 cursor-pointer text-xs"
                     >
-                      <Upload size={14} /> Upload Banner Image
+                      <Upload size={12} /> Upload
                     </button>
                     <input
                       ref={campHeroFileInputRef}
@@ -2459,9 +2801,9 @@ export default function ContentsManager() {
                     <button
                       type="button"
                       onClick={() => { setPickerTarget('campHero'); setShowMediaPicker(true); }}
-                      className="w-full admin-btn admin-btn-outline flex items-center justify-center gap-2 cursor-pointer"
+                      className="admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1 cursor-pointer text-xs"
                     >
-                      <ImageIcon size={14} /> Choose from Media
+                      <ImageIcon size={12} /> Library
                     </button>
                   </div>
                 </div>
@@ -2470,37 +2812,63 @@ export default function ContentsManager() {
                 <div className="bg-white border border-[#e5e5e5] rounded-3xl p-6 shadow-sm space-y-4">
                   <h4 className="font-bold text-[#1a1410] text-sm">Bento Image Gallery</h4>
                   
-                  {campGallery.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-2">
-                      {campGallery.map((url, idx) => (
-                        <div key={idx} className="relative aspect-square border border-[#e5e5e5] rounded-xl overflow-hidden bg-gray-50">
-                          <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCampGallery(campGallery.filter((_, i) => i !== idx));
-                              setCampDirty(true);
-                            }}
-                            className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors"
-                          >
-                            <X size={10} />
-                          </button>
+                  <div
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const files = e.dataTransfer.files;
+                      if (files) {
+                        const urls: string[] = [];
+                        for (let i = 0; i < files.length; i++) {
+                          if (files[i].type.startsWith('image/')) {
+                            urls.push(URL.createObjectURL(files[i]));
+                          }
+                        }
+                        if (urls.length > 0) {
+                          setCampGallery(prev => [...prev, ...urls]);
+                          setCampDirty(true);
+                        }
+                      }
+                    }}
+                    className="border-2 border-dashed border-[#e5e5e5] hover:border-[#8B4949] rounded-2xl bg-[#faf8f5] p-3 min-h-[140px] flex flex-col items-center justify-center relative overflow-hidden transition-all group"
+                  >
+                    {campGallery.length > 0 ? (
+                      <div className="grid grid-cols-3 gap-2 w-full">
+                        {campGallery.map((url, idx) => (
+                          <div key={idx} className="relative aspect-square border border-[#e5e5e5] rounded-xl overflow-hidden bg-white group/item shadow-sm">
+                            <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCampGallery(campGallery.filter((_, i) => i !== idx));
+                                setCampDirty(true);
+                              }}
+                              className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center text-white hover:text-red-500 cursor-pointer"
+                              title="Remove image"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center text-gray-400 space-y-2 select-none pointer-events-none p-4">
+                        <Upload size={16} className="mx-auto text-gray-300 group-hover:translate-y-[-2px] transition-transform" />
+                        <div>
+                          <p className="text-[11px] font-semibold text-gray-500">Drag & drop gallery images</p>
+                          <p className="text-[9px] text-gray-400">Multiple files supported</p>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6 border border-dashed border-[#e5e5e5] rounded-xl text-gray-400 bg-[#faf8f5]">
-                      <p className="text-xs">No gallery photos added</p>
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => campGalleryFileInputRef.current?.click()}
-                      className="w-full admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1.5 cursor-pointer text-xs"
+                      className="w-full admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1 cursor-pointer text-xs"
                     >
-                      <Upload size={12} /> Upload Gallery Image
+                      <Upload size={12} /> Upload
                     </button>
                     <input
                       ref={campGalleryFileInputRef}
@@ -2513,9 +2881,9 @@ export default function ContentsManager() {
                     <button
                       type="button"
                       onClick={() => { setPickerTarget('campGallery'); setShowMediaPicker(true); }}
-                      className="w-full admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1.5 cursor-pointer text-xs"
+                      className="w-full admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1 cursor-pointer text-xs"
                     >
-                      <ImageIcon size={12} /> Choose from Media Library
+                      <ImageIcon size={12} /> Library
                     </button>
                   </div>
                 </div>
@@ -2696,6 +3064,88 @@ export default function ContentsManager() {
         onCancel={() => setCampaignDeleteTarget(null)}
         danger
       />
+
+      {/* ── CREATE CUSTOM SECTION MODAL ────────────────────────────── */}
+      {showCustomSectionModal && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] admin-animate-in"
+            onClick={() => setShowCustomSectionModal(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-3xl shadow-2xl z-[250] overflow-hidden border border-[#e5e5e5]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0f0f0]">
+              <div>
+                <h3 className="font-bold text-[#1a1410] text-base" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                  Add Custom Section
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5">Create a new editable content block for the website</p>
+              </div>
+              <button
+                onClick={() => setShowCustomSectionModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="admin-label">Section Name *</label>
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={newSectionName}
+                  onChange={(e) => setNewSectionName(e.target.value)}
+                  placeholder="e.g. Wedding Services Highlight"
+                />
+              </div>
+
+              <div>
+                <label className="admin-label">Template Layout Style</label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {[
+                    { value: 'text', label: 'Simple Paragraph', desc: 'Title, subtitle, and body text editor' },
+                    { value: 'hero', label: 'Hero Section', desc: 'Title, subtitle, CTA button, and single image' },
+                    { value: 'grid', label: 'Info Highlights Grid', desc: 'Title, subtitle, and 3 feature blocks' },
+                    { value: 'faq', label: 'FAQs Accordion', desc: 'Title, subtitle, and dynamic list of Q&As' }
+                  ].map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setNewSectionTemplate(t.value as any)}
+                      className={`p-3 rounded-2xl border text-left cursor-pointer transition-all hover:scale-[1.01] ${
+                        newSectionTemplate === t.value
+                          ? 'border-[#8B4949] bg-[#8B4949]/5 ring-2 ring-[#8B4949]'
+                          : 'border-[#e5e5e5] bg-white hover:border-[#8B4949]/30'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-gray-800 block">{t.label}</span>
+                      <span className="text-[9px] text-gray-400 block leading-tight mt-1">{t.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-[#faf8f5] border-t border-[#f0f0f0] flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowCustomSectionModal(false)}
+                className="admin-btn admin-btn-outline admin-btn-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateCustomSection}
+                className="admin-btn admin-btn-primary admin-btn-sm"
+              >
+                Create Section
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

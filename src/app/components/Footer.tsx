@@ -2,9 +2,21 @@ import { Link } from 'react-router';
 import { Instagram, Facebook, Mail, Phone, Youtube, Linkedin } from 'lucide-react';
 import logo from 'figma:asset/18b0c663189a1e14d470c65edfce57c31a40bf8e.png';
 import { FloralDivider, LotusDecor } from './decorative/FloralDecor';
+import { useAdmin } from '../admin/context/AdminContext';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { state } = useAdmin();
+  const footerBlock = state.contentBlocks.find((cb) => cb.sectionName === 'Footer');
+
+  const tagline = footerBlock?.footerBrandTagline || 'Personalized digital e-invites for every celebration. Making your special moments memorable.';
+  const phone = footerBlock?.footerContactInfo?.phone || '+91 98765 43210';
+  const email = footerBlock?.footerContactInfo?.email || 'hello@eventique.in';
+
+  const getSocialUrl = (platform: string, fallback: string) => {
+    const soc = footerBlock?.footerSocialLinks?.find(s => s.platform === platform);
+    return soc?.url || fallback;
+  };
 
   return (
     <footer className="bg-gradient-to-br from-muted via-muted to-card border-t border-primary/10 mt-20 relative overflow-hidden">
@@ -23,11 +35,11 @@ export function Footer() {
           <div>
             <img src={logo} alt="Eventique" className="h-10 mb-4" />
             <p className="text-sm text-muted-foreground mb-4">
-              Personalized digital e-invites for every celebration. Making your special moments memorable.
+              {tagline}
             </p>
             <div className="flex gap-2.5">
               <a
-                href="https://instagram.com"
+                href={getSocialUrl('instagram', 'https://instagram.com')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary hover:from-primary hover:to-secondary hover:text-primary-foreground transition-all hover:scale-110 border border-primary/20"
@@ -36,7 +48,7 @@ export function Footer() {
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="https://facebook.com"
+                href={getSocialUrl('facebook', 'https://facebook.com')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary hover:from-primary hover:to-secondary hover:text-primary-foreground transition-all hover:scale-110 border border-primary/20"
@@ -45,7 +57,7 @@ export function Footer() {
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="https://youtube.com"
+                href={getSocialUrl('youtube', 'https://youtube.com')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary hover:from-primary hover:to-secondary hover:text-primary-foreground transition-all hover:scale-110 border border-primary/20"
@@ -54,7 +66,7 @@ export function Footer() {
                 <Youtube className="w-5 h-5" />
               </a>
               <a
-                href="https://pinterest.com"
+                href={getSocialUrl('pinterest', 'https://pinterest.com')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary hover:from-primary hover:to-secondary hover:text-primary-foreground transition-all hover:scale-110 border border-primary/20"
@@ -65,7 +77,7 @@ export function Footer() {
                 </svg>
               </a>
               <a
-                href="https://linkedin.com"
+                href={getSocialUrl('linkedin', 'https://linkedin.com')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary hover:from-primary hover:to-secondary hover:text-primary-foreground transition-all hover:scale-110 border border-primary/20"
@@ -74,7 +86,7 @@ export function Footer() {
                 <Linkedin className="w-5 h-5" />
               </a>
               <a
-                href="https://x.com"
+                href={getSocialUrl('x', 'https://x.com')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary hover:from-primary hover:to-secondary hover:text-primary-foreground transition-all hover:scale-110 border border-primary/20"
@@ -157,11 +169,11 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4 text-primary" />
-                <span>+91 98765 43210</span>
+                <span>{phone}</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 text-primary" />
-                <span>hello@eventique.in</span>
+                <span>{email}</span>
               </li>
             </ul>
             <div className="mt-4">

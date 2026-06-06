@@ -255,7 +255,23 @@ const defaultContentBlocks: ContentBlock[] = [
     ]
   },
   { id: 'cb-6', sectionName: 'FAQ', title: 'Frequently Asked Questions', subtitle: 'Find answers to common questions about our services.', enabled: true, lastUpdated: '2026-05-01' },
-  { id: 'cb-7', sectionName: 'Footer', body: 'Eventique — Premium Digital Invitations & Event Design Studio', enabled: true, lastUpdated: '2026-05-01' },
+  { 
+    id: 'cb-7', 
+    sectionName: 'Footer', 
+    body: 'Eventique — Premium Digital Invitations & Event Design Studio', 
+    enabled: true, 
+    lastUpdated: '2026-05-01',
+    footerBrandTagline: 'Personalized digital e-invites for every celebration. Making your special moments memorable.',
+    footerContactInfo: { phone: '+91 98765 43210', email: 'hello@eventique.in' },
+    footerSocialLinks: [
+      { platform: 'instagram', url: 'https://instagram.com' },
+      { platform: 'facebook', url: 'https://facebook.com' },
+      { platform: 'youtube', url: 'https://youtube.com' },
+      { platform: 'pinterest', url: 'https://pinterest.com' },
+      { platform: 'linkedin', url: 'https://linkedin.com' },
+      { platform: 'x', url: 'https://x.com' }
+    ]
+  },
   { id: 'cb-8', sectionName: 'About', title: 'The Story of Eventique', body: 'Where tradition meets modern design — crafting invitations that feel as special as the moments they celebrate.', enabled: true, lastUpdated: '2026-05-01',
     aboutValues: [
       { icon: '🪷', title: 'Culturally Rooted', desc: 'Every motif, every colour is chosen with the depth of Indian tradition in mind — never generic, always intentional.' },
@@ -759,6 +775,8 @@ interface AdminContextType {
   deleteMediaFile: (id: string) => void;
   // Content Blocks
   updateContentBlock: (id: string, b: Partial<ContentBlock>) => void;
+  addContentBlock: (b: ContentBlock) => void;
+  deleteContentBlock: (id: string) => void;
   // Blog Posts
   addBlogPost: (post: BlogPost) => void;
   updateBlogPost: (id: number, post: Partial<BlogPost>) => void;
@@ -1076,6 +1094,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     updateMediaFile: (id, m) => set('mediaFiles', prev => (prev as MediaFile[]).map(x => x.id === id ? { ...x, ...m } : x)),
     deleteMediaFile: (id) => set('mediaFiles', prev => (prev as MediaFile[]).filter(x => x.id !== id)),
     updateContentBlock: (id, b) => set('contentBlocks', prev => (prev as ContentBlock[]).map(x => x.id === id ? { ...x, ...b, lastUpdated: new Date().toLocaleDateString() } : x)),
+    addContentBlock: (b) => {
+      set('contentBlocks', prev => [...prev as ContentBlock[], b]);
+      addActivityLog('Content Block Added', b.sectionName, 'success');
+    },
+    deleteContentBlock: (id) => {
+      set('contentBlocks', prev => (prev as ContentBlock[]).filter(x => x.id !== id));
+      addActivityLog('Content Block Deleted', id, 'danger');
+    },
     addBlogPost: (post) => { set('blogPosts', prev => [...prev as BlogPost[], post]); addActivityLog('Blog Post Added', post.title, 'success'); },
     updateBlogPost: (id, post) => set('blogPosts', prev => (prev as BlogPost[]).map(x => x.id === id ? { ...x, ...post } : x)),
     deleteBlogPost: (id) => { set('blogPosts', prev => (prev as BlogPost[]).filter(x => x.id !== id)); addActivityLog('Blog Post Deleted', String(id), 'danger'); },

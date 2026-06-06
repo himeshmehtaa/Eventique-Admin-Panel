@@ -221,6 +221,15 @@ export interface ContentBlock {
   contactDetails?: { type: string; title: string; subtitle: string; value: string; linkText?: string; linkUrl?: string }[];
   contactFaqs?: { q: string; a: string }[];
   contactCtaInfo?: { title: string; subtitle: string; detail: string; whatsappNumber?: string; whatsappText?: string };
+
+  // Custom fields for Footer page editing
+  footerBrandTagline?: string;
+  footerSocialLinks?: { platform: string; url: string }[];
+  footerContactInfo?: { phone: string; email: string };
+
+  // Custom section attributes
+  customTemplateType?: 'text' | 'hero' | 'grid' | 'faq';
+  isCustomSection?: boolean;
 }
 
 // ── Activity Log ──────────────────────────────────────────────
