@@ -93,7 +93,6 @@ export const router = createBrowserRouter([
       { path: 'profile', Component: Profile },
       { path: 'blog/:id', Component: BlogPost },
       { path: 'launch/:slug', Component: LaunchPage },
-      { path: '*', Component: NotFound },
     ],
   },
   // ── Top-level Login Redirect ──────────────────────────────
@@ -135,4 +134,12 @@ export const router = createBrowserRouter([
       { path: 'page-builder', Component: PageBuilder },
     ],
   },
+  // ── Public Catch-all 404 ──────────────────────────────────
+  {
+    path: '*',
+    Component: Layout,
+    children: [
+      { index: true, Component: NotFound }
+    ]
+  }
 ]);
