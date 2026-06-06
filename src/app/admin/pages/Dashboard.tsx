@@ -215,15 +215,168 @@ export default function Dashboard() {
       .sort((a, b) => b.revenue - a.revenue);
   }, [state.orders]);
 
-  // Filter actions based on permissions
-  const visibleActions = QUICK_ACTIONS.filter(act => hasPermission(act.permission as any));
-
   // Determine if user has any financial or business analytics access
   const hasFinancialAccess = hasPermission('payments') || hasPermission('finance');
   const hasOrdersAccess = hasPermission('orders');
   const hasCustomersAccess = hasPermission('customers');
   const hasProductsAccess = hasPermission('products');
   const hasPromotionsAccess = hasPermission('promotions');
+
+  // Compute active summary cards
+  const summaryCards = useMemo(() => {
+    const cards = [];
+    if (hasFinancialAccess) {
+      cards.push(
+        <StatsCard
+          key="revenue"
+          label="Revenue"
+          value={`₹${totalRevenue.toLocaleString('en-IN')}`}
+          icon={<IndianRupee size={18} />}
+          color="primary"
+          trend={{ value: 12, label: 'vs last month' }}
+        />
+      );
+    }
+    if (hasPermission('finance')) {
+      cards.push(
+        <StatsCard
+          key="expenses"
+          label="Expenses"
+          value={`₹${totalExpenses.toLocaleString('en-IN')}`}
+          icon={<TrendingDown size={18} />}
+          color="blue"
+        />
+      );
+    }
+    if (hasPermission('finance') && hasPermission('payments')) {
+      cards.push(
+        <StatsCard
+          key="netprofit"
+          label="Net Profit"
+          value={`₹${netProfit.toLocaleString('en-IN')}`}
+          icon={<TrendingUp size={18} />}
+          color="green"
+        />
+      );
+    }
+    if (hasOrdersAccess) {
+      cards.push(
+        <StatsCard
+          key="orders"
+          label="Orders"
+          value={state.orders.length}
+          icon={<ClipboardList size={18} />}
+          color="gold"
+          trend={{ value: 8, label: 'this month' }}
+        />
+      );
+    }
+    if (hasCustomersAccess) {
+      cards.push(
+        <StatsCard
+          key="customers"
+          label="Customers"
+          value={state.customers.length}
+          icon={<UserCheck size={18} />}
+          color="primary"
+          trend={{ value: 5, label: 'new this week' }}
+        />
+      );
+    }
+    if (hasProductsAccess) {
+      cards.push(
+        <StatsCard
+          key="products"
+          label="Products"
+          value={state.products.length}
+          icon={<Package size={18} />}
+          color="blue"
+        />
+      );
+    }
+    return cards;
+  }, [hasFinancialAccess, hasPermission, hasOrdersAccess, hasCustomersAccess, hasProductsAccess, totalRevenue, totalExpenses, netProfit, state.orders.length, state.customers.length, state.products.length]);
+
+  const summaryGridClass = useMemo(() => {
+    const count = summaryCards.length;
+    if (count === 1) return 'grid-cols-1 max-w-sm';
+    if (count === 2) return 'grid-cols-2 max-w-2xl';
+    if (count === 3) return 'grid-cols-2 md:grid-cols-3 max-w-4xl';
+    if (count === 4) return 'grid-cols-2 lg:grid-cols-4';
+    if (count === 5) return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5';
+    return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6';
+  }, [summaryCards.length]);
+
+  // Filter actions based on permissions
+  const visibleActions = useMemo(() => {
+    return QUICK_ACTIONS.filter(act => hasPermission(act.permission as any));
+  }, [hasPermission]);
+
+  const quickActionsGridClass = useMemo(() => {
+    const len = visibleActions.length;
+    if (len === 1) return 'grid-cols-1 max-w-xs';
+    if (len === 2) return 'grid-cols-2 max-w-md';
+    if (len === 3) return 'grid-cols-3 max-w-2xl';
+    if (len === 4) return 'grid-cols-2 sm:grid-cols-4 max-w-4xl';
+    if (len === 5) return 'grid-cols-2 sm:grid-cols-5 max-w-5xl';
+    if (len === 6) return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-6';
+    if (len === 7) return 'grid-cols-2 sm:grid-cols-4 md:grid-cols-7';
+    return 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8';
+  }, [visibleActions.length]);
+
+  const activeOverviewCount = useMemo(() => {
+    return [
+      hasOrdersAccess,
+      hasFinancialAccess,
+      hasPromotionsAccess
+    ].filter(Boolean).length;
+  }, [hasOrdersAccess, hasFinancialAccess, hasPromotionsAccess]);
+
+  const overviewGridClass = useMemo(() => {
+    if (activeOverviewCount === 1) return 'grid-cols-1 max-w-md';
+    if (activeOverviewCount === 2) return 'grid-cols-1 md:grid-cols-2 max-w-4xl';
+    return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+  }, [activeOverviewCount]);
+
+  const renderedWorkspaceLinks = useMemo(() => {
+    const links = [];
+    if (hasPermission('contents')) {
+      links.push(
+        <Link key="sections" to="/admin/contents" className="p-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl hover:border-[#8B4949]/30 transition-all flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#8B4949]/10 text-[#8B4949] flex items-center justify-center flex-shrink-0">
+            <FolderEdit size={16} />
+          </div>
+          <div className="text-left">
+            <p className="text-xs font-bold text-[#1a1410]">Website Sections</p>
+            <p className="text-[10px] text-gray-400">Edit banners & lists</p>
+          </div>
+        </Link>
+      );
+      links.push(
+        <Link key="launch" to="/admin/contents" className="p-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl hover:border-[#8B4949]/30 transition-all flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/10 text-[#D4AF37] flex items-center justify-center flex-shrink-0">
+            <Rocket size={16} />
+          </div>
+          <div className="text-left">
+            <p className="text-xs font-bold text-[#1a1410]">Launch Pages</p>
+            <p className="text-[10px] text-gray-400">Build new campaigns</p>
+          </div>
+        </Link>
+      );
+      links.push(
+        <Link key="blog" to="/admin/contents" className="p-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl hover:border-[#8B4949]/30 transition-all flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#6366F1]/10 text-[#6366F1] flex items-center justify-center flex-shrink-0">
+            <BookOpen size={16} />
+          </div>
+          <div className="text-left">
+            <p className="text-xs font-bold text-[#1a1410]">Blog Articles</p>
+            <p className="text-[10px] text-gray-400">Write design feeds</p>
+          </div>
+        </Link>
+      );
+    }
+    return links;
+  }, [hasPermission]);
 
   return (
     <div className="space-y-8 admin-animate-in">
@@ -261,59 +414,9 @@ export default function Dashboard() {
       </div>
 
       {/* ── Summary Cards (Filtered by permission) ──────────────────────────────────── */}
-      {(hasFinancialAccess || hasOrdersAccess || hasCustomersAccess || hasProductsAccess) && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {hasFinancialAccess && (
-            <StatsCard
-              label="Revenue"
-              value={`₹${totalRevenue.toLocaleString('en-IN')}`}
-              icon={<IndianRupee size={18} />}
-              color="primary"
-              trend={{ value: 12, label: 'vs last month' }}
-            />
-          )}
-          {hasPermission('finance') && (
-            <StatsCard
-              label="Expenses"
-              value={`₹${totalExpenses.toLocaleString('en-IN')}`}
-              icon={<TrendingDown size={18} />}
-              color="blue"
-            />
-          )}
-          {hasPermission('finance') && hasPermission('payments') && (
-            <StatsCard
-              label="Net Profit"
-              value={`₹${netProfit.toLocaleString('en-IN')}`}
-              icon={<TrendingUp size={18} />}
-              color="green"
-            />
-          )}
-          {hasOrdersAccess && (
-            <StatsCard
-              label="Orders"
-              value={state.orders.length}
-              icon={<ClipboardList size={18} />}
-              color="gold"
-              trend={{ value: 8, label: 'this month' }}
-            />
-          )}
-          {hasCustomersAccess && (
-            <StatsCard
-              label="Customers"
-              value={state.customers.length}
-              icon={<UserCheck size={18} />}
-              color="primary"
-              trend={{ value: 5, label: 'new this week' }}
-            />
-          )}
-          {hasProductsAccess && (
-            <StatsCard
-              label="Products"
-              value={state.products.length}
-              icon={<Package size={18} />}
-              color="blue"
-            />
-          )}
+      {summaryCards.length > 0 && (
+        <div className={`grid ${summaryGridClass} gap-4`}>
+          {summaryCards}
         </div>
       )}
 
@@ -329,41 +432,15 @@ export default function Dashboard() {
             <p className="text-sm text-gray-500 leading-relaxed font-light">
               Welcome to the studio content editor portal. Depending on your team role, you have permissions to manage products, customize homepage blocks, write articles, or design product launch campaign pages.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              {hasPermission('contents') && (
-                <Link to="/admin/contents" className="p-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl hover:border-[#8B4949]/30 transition-all flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#8B4949]/10 text-[#8B4949] flex items-center justify-center flex-shrink-0">
-                    <FolderEdit size={16} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-[#1a1410]">Website Sections</p>
-                    <p className="text-[10px] text-gray-400">Edit banners & lists</p>
-                  </div>
-                </Link>
-              )}
-              {hasPermission('contents') && (
-                <Link to="/admin/contents" className="p-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl hover:border-[#8B4949]/30 transition-all flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/10 text-[#D4AF37] flex items-center justify-center flex-shrink-0">
-                    <Rocket size={16} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-[#1a1410]">Launch Pages</p>
-                    <p className="text-[10px] text-gray-400">Build new campaigns</p>
-                  </div>
-                </Link>
-              )}
-              {hasPermission('contents') && (
-                <Link to="/admin/contents" className="p-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl hover:border-[#8B4949]/30 transition-all flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#6366F1]/10 text-[#6366F1] flex items-center justify-center flex-shrink-0">
-                    <BookOpen size={16} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-[#1a1410]">Blog Articles</p>
-                    <p className="text-[10px] text-gray-400">Write design feeds</p>
-                  </div>
-                </Link>
-              )}
-            </div>
+            {renderedWorkspaceLinks.length > 0 && (
+              <div className={`grid gap-3 pt-2 ${
+                renderedWorkspaceLinks.length === 1 ? 'grid-cols-1 max-w-sm' :
+                renderedWorkspaceLinks.length === 2 ? 'grid-cols-2 max-w-xl' :
+                'grid-cols-1 sm:grid-cols-3'
+              }`}>
+                {renderedWorkspaceLinks}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -372,7 +449,7 @@ export default function Dashboard() {
       {visibleActions.length > 0 && (
         <div>
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Quick Actions</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+          <div className={`grid ${quickActionsGridClass} gap-4`}>
             {visibleActions.map(({ label, icon: Icon, to, color }) => (
               <Link
                 key={label}
@@ -394,7 +471,7 @@ export default function Dashboard() {
 
       {/* ── Mini Overview Row (Filtered by permission) ───────────────────────────────── */}
       {(hasOrdersAccess || hasFinancialAccess || hasPromotionsAccess) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={`grid ${overviewGridClass} gap-4`}>
           {/* Order Status Donut Chart Card */}
           {hasOrdersAccess && (
             <div className="admin-card flex flex-col justify-between h-full">
@@ -588,10 +665,16 @@ export default function Dashboard() {
 
       {/* ── KPI Metrics Row (Filtered by permission) ──────────────────────────────────── */}
       {(hasProductsAccess || hasFinancialAccess) && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className={`grid gap-6 ${
+          hasProductsAccess && hasFinancialAccess 
+            ? 'grid-cols-1 lg:grid-cols-3' 
+            : 'grid-cols-1'
+        }`}>
           {/* Top Selling Products */}
           {hasProductsAccess && (
-            <div className="lg:col-span-2 admin-card flex flex-col justify-between">
+            <div className={`admin-card flex flex-col justify-between ${
+              hasFinancialAccess ? 'lg:col-span-2' : ''
+            }`}>
               <div>
                 <div className="admin-card-header">
                   <div className="flex items-center gap-2">
