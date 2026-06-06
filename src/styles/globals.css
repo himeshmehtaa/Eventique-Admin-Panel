@@ -1,0 +1,12 @@
+@keyframes marquee-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-right {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.carousel-left  { animation: marquee-left  38s linear infinite; }
+.carousel-right { animation: marquee-right 32s linear infinite; }
+.carousel-track:hover .carousel-left,
+.carousel-track:hover .carousel-right { animation-play-state: paused; }

@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Theme customizations */
+@theme {
+  --color-primary: #8b4949;
+  --color-secondary: #d4af37;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom utilities */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

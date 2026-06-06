@@ -1,0 +1,785 @@
+export type ProductType = 'video-invite' | 'pdf-invite' | 'e-invitation' | 'wedding-website' | 'stationery' | 'website' | 'printed-invite';
+export type OccasionType = 'wedding' | 'engagement' | 'birthday' | 'baby-shower' | 'pooja' | 'anniversary' | 'all';
+
+export interface Product {
+  id: string;
+  name: string;
+  type: ProductType;
+  occasion: OccasionType;
+  price: number;
+  description: string;
+  features: string[];
+  deliveryTime: string;
+  imageUrl: string;
+  videoUrl?: string;
+  demoUrl?: string;
+  size?: string;
+  moq?: number | string;
+  material?: string;
+  canPersonalise?: boolean;
+  paperQuality?: string;
+  shape?: string;
+  color?: string;
+  originalPrice?: number;
+  promoTag?: string;
+  tier?: string;
+  images?: string[];
+  createdAt?: string;
+}
+
+export const products: Product[] = [
+  // Wedding Invitations
+  {
+    id: 'w1',
+    name: 'Royal Elegance',
+    type: 'video-invite',
+    occasion: 'wedding',
+    price: 2499,
+    description: 'A luxurious video invitation with traditional motifs and elegant animations',
+    features: ['HD Video', 'Custom Music', 'Unlimited Revisions', 'Multiple Formats'],
+    deliveryTime: '3-4 days',
+    imageUrl: 'https://images.unsplash.com/photo-1764731080480-58b18e519bd9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwd2VkZGluZyUyMGludml0YXRpb24lMjBzdGF0aW9uZXJ5fGVufDF8fHx8MTc3NTcyNDg4MHww&ixlib=rb-4.1.0&q=80&w=1080',
+    tier: 'Premium',
+  },
+  {
+    id: 'w2',
+    name: 'Floral Dreams',
+    type: 'e-invitation',
+    occasion: 'wedding',
+    price: 1999,
+    description: 'Beautiful floral themed digital invitation with interactive elements',
+    features: ['Interactive Design', 'RSVP Collection', 'Google Maps Integration', 'WhatsApp Share'],
+    deliveryTime: '2-3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1647470226271-5e60e269a1f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBmbG9yYWwlMjB3ZWRkaW5nJTIwY2FyZHxlbnwxfHx8fDE3NzU3MjQ4ODB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    tier: 'Standard',
+  },
+  {
+    id: 'w3',
+    name: 'Modern Minimalist',
+    type: 'pdf-invite',
+    occasion: 'wedding',
+    price: 1499,
+    description: 'Clean and minimal wedding invitation perfect for modern couples',
+    features: ['Print Ready', 'Multiple Sizes', '2 Revision Rounds', 'Editable PDF'],
+    deliveryTime: '2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1697504379624-266c3dfaad03?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBtaW5pbWFsJTIwaW52aXRhdGlvbnxlbnwxfHx8fDE3NzU3MjQ4ODF8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'w4',
+    name: 'Traditional Charm',
+    type: 'video-invite',
+    occasion: 'wedding',
+    price: 2799,
+    description: 'Classic wedding video invitation with traditional Indian aesthetics',
+    features: ['HD Video', '3D Elements', 'Premium Fonts', 'Background Score'],
+    deliveryTime: '4-5 days',
+    imageUrl: 'https://images.unsplash.com/photo-1586934280706-262a90ddd743?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaXRpb25hbCUyMGluZGlhbiUyMHdlZGRpbmd8ZW58MXx8fHwxNzc1NzI0ODgxfDA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'w5',
+    name: 'Golden Hour',
+    type: 'e-invitation',
+    occasion: 'wedding',
+    price: 2199,
+    description: 'Elegant digital invitation with golden accents and animations',
+    features: ['Animated Elements', 'RSVP Tracking', 'Gallery Section', 'Mobile Optimized'],
+    deliveryTime: '3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1759887244219-17c3d64a7f01?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkZW4lMjBlbGVnYW50JTIwaW52aXRhdGlvbnxlbnwxfHx8fDE3NzU3MjQ4ODF8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'w6',
+    name: 'Majestic Palace',
+    type: 'video-invite',
+    occasion: 'wedding',
+    price: 2999,
+    description: 'Grand video invitation with royal palace themes and majestic visuals',
+    features: ['4K Video', 'Royal Themes', 'Premium Music', 'Luxury Fonts'],
+    deliveryTime: '4-5 days',
+    imageUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1080&fit=crop',
+    tier: 'Luxury',
+  },
+  {
+    id: 'w7',
+    name: 'Garden Romance',
+    type: 'video-invite',
+    occasion: 'wedding',
+    price: 2399,
+    description: 'Beautiful garden themed video with nature elements and soft animations',
+    features: ['HD Video', 'Nature Themes', 'Soft Music', 'Floral Graphics'],
+    deliveryTime: '3-4 days',
+    imageUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1080&fit=crop',
+  },
+  {
+    id: 'w8',
+    name: 'Crystal Dreams',
+    type: 'video-invite',
+    occasion: 'wedding',
+    price: 2599,
+    description: 'Sparkling video invitation with crystal effects and elegant transitions',
+    features: ['HD Video', 'Crystal Effects', 'Elegant Music', 'Luxury Design'],
+    deliveryTime: '3-4 days',
+    imageUrl: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1080&fit=crop',
+  },
+  {
+    id: 'w9',
+    name: 'Vintage Elegance',
+    type: 'video-invite',
+    occasion: 'wedding',
+    price: 2299,
+    description: 'Classic vintage style video with timeless elegance and retro charm',
+    features: ['HD Video', 'Vintage Filters', 'Classic Music', 'Retro Graphics'],
+    deliveryTime: '3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1478146059814-e02ea2f03e2e?w=1080&fit=crop',
+  },
+  {
+    id: 'w10',
+    name: 'Starry Night',
+    type: 'video-invite',
+    occasion: 'wedding',
+    price: 2499,
+    description: 'Magical night sky themed video with twinkling stars and dreamy atmosphere',
+    features: ['HD Video', 'Star Effects', 'Romantic Music', 'Night Theme'],
+    deliveryTime: '3-4 days',
+    imageUrl: 'https://images.unsplash.com/photo-1519167758481-83f29da8c1f7?w=1080&fit=crop',
+  },
+  
+  // Engagement Invitations
+  {
+    id: 'e1',
+    name: 'Romantic Rose',
+    type: 'video-invite',
+    occasion: 'engagement',
+    price: 1999,
+    description: 'Sweet and romantic engagement video invitation with rose motifs',
+    features: ['HD Video', 'Love Story Timeline', 'Custom Music', 'Multiple Languages'],
+    deliveryTime: '2-3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1743407849750-d7d18f4b8380?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyb21hbnRpYyUyMHJvc2UlMjBlbmdhZ2VtZW50fGVufDF8fHx8MTc3NTcyNDg4Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'e2',
+    name: 'Sparkling Love',
+    type: 'e-invitation',
+    occasion: 'engagement',
+    price: 1699,
+    description: 'Bright and cheerful digital engagement invitation',
+    features: ['Interactive Design', 'Countdown Timer', 'RSVP Collection', 'Social Share'],
+    deliveryTime: '2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1578041803820-27c0571e6983?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzcGFya2xpbmclMjBjZWxlYnJhdGlvbiUyMHBhcnR5fGVufDF8fHx8MTc3NTcyNDg4Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'e3',
+    name: 'Vintage Romance',
+    type: 'pdf-invite',
+    occasion: 'engagement',
+    price: 1299,
+    description: 'Classic vintage-style engagement invitation for print',
+    features: ['Print Ready', 'High Resolution', 'Editable Text', 'Multiple Formats'],
+    deliveryTime: '1-2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1584440947558-3dfab599ef44?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aW50YWdlJTIwcm9tYW5jZSUyMGNhcmR8ZW58MXx8fHwxNzc1NzI0ODgzfDA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  
+  // Birthday Invitations
+  {
+    id: 'b1',
+    name: 'Birthday Bash',
+    type: 'video-invite',
+    occasion: 'birthday',
+    price: 1499,
+    description: 'Fun and vibrant birthday video invitation',
+    features: ['Animated Video', 'Fun Music', 'Photo Slideshow', 'Custom Theme'],
+    deliveryTime: '2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1715281007002-0c6951203c55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2xvcmZ1bCUyMGJpcnRoZGF5JTIwY2VsZWJyYXRpb258ZW58MXx8fHwxNzc1NzI0ODgzfDA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'b2',
+    name: 'Kids Party',
+    type: 'e-invitation',
+    occasion: 'birthday',
+    price: 1299,
+    description: 'Colorful and playful digital invitation for kids birthday',
+    features: ['Cartoon Characters', 'Games Info', 'RSVP', 'Gift Registry Link'],
+    deliveryTime: '1-2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1595116971913-b52f8ccca4c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraWRzJTIwcGFydHklMjBiYWxsb29uc3xlbnwxfHx8fDE3NzU3MjQ4ODN8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'b3',
+    name: 'Elegant Celebration',
+    type: 'pdf-invite',
+    occasion: 'birthday',
+    price: 999,
+    description: 'Sophisticated birthday invitation for adult celebrations',
+    features: ['Print Ready', 'Elegant Design', 'Customizable', 'Quick Delivery'],
+    deliveryTime: '1 day',
+    imageUrl: 'https://images.unsplash.com/photo-1582180834946-f3d376b18376?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwYmlydGhkYXklMjBjYWtlfGVufDF8fHx8MTc3NTcyNDg4NHww&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  
+  // Baby Shower Invitations
+  {
+    id: 'bs1',
+    name: 'Little Star',
+    type: 'video-invite',
+    occasion: 'baby-shower',
+    price: 1799,
+    description: 'Adorable baby shower video invitation with cute animations',
+    features: ['Animated Video', 'Soft Colors', 'Baby Themes', 'Custom Message'],
+    deliveryTime: '2-3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1541014994-49ec4752a411?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYWJ5JTIwc2hvd2VyJTIwZGVjb3JhdGlvbnxlbnwxfHx8fDE3NzU3MjQ4ODR8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'bs2',
+    name: 'Sweet Baby',
+    type: 'e-invitation',
+    occasion: 'baby-shower',
+    price: 1499,
+    description: 'Sweet and gentle digital baby shower invitation',
+    features: ['Interactive Design', 'Registry Link', 'RSVP', 'Gender Reveal Option'],
+    deliveryTime: '2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1753370241583-82d8c84f0c6e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXRlJTIwYmFieSUyMG51cnNlcnl8ZW58MXx8fHwxNzc1NjI1MTA1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'bs3',
+    name: 'Bundle of Joy',
+    type: 'pdf-invite',
+    occasion: 'baby-shower',
+    price: 1199,
+    description: 'Charming print-ready baby shower invitation',
+    features: ['Print Ready', 'Multiple Themes', 'Editable', 'High Quality'],
+    deliveryTime: '1-2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1768776182433-eff58e44d66d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYWJ5JTIwY2VsZWJyYXRpb24lMjBwaW5rfGVufDF8fHx8MTc3NTcyNDg4NXww&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  
+  // Pooja Invitations
+  {
+    id: 'p1',
+    name: 'Divine Blessings',
+    type: 'video-invite',
+    occasion: 'pooja',
+    price: 1899,
+    description: 'Traditional pooja video invitation with spiritual elements',
+    features: ['HD Video', 'Traditional Music', 'Deity Graphics', 'Multiple Languages'],
+    deliveryTime: '2-3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1680490964983-ca02f691960f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBwb29qYSUyMGNlcmVtb255fGVufDF8fHx8MTc3NTcyNDg4NXww&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'p2',
+    name: 'Sacred Ceremony',
+    type: 'e-invitation',
+    occasion: 'pooja',
+    price: 1599,
+    description: 'Elegant digital invitation for religious ceremonies',
+    features: ['Traditional Design', 'RSVP', 'Temple Location', 'Timing Details'],
+    deliveryTime: '2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1752917889576-46419c28de00?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaXRpb25hbCUyMHRlbXBsZSUyMGRlY29yYXRpb258ZW58MXx8fHwxNzc1NzI0ODg1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    id: 'p3',
+    name: 'Traditional Pooja',
+    type: 'pdf-invite',
+    occasion: 'pooja',
+    price: 1299,
+    description: 'Classic print invitation for pooja ceremonies',
+    features: ['Print Ready', 'Traditional Motifs', 'Bilingual Text', 'Premium Finish'],
+    deliveryTime: '1-2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1679141435935-7d8ff9659c9a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzYWNyZWQlMjBoaW5kdSUyMGNlcmVtb255fGVufDF8fHx8MTc3NTcyNDg4Nnww&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+
+  // Anniversary Invitations
+  {
+    id: 'a1',
+    name: 'Golden Moments',
+    type: 'video-invite',
+    occasion: 'anniversary',
+    price: 1899,
+    description: 'Celebrate your golden anniversary with elegant video invitation',
+    features: ['HD Video', 'Photo Montage', 'Love Story Timeline', 'Custom Music'],
+    deliveryTime: '2-3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1080&fit=crop',
+  },
+  {
+    id: 'a2',
+    name: 'Love Eternal',
+    type: 'e-invitation',
+    occasion: 'anniversary',
+    price: 1599,
+    description: 'Romantic digital anniversary invitation with interactive elements',
+    features: ['Interactive Design', 'RSVP Collection', 'Photo Gallery', 'Timeline Feature'],
+    deliveryTime: '2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1080&fit=crop',
+  },
+  {
+    id: 'a3',
+    name: 'Silver Celebration',
+    type: 'pdf-invite',
+    occasion: 'anniversary',
+    price: 1299,
+    description: 'Elegant print invitation for 25th anniversary celebration',
+    features: ['Print Ready', 'Silver Theme', 'High Resolution', 'Customizable'],
+    deliveryTime: '1-2 days',
+    imageUrl: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1080&fit=crop',
+  },
+  {
+    id: 'a4',
+    name: 'Timeless Romance',
+    type: 'video-invite',
+    occasion: 'anniversary',
+    price: 1999,
+    description: 'Beautiful anniversary video with romantic themes and memories',
+    features: ['HD Video', 'Vintage Effects', 'Music Selection', 'Photo Slideshow'],
+    deliveryTime: '2-3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1519167758481-83f29da8c1f7?w=1080&fit=crop',
+  },
+
+  // Wedding Websites
+  {
+    id: 'ws1',
+    name: 'Classic Elegance Website',
+    type: 'website',
+    occasion: 'wedding',
+    price: 4999,
+    description: 'Elegant wedding website with timeline, RSVP, photo gallery, and venue details',
+    features: ['RSVP Collection', 'Photo Gallery', 'Event Timeline', 'Google Maps', 'Guest Messages', 'Mobile Responsive'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1080&fit=crop',
+    demoUrl: 'https://demo.eventique.com/classic',
+  },
+  {
+    id: 'ws2',
+    name: 'Modern Minimalist Website',
+    type: 'website',
+    occasion: 'wedding',
+    price: 5499,
+    description: 'Clean and modern wedding website with interactive elements and smooth animations',
+    features: ['Interactive RSVP', 'Countdown Timer', 'Video Background', 'Custom Domain', 'Social Media Integration', 'QR Code'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1080&fit=crop',
+    demoUrl: 'https://demo.eventique.com/modern',
+  },
+  {
+    id: 'ws3',
+    name: 'Traditional Heritage Website',
+    type: 'website',
+    occasion: 'wedding',
+    price: 5999,
+    description: 'Traditional Indian wedding website with cultural motifs and bilingual support',
+    features: ['Bilingual Content', 'Traditional Design', 'Multiple Events', 'Gift Registry', 'Accommodation Info', 'Travel Guide'],
+    deliveryTime: '7-10 days',
+    imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1080&fit=crop',
+    demoUrl: 'https://demo.eventique.com/traditional',
+  },
+  {
+    id: 'ws4',
+    name: 'Luxury Premium Website',
+    type: 'website',
+    occasion: 'wedding',
+    price: 7999,
+    description: 'Premium wedding website with advanced features, custom animations, and unique design',
+    features: ['Custom Animations', 'Video Invites', 'Live Streaming', 'Guest Login', 'Seating Chart', 'Menu Preview', 'Dedicated Support'],
+    deliveryTime: '10-14 days',
+    imageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1080&fit=crop',
+    demoUrl: 'https://demo.eventique.com/luxury',
+  },
+
+  // Printed Invitations - Wedding
+  {
+    id: 'pi-w1',
+    name: 'Traditional Elegance Invite',
+    type: 'printed-invite',
+    occasion: 'wedding',
+    price: 75,
+    description: 'Classic printed wedding invitation with rich cultural motifs and elegant design',
+    features: ['Premium Paper Stock', 'Gold Foil Accents', 'Embossed Details', 'Envelope Included', 'Minimum 50 pieces'],
+    deliveryTime: '7-10 days',
+    imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1080&fit=crop',
+    size: '5.5 x 8.25 inches',
+    moq: '50 sets',
+    material: 'Premium Card Board',
+    paperQuality: '300gsm Premium Textured Card Stock',
+    shape: 'Rectangle',
+    color: 'Burgundy & Gold',
+    canPersonalise: true,
+  },
+  {
+    id: 'pi-w2',
+    name: 'Modern Minimal Invite',
+    type: 'printed-invite',
+    occasion: 'wedding',
+    price: 60,
+    description: 'Clean and minimal printed wedding invitation with contemporary design',
+    features: ['Premium Matte Paper', 'Letterpress Printing', 'Minimalist Design', 'Custom Colors', 'Minimum 50 pieces'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1080&fit=crop',
+    size: '6 x 6 inches',
+    moq: '100 sets',
+    material: 'Cotton Paper',
+    paperQuality: '250gsm Handmade Cotton Matte',
+    shape: 'Square',
+    color: 'Blush Pink & Ivory',
+    canPersonalise: true,
+  },
+  {
+    id: 'pi-w3',
+    name: 'Luxury Premium Invite',
+    type: 'printed-invite',
+    occasion: 'wedding',
+    price: 150,
+    description: 'Ultra-luxury printed invitation with premium materials and exquisite finishes',
+    features: ['Silk/Velvet Paper', 'Gold Foil Stamping', 'Laser Cut Details', 'Hand-tied Ribbon', 'Luxury Box', 'Minimum 50 pieces'],
+    deliveryTime: '10-14 days',
+    imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1080&fit=crop',
+    size: '7 x 9 inches',
+    moq: '30 sets',
+    material: 'Silk Velvet Card stock',
+    paperQuality: '400gsm Gold Foil Stamped Velvet Paper',
+    shape: 'Rectangle with Laser Cut Pocket',
+    color: 'Royal Navy & Gold',
+    canPersonalise: true,
+    tier: 'Luxury',
+  },
+  {
+    id: 'pi-w4',
+    name: 'Floral Romance Invite',
+    type: 'printed-invite',
+    occasion: 'wedding',
+    price: 65,
+    description: 'Beautiful printed invitation with botanical and floral patterns',
+    features: ['Premium Card Stock', 'Floral Illustrations', 'Watercolor Accents', 'Matching Envelope', 'Minimum 50 pieces'],
+    deliveryTime: '7-10 days',
+    imageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1080&fit=crop',
+  },
+  {
+    id: 'pi-w5',
+    name: 'Destination Dreams Invite',
+    type: 'printed-invite',
+    occasion: 'wedding',
+    price: 90,
+    description: 'Passport-style printed invitation for destination weddings',
+    features: ['Passport Design', 'Custom Map Insert', 'Travel Itinerary', 'Belly Band', 'Minimum 50 pieces'],
+    deliveryTime: '8-12 days',
+    imageUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1080&fit=crop',
+  },
+  {
+    id: 'pi-w6',
+    name: 'Royal Heritage Invite',
+    type: 'printed-invite',
+    occasion: 'wedding',
+    price: 120,
+    description: 'Regal printed invitation with palace-inspired aesthetics',
+    features: ['Textured Paper', 'Gold/Silver Foil', 'Embossing', 'Royal Motifs', 'Premium Envelope', 'Minimum 50 pieces'],
+    deliveryTime: '10-12 days',
+    imageUrl: 'https://images.unsplash.com/photo-1460978812857-470ed1c77af0?w=1080&fit=crop',
+  },
+
+  // Printed Invitations - Engagement
+  {
+    id: 'pi-e1',
+    name: 'Romantic Blush Invite',
+    type: 'printed-invite',
+    occasion: 'engagement',
+    price: 55,
+    description: 'Sweet printed engagement invitation with romantic design',
+    features: ['Blush Pink Paper', 'Floral Accents', 'Gold Foil Names', 'Matching Envelope', 'Minimum 50 pieces'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1080&fit=crop',
+  },
+  {
+    id: 'pi-e2',
+    name: 'Modern Love Invite',
+    type: 'printed-invite',
+    occasion: 'engagement',
+    price: 50,
+    description: 'Contemporary printed engagement invitation with clean design',
+    features: ['Premium Paper', 'Modern Typography', 'Custom Colors', 'Minimalist Style', 'Minimum 50 pieces'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1080&fit=crop',
+  },
+
+  // Printed Invitations - Birthday
+  {
+    id: 'pi-b1',
+    name: 'Fun Kids Party Invite',
+    type: 'printed-invite',
+    occasion: 'birthday',
+    price: 40,
+    description: 'Colorful and fun printed birthday invitation for kids parties',
+    features: ['Vibrant Colors', 'Fun Graphics', 'Custom Theme', 'Quality Card Stock', 'Minimum 30 pieces'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1080&fit=crop',
+  },
+  {
+    id: 'pi-b2',
+    name: 'Elegant Milestone Invite',
+    type: 'printed-invite',
+    occasion: 'birthday',
+    price: 55,
+    description: 'Sophisticated printed invitation for milestone birthday celebrations',
+    features: ['Premium Paper', 'Gold/Silver Foil', 'Elegant Typography', 'Custom Design', 'Minimum 30 pieces'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1080&fit=crop',
+  },
+
+  // Printed Invitations - Baby Shower
+  {
+    id: 'pi-bs1',
+    name: 'Sweet Baby Invite',
+    type: 'printed-invite',
+    occasion: 'baby-shower',
+    price: 45,
+    description: 'Adorable printed baby shower invitation with cute designs',
+    features: ['Soft Colors', 'Baby Illustrations', 'Quality Paper', 'Matching Envelope', 'Minimum 30 pieces'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=1080&fit=crop',
+  },
+
+  // Printed Invitations - Anniversary
+  {
+    id: 'pi-a1',
+    name: 'Golden Anniversary Invite',
+    type: 'printed-invite',
+    occasion: 'anniversary',
+    price: 60,
+    description: 'Elegant printed anniversary invitation with premium finishes',
+    features: ['Premium Card Stock', 'Gold Foil Accents', 'Classic Design', 'Envelope Included', 'Minimum 30 pieces'],
+    deliveryTime: '7-10 days',
+    imageUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1080&fit=crop',
+  },
+
+  // Printed Invitations - Pooja
+  {
+    id: 'pi-p1',
+    name: 'Traditional Pooja Invite',
+    type: 'printed-invite',
+    occasion: 'pooja',
+    price: 50,
+    description: 'Sacred printed invitation for religious ceremonies',
+    features: ['Traditional Motifs', 'Premium Paper', 'Gold Accents', 'Bilingual Text', 'Minimum 30 pieces'],
+    deliveryTime: '5-7 days',
+    imageUrl: 'https://images.unsplash.com/photo-1680490964983-ca02f691960f?w=1080&fit=crop',
+  },
+
+  // Stationery
+  {
+    id: 'st-1',
+    name: 'Custom Logo Design',
+    type: 'stationery',
+    occasion: 'wedding',
+    price: 2499,
+    description: 'Unique monogram or logo for your event branding, printed on premium paper with gold foiling',
+    features: ['Custom Monogram', 'High Resolution Files', 'Gold Foil Details', 'WhatsApp Optimized Format'],
+    deliveryTime: '3-4 days',
+    imageUrl: 'https://images.unsplash.com/photo-1692098075460-6bdb6009b33e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+    size: '8x8 inches',
+    moq: '50 sets',
+    material: 'Premium Textured Paper with Gold Foiling',
+    paperQuality: '300gsm Handcrafted Cotton Cardstock',
+    shape: 'Square',
+    color: 'Gold Foil & Ivory',
+    canPersonalise: true,
+  },
+  {
+    id: 'st-2',
+    name: 'Save the Date Cards',
+    type: 'stationery',
+    occasion: 'wedding',
+    price: 1499,
+    description: 'Announce your event date with elegant cards. Printed on 350 GSM premium cardstock.',
+    features: ['Premium Cardstock', 'Double Sided Design', 'Matching Envelopes', 'Fast Delivery'],
+    deliveryTime: '2-3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1674227832118-df9f372bff25?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+    size: '5x7 inches',
+    moq: '50 sets',
+    material: 'Premium Matte Board',
+    paperQuality: '350gsm Matte Cardstock',
+    shape: 'Rectangle',
+    color: 'Burgundy & Rose Gold',
+    canPersonalise: true,
+  },
+  {
+    id: 'st-3',
+    name: 'Welcome Cards',
+    type: 'stationery',
+    occasion: 'wedding',
+    price: 1299,
+    description: 'Greet your guests with beautiful welcome cards. Printed on 300 GSM art cardstock.',
+    features: ['Art Cardstock', 'Vibrant Printing', 'Custom Text', 'Fast Revisions'],
+    deliveryTime: '2-3 days',
+    imageUrl: 'https://images.unsplash.com/photo-1618107158953-dd4c6424b638?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+    size: '6x8 inches',
+    moq: '50 sets',
+    material: 'Fine Art Cardstock',
+    paperQuality: '300gsm Fine Art Textured Card',
+    shape: 'Rectangle with Arch Top',
+    color: 'Emerald & Gold',
+    canPersonalise: true,
+  },
+];
+
+export interface Package {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  includes: string[];
+  savings: number;
+  popular?: boolean;
+}
+
+export const packages: Package[] = [
+  {
+    id: 'starter',
+    name: 'Starter Kit',
+    description: 'Perfect for getting started with your event branding',
+    price: 4999,
+    includes: [
+      'Custom Logo Design',
+      'Digital Invitation (Video or E-invite)',
+      'Save the Date Card',
+      '2 Revision Rounds',
+      'WhatsApp Support',
+    ],
+    savings: 1500,
+  },
+  {
+    id: 'premium',
+    name: 'Premium Kit',
+    description: 'Complete package for a fully branded event',
+    price: 9999,
+    includes: [
+      'Custom Logo Design',
+      'Wedding Website',
+      'Video Invitation',
+      'E-Invitation',
+      'Save the Date Card',
+      'Welcome Card Design',
+      'Thank You Card',
+      'Unlimited Revisions',
+      'Priority Support',
+    ],
+    savings: 5000,
+    popular: true,
+  },
+  {
+    id: 'deluxe',
+    name: 'Deluxe Kit',
+    description: 'Ultimate package with all stationery and digital items',
+    price: 14999,
+    includes: [
+      'Everything in Premium Kit',
+      'Print-ready Stationery Set (5 items)',
+      'Custom Illustrations',
+      'Event Signage Designs',
+      'Itinerary Cards',
+      'Menu Cards',
+      'Seating Chart Design',
+      'Dedicated Designer',
+      '24/7 Support',
+    ],
+    savings: 10000,
+  },
+];
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  event: string;
+  rating: number;
+  comment: string;
+  image?: string;
+  date: string;
+  videoUrl?: string;
+}
+
+export const testimonials: Testimonial[] = [
+  {
+    id: 't1',
+    name: 'Priya & Rahul',
+    event: 'Wedding',
+    rating: 5,
+    comment: 'Eventique made our wedding invitations absolutely stunning! The video invitation was a hit with all our guests. The team was professional and delivered on time.',
+    date: 'March 2026',
+    videoUrl: 'https://www.youtube.com/shorts/36V_8e9d-Z8',
+  },
+  {
+    id: 't2',
+    name: 'Sneha Sharma',
+    event: 'Baby Shower',
+    rating: 5,
+    comment: 'I loved the adorable baby shower invitation! It was exactly what I imagined. The customization process was smooth and the team was very responsive.',
+    date: 'February 2026',
+    videoUrl: 'https://www.youtube.com/shorts/36V_8e9d-Z8',
+  },
+  {
+    id: 't3',
+    name: 'Amit Patel',
+    event: 'Engagement',
+    rating: 5,
+    comment: 'Beautiful designs and excellent service! Our engagement invitation got so many compliments. Highly recommend Eventique for any celebration.',
+    date: 'January 2026',
+  },
+  {
+    id: 't4',
+    name: 'Neha & Karan',
+    event: 'Wedding',
+    rating: 5,
+    comment: 'The Premium Kit was worth every penny! From the website to all the stationery, everything was cohesive and elegant. Thank you Eventique!',
+    date: 'December 2025',
+  },
+  {
+    id: 't5',
+    name: 'Anjali Reddy',
+    event: 'Birthday',
+    rating: 5,
+    comment: 'My daughter\'s birthday invitation was so creative and fun! All the kids loved the animated video. Will definitely use Eventique again!',
+    date: 'March 2026',
+  },
+  {
+    id: 't6',
+    name: 'Rajesh Kumar',
+    event: 'Pooja Ceremony',
+    rating: 5,
+    comment: 'Traditional yet modern design for our pooja invitation. The team understood our requirements perfectly and delivered a beautiful invitation.',
+    date: 'February 2026',
+  },
+];
+
+export const faqs = [
+  {
+    question: 'How long does it take to create an invitation?',
+    answer: 'Delivery time varies by product type. Video invitations typically take 3-4 days, e-invitations 2-3 days, and PDF invitations 1-2 days. Rush delivery options are available for urgent orders.',
+  },
+  {
+    question: 'Can I customize the designs?',
+    answer: 'Absolutely! All our designs are fully customizable. You can change colors, text, images, and layout. We offer multiple revision rounds to ensure you get exactly what you want.',
+  },
+  {
+    question: 'What formats do you provide?',
+    answer: 'Video invitations are delivered in MP4 format optimized for WhatsApp and social media. E-invitations come with a shareable link and QR code. PDF invitations are print-ready in high resolution.',
+  },
+  {
+    question: 'Do you offer wedding websites?',
+    answer: 'Yes! Our wedding websites are fully customizable with features like RSVP collection, photo galleries, event timeline, venue details, and more. They are mobile-responsive and easy to share.',
+  },
+  {
+    question: 'What is your refund policy?',
+    answer: 'We offer revisions until you\'re satisfied with the design. Refunds are available if we cannot meet your requirements or if there are issues with our service. Please contact us for specific cases.',
+  },
+  {
+    question: 'Can I see samples before ordering?',
+    answer: 'Yes, you can browse all our designs on the website with sample previews. For wedding websites, we have live demo links you can explore before ordering.',
+  },
+  {
+    question: 'Do you provide print services?',
+    answer: 'We provide print-ready files for all stationery items. While we don\'t print ourselves, we can recommend trusted printing partners and ensure your files are optimized for printing.',
+  },
+  {
+    question: 'How do I share the digital invitations?',
+    answer: 'Digital invitations can be shared via WhatsApp, email, social media, or SMS. Video invitations can be downloaded and shared directly. E-invitations come with a unique link and QR code for easy sharing.',
+  },
+  {
+    question: 'What payment methods do you accept?',
+    answer: 'We accept all major payment methods through Razorpay including credit/debit cards, UPI, net banking, and digital wallets. All transactions are secure.',
+  },
+  {
+    question: 'Can you create invitations in regional languages?',
+    answer: 'Yes! We can create invitations in multiple Indian languages including Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, and more.',
+  },
+];
