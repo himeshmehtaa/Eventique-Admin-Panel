@@ -171,10 +171,10 @@ const defaultPayments: Payment[] = [
 
 // ── Mock Roles ──────────────────────────────────────────────
 const defaultRoles: Role[] = [
-  { id: 'role-1', name: 'Super Admin', color: '#8B4949', membersCount: 1, permissions: { products: true, orders: true, upload_files: true, contents: true, customers: true, payments: true, settings: true, promotions: true, vendors: true, finance: true } },
-  { id: 'role-2', name: 'Designer', color: '#6366F1', membersCount: 2, permissions: { products: true, orders: false, upload_files: true, contents: true, customers: false, payments: false, settings: false, promotions: false, vendors: false, finance: false } },
-  { id: 'role-3', name: 'Content Editor', color: '#D4AF37', membersCount: 1, permissions: { products: false, orders: false, upload_files: false, contents: true, customers: false, payments: false, settings: false, promotions: true, vendors: false, finance: false } },
-  { id: 'role-4', name: 'Support', color: '#4A7C59', membersCount: 2, permissions: { products: false, orders: true, upload_files: true, contents: false, customers: true, payments: false, settings: false, promotions: false, vendors: false, finance: false } },
+  { id: 'role-1', name: 'Super Admin', color: '#8B4949', membersCount: 1, permissions: { products: true, orders: true, upload_files: true, contents: true, customers: true, payments: true, settings: true, promotions: true, vendors: true, finance: true, marketing: true } },
+  { id: 'role-2', name: 'Designer', color: '#6366F1', membersCount: 2, permissions: { products: true, orders: false, upload_files: true, contents: true, customers: false, payments: false, settings: false, promotions: false, vendors: false, finance: false, marketing: false } },
+  { id: 'role-3', name: 'Content Editor', color: '#D4AF37', membersCount: 1, permissions: { products: false, orders: false, upload_files: false, contents: true, customers: false, payments: false, settings: false, promotions: true, vendors: false, finance: false, marketing: true } },
+  { id: 'role-4', name: 'Support', color: '#4A7C59', membersCount: 2, permissions: { products: false, orders: true, upload_files: true, contents: false, customers: true, payments: false, settings: false, promotions: false, vendors: false, finance: false, marketing: false } },
 ];
 
 // ── Mock Team Members ────────────────────────────────────────
@@ -877,6 +877,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           promotions: r.permissions.promotions !== undefined ? r.permissions.promotions : false,
           vendors: r.permissions.vendors !== undefined ? r.permissions.vendors : (r.id === 'role-1'),
           finance: r.permissions.finance !== undefined ? r.permissions.finance : (r.id === 'role-1'),
+          marketing: r.permissions.marketing !== undefined ? r.permissions.marketing : (r.id === 'role-1' || r.id === 'role-3'),
         }
       }));
     } else {

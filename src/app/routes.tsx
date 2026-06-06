@@ -41,6 +41,7 @@ import OrdersManager from './admin/pages/OrdersManager';
 import VendorsManager from './admin/pages/VendorsManager';
 import AnalyticsPage from './admin/pages/AnalyticsPage';
 import PromotionsManager from './admin/pages/PromotionsManager';
+import MarketingHub from './admin/pages/MarketingHub';
 import PaymentsPage from './admin/pages/PaymentsPage';
 import FinanceManager from './admin/pages/FinanceManager';
 
@@ -115,6 +116,7 @@ export const router = createBrowserRouter([
       { path: 'vendors',    Component: VendorsManager },
       { path: 'analytics',  Component: AnalyticsPage },
       { path: 'promotions', Component: PromotionsManager },
+      { path: 'marketing',  Component: MarketingHub },
       { path: 'payments',   Component: PaymentsPage },
       { path: 'finance',    Component: FinanceManager },
       // Content

@@ -137,7 +137,7 @@ export interface Payment {
 }
 
 // ── Role ──────────────────────────────────────────────────────
-export type PermissionKey = 'products' | 'orders' | 'upload_files' | 'contents' | 'customers' | 'payments' | 'settings' | 'promotions' | 'vendors' | 'finance';
+export type PermissionKey = 'products' | 'orders' | 'upload_files' | 'contents' | 'customers' | 'payments' | 'settings' | 'promotions' | 'vendors' | 'finance' | 'marketing';
 
 export interface Role {
   id: string;

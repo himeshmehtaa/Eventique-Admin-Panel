@@ -18,6 +18,7 @@ function getRequiredPermission(pathname: string): PermissionKey | null {
   if (path.startsWith('/admin/vendors')) return 'vendors';
   if (path.startsWith('/admin/analytics')) return 'products'; // analytics matches products
   if (path.startsWith('/admin/promotions')) return 'promotions';
+  if (path.startsWith('/admin/marketing')) return 'marketing';
   if (path.startsWith('/admin/payments')) return 'payments';
   if (path.startsWith('/admin/finance')) return 'finance';
   if (path.startsWith('/admin/contents')) return 'contents';

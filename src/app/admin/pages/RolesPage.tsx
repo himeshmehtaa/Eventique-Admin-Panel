@@ -27,12 +27,13 @@ const PERMISSION_LABELS: Record<PermissionKey, string> = {
   promotions:   'Promotions',
   vendors:      'Partners',
   finance:      'Finance Ledger',
+  marketing:    'Marketing Hub',
 };
 
 const ALL_PERMISSIONS: PermissionKey[] = [
   'products', 'orders', 'upload_files', 'contents',
   'customers', 'payments', 'settings', 'promotions',
-  'vendors', 'finance',
+  'vendors', 'finance', 'marketing',
 ];
 
 // ── Avatar Component ──────────────────────────────────────────
