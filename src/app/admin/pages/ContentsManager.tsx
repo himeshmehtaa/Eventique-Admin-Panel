@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Save, Eye, EyeOff, Clock, Plus, Trash2, ArrowUp, ArrowDown,
   Image as ImageIcon, Link as LinkIcon, FileText, Upload,
-  Calendar, Edit3, X, ChevronRight, Check, GripVertical
+  Calendar, Edit3, X, ChevronRight, Check, GripVertical, Rocket, ExternalLink
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import type { ContentBlock, BlogPost, BlogPostContent } from '../types';
+import type { ContentBlock, BlogPost, BlogPostContent, LaunchCampaign } from '../types';
 import HeroSlidesManager from './HeroSlidesManager';
 import PackagesManager from './PackagesManager';
 import FAQsManager from './FAQsManager';
@@ -35,10 +35,19 @@ const SECTION_NAMES = [
 ] as const;
 
 export default function ContentsManager() {
-  const { state, updateContentBlock, addBlogPost, updateBlogPost, deleteBlogPost } = useAdmin();
+  const {
+    state,
+    updateContentBlock,
+    addBlogPost,
+    updateBlogPost,
+    deleteBlogPost,
+    addCampaign,
+    updateCampaign,
+    deleteCampaign
+  } = useAdmin();
 
-  // Tab State: 'sections' | 'blog'
-  const [activeTab, setActiveTab] = useState<'sections' | 'blog'>('sections');
+  // Tab State: 'sections' | 'blog' | 'campaigns'
+  const [activeTab, setActiveTab] = useState<'sections' | 'blog' | 'campaigns'>('sections');
 
   // ── SECTIONS TAB STATE ──────────────────────────────────────
   const [selectedSection, setSelectedSection] = useState<string>(SECTION_NAMES[0]);
@@ -53,6 +62,11 @@ export default function ContentsManager() {
   const [showCtaToggle, setShowCtaToggle] = useState(false);
   const [sectionImages, setSectionImages] = useState<string[]>([]);
   const [sectionDirty, setSectionDirty] = useState(false);
+
+  // Dynamic custom fields for section editor
+  const [badgeText, setBadgeText] = useState('');
+  const [footerText, setFooterText] = useState('');
+  const [features, setFeatures] = useState<{ title: string; desc: string }[]>([]);
 
   // About Page Sub-states
   const [aboutValues, setAboutValues] = useState<{ icon: string; title: string; desc: string }[]>([]);
@@ -70,12 +84,39 @@ export default function ContentsManager() {
   const [contactFaqs, setContactFaqs] = useState<{ q: string; a: string }[]>([]);
   const [contactCtaInfo, setContactCtaInfo] = useState({ title: '', subtitle: '', detail: '', whatsappNumber: '', whatsappText: '' });
 
+  // ── LAUNCH CAMPAIGNS STATE ──────────────────────────────────
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const [isEditingCampaign, setIsEditingCampaign] = useState(false);
+  const [campaignDeleteTarget, setCampaignDeleteTarget] = useState<string | null>(null);
+
+  const [campTitle, setCampTitle] = useState('');
+  const [campSlug, setCampSlug] = useState('');
+  const [campProductName, setCampProductName] = useState('');
+  const [campStatus, setCampStatus] = useState<'Draft' | 'Active' | 'Archived'>('Draft');
+  const [campAccentColor, setCampAccentColor] = useState('#8B4949');
+  const [campTheme, setCampTheme] = useState<'Royal' | 'Modern' | 'Minimalist' | 'Floral'>('Royal');
+  const [campHeroTitle, setCampHeroTitle] = useState('');
+  const [campHeroSubtitle, setCampHeroSubtitle] = useState('');
+  const [campHeroImage, setCampHeroImage] = useState('');
+  const [campVideoUrl, setCampVideoUrl] = useState('');
+  const [campFeatures, setCampFeatures] = useState<{ title: string; desc: string }[]>([
+    { title: '', desc: '' },
+    { title: '', desc: '' },
+    { title: '', desc: '' }
+  ]);
+  const [campGallery, setCampGallery] = useState<string[]>([]);
+  const [campPackages, setCampPackages] = useState<{ name: string; price: number; features: string[] }[]>([]);
+  const [campFaqs, setCampFaqs] = useState<{ q: string; a: string }[]>([]);
+  const [campDirty, setCampDirty] = useState(false);
+
   // Media Library Picker Modal State
   const [showMediaPicker, setShowMediaPicker] = useState(false);
-  const [pickerTarget, setPickerTarget] = useState<'section' | 'blog' | 'gallery'>('section');
+  const [pickerTarget, setPickerTarget] = useState<'section' | 'blog' | 'gallery' | 'campHero' | 'campGallery'>('section');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  const campHeroFileInputRef = useRef<HTMLInputElement>(null);
+  const campGalleryFileInputRef = useRef<HTMLInputElement>(null);
 
   // Sync section form draft when section selection changes
   useEffect(() => {
@@ -88,6 +129,18 @@ export default function ContentsManager() {
       setSectionCtaLink(currentBlock.ctaLink ?? '');
       setShowCtaToggle(!!currentBlock.ctaText);
       setSectionImages(currentBlock.images ?? []);
+
+      // Populate Badge and Footer Text
+      setBadgeText(currentBlock.badgeText ?? '');
+      setFooterText(currentBlock.footerText ?? '');
+
+      // Populate Features (ensure exactly 3 items are always initialized)
+      const blockFeatures = currentBlock.features || [];
+      const paddedFeatures = [...blockFeatures];
+      while (paddedFeatures.length < 3) {
+        paddedFeatures.push({ title: '', desc: '' });
+      }
+      setFeatures(paddedFeatures.slice(0, 3));
 
       // Populate About fields
       setAboutValues(currentBlock.aboutValues ?? []);
@@ -119,6 +172,9 @@ export default function ContentsManager() {
       setSectionCtaLink('');
       setShowCtaToggle(false);
       setSectionImages([]);
+      setBadgeText('');
+      setFooterText('');
+      setFeatures([{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
 
       // Reset About fields
       setAboutValues([]);
@@ -155,6 +211,9 @@ export default function ContentsManager() {
       ctaText: showCtaToggle ? sectionCtaText || undefined : undefined,
       ctaLink: showCtaToggle ? sectionCtaLink || undefined : undefined,
       images: sectionImages,
+      badgeText: badgeText || undefined,
+      footerText: footerText || undefined,
+      features: features.filter(f => f.title.trim() !== ''),
     };
 
     if (selectedSection === 'About') {
@@ -362,6 +421,124 @@ export default function ContentsManager() {
     }
   };
 
+  // ── LAUNCH CAMPAIGNS ACTIONS ────────────────────────────────
+  const handleOpenCampaignEditor = (camp: LaunchCampaign | null) => {
+    if (camp) {
+      setSelectedCampaignId(camp.id);
+      setCampTitle(camp.title);
+      setCampSlug(camp.slug);
+      setCampProductName(camp.productName);
+      setCampStatus(camp.status);
+      setCampAccentColor(camp.accentColor);
+      setCampTheme(camp.theme);
+      setCampHeroTitle(camp.heroTitle);
+      setCampHeroSubtitle(camp.heroSubtitle);
+      setCampHeroImage(camp.heroImage);
+      setCampVideoUrl(camp.videoUrl ?? '');
+      
+      const paddedFeatures = [...camp.features];
+      while (paddedFeatures.length < 3) {
+        paddedFeatures.push({ title: '', desc: '' });
+      }
+      setCampFeatures(paddedFeatures.slice(0, 3));
+      setCampGallery(camp.gallery ?? []);
+      setCampPackages(camp.pricingPackages ?? []);
+      setCampFaqs(camp.faqs ?? []);
+    } else {
+      setSelectedCampaignId(null);
+      setCampTitle('');
+      setCampSlug('');
+      setCampProductName('');
+      setCampStatus('Draft');
+      setCampAccentColor('#8B4949');
+      setCampTheme('Royal');
+      setCampHeroTitle('');
+      setCampHeroSubtitle('');
+      setCampHeroImage('');
+      setCampVideoUrl('');
+      setCampFeatures([
+        { title: '', desc: '' },
+        { title: '', desc: '' },
+        { title: '', desc: '' }
+      ]);
+      setCampGallery([]);
+      setCampPackages([
+        { name: 'Standard Pack', price: 1999, features: ['1 Round of edits', 'MP4 Video Delivery'] },
+        { name: 'Royal Suite', price: 4499, features: ['Unlimited edits', 'Cinematic HD MP4', 'WhatsApp welcome card'] }
+      ]);
+      setCampFaqs([
+        { q: 'How do I receive the files?', a: 'We deliver all invitations as high-quality files via secure download link and WhatsApp.' }
+      ]);
+    }
+    setIsEditingCampaign(true);
+    setCampDirty(false);
+  };
+
+  const handleCampaignSave = () => {
+    if (!campTitle.trim() || !campSlug.trim()) {
+      alert('Please enter a campaign title and slug.');
+      return;
+    }
+
+    const campaignData: LaunchCampaign = {
+      id: selectedCampaignId ?? `camp-${Date.now()}`,
+      slug: campSlug.toLowerCase().trim().replace(/[^a-z0-9-_]/g, '-'),
+      title: campTitle,
+      productName: campProductName,
+      status: campStatus,
+      accentColor: campAccentColor,
+      theme: campTheme,
+      heroTitle: campHeroTitle,
+      heroSubtitle: campHeroSubtitle,
+      heroImage: campHeroImage,
+      videoUrl: campVideoUrl || undefined,
+      features: campFeatures.filter(f => f.title.trim() !== ''),
+      gallery: campGallery,
+      pricingPackages: campPackages,
+      faqs: campFaqs
+    };
+
+    if (selectedCampaignId) {
+      updateCampaign(selectedCampaignId, campaignData);
+      alert('Launch campaign updated successfully!');
+    } else {
+      addCampaign(campaignData);
+      alert('New launch campaign created successfully!');
+    }
+    setIsEditingCampaign(false);
+    setCampDirty(false);
+  };
+
+  const handleDeleteCampaignConfirm = () => {
+    if (campaignDeleteTarget !== null) {
+      deleteCampaign(campaignDeleteTarget);
+      setCampaignDeleteTarget(null);
+      setIsEditingCampaign(false);
+      alert('Launch campaign deleted successfully!');
+    }
+  };
+
+  const handleCampHeroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setCampHeroImage(url);
+      setCampDirty(true);
+    }
+  };
+
+  const handleCampGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const urls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        urls.push(URL.createObjectURL(files[i]));
+      }
+      setCampGallery(prev => [...prev, ...urls]);
+      setCampDirty(true);
+    }
+  };
+
   const isCarouselSection = ['Hero', 'Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection);
 
   // Section fields filter logic
@@ -381,7 +558,7 @@ export default function ContentsManager() {
           <h1 className="text-2xl font-bold text-[#1a1410]" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
             Website Contents
           </h1>
-          <p className="text-sm text-gray-400 mt-0.5">Manage section headers, images, CTAs, and blog publishing</p>
+          <p className="text-sm text-gray-400 mt-0.5">Manage section headers, images, blogs, and launch campaign builders</p>
         </div>
       </div>
 
@@ -396,6 +573,7 @@ export default function ContentsManager() {
           onClick={() => {
             setActiveTab('sections');
             setIsEditingPost(false);
+            setIsEditingCampaign(false);
           }}
         >
           Website Sections
@@ -406,9 +584,25 @@ export default function ContentsManager() {
               ? 'bg-[#8B4949] text-white shadow-sm'
               : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
           }`}
-          onClick={() => setActiveTab('blog')}
+          onClick={() => {
+            setActiveTab('blog');
+            setIsEditingCampaign(false);
+          }}
         >
           Blog Articles
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+            activeTab === 'campaigns'
+              ? 'bg-[#8B4949] text-white shadow-sm'
+              : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
+          }`}
+          onClick={() => {
+            setActiveTab('campaigns');
+            setIsEditingPost(false);
+          }}
+        >
+          Launch Campaigns
         </button>
       </div>
 
@@ -519,6 +713,32 @@ export default function ContentsManager() {
                       </div>
                     )}
 
+                    {/* Badge and Footer Text editors */}
+                    {['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection) && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="admin-label">Section Badge Text</label>
+                          <input
+                            type="text"
+                            className="admin-input"
+                            value={badgeText}
+                            onChange={handleSectionFieldChange(setBadgeText)}
+                            placeholder="e.g. Personalized Portals..."
+                          />
+                        </div>
+                        <div>
+                          <label className="admin-label">Section Footer Text</label>
+                          <input
+                            type="text"
+                            className="admin-input"
+                            value={footerText}
+                            onChange={handleSectionFieldChange(setFooterText)}
+                            placeholder="e.g. Starting from ₹4,999 onwards..."
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     {hasBody && (
                       <div>
                         <label className="admin-label">Body Content / Details</label>
@@ -529,6 +749,55 @@ export default function ContentsManager() {
                           placeholder="Enter full body text..."
                           rows={6}
                         />
+                      </div>
+                    )}
+
+                    {/* Features list editor (only for sections that support features/badges) */}
+                    {['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection) && (
+                      <div className="bg-[#faf8f5] border border-[#f0ece4] rounded-2xl p-5 space-y-4">
+                        <div>
+                          <label className="admin-label !mb-1 text-sm font-semibold text-[#1a1410]">Section Features List (Up to 3 Items)</label>
+                          <p className="text-xs text-gray-400">Configure key highlights showing under this homepage block.</p>
+                        </div>
+                        <div className="space-y-4">
+                          {features.map((feature, fIdx) => (
+                            <div key={fIdx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-2.5 shadow-sm">
+                              <p className="text-[10px] uppercase font-bold text-gray-400">Feature Item {fIdx + 1}</p>
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="text-[10px] font-semibold text-gray-500">Feature Title</label>
+                                  <input
+                                    type="text"
+                                    className="admin-input bg-white text-xs px-2.5 py-1.5"
+                                    value={feature.title}
+                                    onChange={(e) => {
+                                      const updated = [...features];
+                                      updated[fIdx] = { ...updated[fIdx], title: e.target.value };
+                                      setFeatures(updated);
+                                      setSectionDirty(true);
+                                    }}
+                                    placeholder="e.g. Quick Personalization"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-[10px] font-semibold text-gray-500">Feature Description</label>
+                                  <textarea
+                                    className="admin-textarea bg-white text-xs p-2.5"
+                                    rows={2}
+                                    value={feature.desc}
+                                    onChange={(e) => {
+                                      const updated = [...features];
+                                      updated[fIdx] = { ...updated[fIdx], desc: e.target.value };
+                                      setFeatures(updated);
+                                      setSectionDirty(true);
+                                    }}
+                                    placeholder="Describe this highlight detail..."
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
 
@@ -598,7 +867,7 @@ export default function ContentsManager() {
                         </div>
 
                         {showCtaToggle && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                             <div>
                               <label className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Button Text</label>
                               <input
@@ -810,7 +1079,7 @@ export default function ContentsManager() {
 
                         {/* Story Points Editor */}
                         <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <h4 className="font-semibold text-xs text-gray-700">Story Points (Born from a Passion)</h4>
+                          <h4 className="font-semibold text-xs text-gray-700">Story Points</h4>
                           <div className="space-y-4">
                             {aboutStoryPoints.map((point, idx) => (
                               <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-3 shadow-sm">
@@ -889,47 +1158,47 @@ export default function ContentsManager() {
                             <div>
                               <label className="admin-label text-xs">Founder Name</label>
                               <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={founderName}
-                                onChange={(e) => { setFounderName(e.target.value); setSectionDirty(true); }}
+                                  type="text"
+                                  className="admin-input bg-white"
+                                  value={founderName}
+                                  onChange={(e) => { setFounderName(e.target.value); setSectionDirty(true); }}
                               />
                             </div>
                             <div>
                               <label className="admin-label text-xs">Role Title</label>
                               <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={founderRole}
-                                onChange={(e) => { setFounderRole(e.target.value); setSectionDirty(true); }}
+                                  type="text"
+                                  className="admin-input bg-white"
+                                  value={founderRole}
+                                  onChange={(e) => { setFounderRole(e.target.value); setSectionDirty(true); }}
                               />
                             </div>
                             <div>
                               <label className="admin-label text-xs">Education/Alumni Info</label>
                               <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={founderEducation}
-                                onChange={(e) => { setFounderEducation(e.target.value); setSectionDirty(true); }}
+                                  type="text"
+                                  className="admin-input bg-white"
+                                  value={founderEducation}
+                                  onChange={(e) => { setFounderEducation(e.target.value); setSectionDirty(true); }}
                               />
                             </div>
                             <div>
                               <label className="admin-label text-xs">Founder Photo URL</label>
                               <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={founderImage}
-                                onChange={(e) => { setFounderImage(e.target.value); setSectionDirty(true); }}
+                                  type="text"
+                                  className="admin-input bg-white"
+                                  value={founderImage}
+                                  onChange={(e) => { setFounderImage(e.target.value); setSectionDirty(true); }}
                               />
                             </div>
                           </div>
                           <div>
                             <label className="admin-label text-xs">Founder Bio/Quote</label>
                             <textarea
-                              className="admin-textarea bg-white"
-                              rows={3}
-                              value={founderBio}
-                              onChange={(e) => { setFounderBio(e.target.value); setSectionDirty(true); }}
+                                className="admin-textarea bg-white"
+                                rows={3}
+                                value={founderBio}
+                                onChange={(e) => { setFounderBio(e.target.value); setSectionDirty(true); }}
                             />
                           </div>
                         </div>
@@ -1157,7 +1426,7 @@ export default function ContentsManager() {
 
                         {/* CTA Info Editor */}
                         <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <h4 className="font-semibold text-xs text-gray-700">Bottom CTA Box Details ("Let's Talk Directly")</h4>
+                          <h4 className="font-semibold text-xs text-gray-700">Bottom CTA Box Details</h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="admin-label text-xs">CTA Main Title</label>
@@ -1221,7 +1490,7 @@ export default function ContentsManager() {
                         className="admin-btn admin-btn-primary flex items-center gap-2 shadow-sm"
                         style={{ opacity: sectionDirty ? 1 : 0.5, cursor: sectionDirty ? 'pointer' : 'not-allowed' }}
                       >
-                        <Save size={15} /> Save Section Headers
+                        <Save size={15} /> Save Section Content
                       </button>
                       {currentBlock.lastUpdated && (
                         <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -1281,7 +1550,6 @@ export default function ContentsManager() {
               </div>
             )}
           </div>
-
         </div>
       )}
 
@@ -1356,7 +1624,7 @@ export default function ContentsManager() {
             </div>
           ) : (
             /* Composer / Editor Form View */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
               {/* Left Form Panel */}
               <div className="lg:col-span-8 bg-white border border-[#e5e5e5] rounded-3xl p-7 shadow-sm space-y-6">
                 <div className="flex items-center justify-between border-b border-[#f0f0f0] pb-4">
@@ -1416,7 +1684,7 @@ export default function ContentsManager() {
                       />
                     </div>
                     <div>
-                      <label className="admin-label">Short Description (for Home Feed)</label>
+                      <label className="admin-label">Short Description</label>
                       <input
                         type="text"
                         className="admin-input"
@@ -1449,7 +1717,6 @@ export default function ContentsManager() {
                           {/* Block Header */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              {/* Drag Handle */}
                               <div
                                 className="text-gray-400 cursor-grab active:cursor-grabbing hover:text-[#8B4949] p-1 rounded hover:bg-white border border-transparent hover:border-gray-100"
                                 title="Drag to reorder"
@@ -1461,7 +1728,6 @@ export default function ContentsManager() {
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                              {/* Reorder up */}
                               <button
                                 type="button"
                                 disabled={idx === 0}
@@ -1470,7 +1736,6 @@ export default function ContentsManager() {
                               >
                                 <ArrowUp size={13} />
                               </button>
-                              {/* Reorder down */}
                               <button
                                 type="button"
                                 disabled={idx === blogContent.length - 1}
@@ -1479,7 +1744,6 @@ export default function ContentsManager() {
                               >
                                 <ArrowDown size={13} />
                               </button>
-                              {/* Remove */}
                               <button
                                 type="button"
                                 onClick={() => handleRemoveContentBlock(idx)}
@@ -1558,6 +1822,7 @@ export default function ContentsManager() {
                                   type="button"
                                   onClick={() => {
                                     setBlogImageBlockIndex(idx);
+                                    setPickerTarget('blog');
                                     setShowBlogImagePicker(true);
                                   }}
                                   className="admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1.5 cursor-pointer"
@@ -1567,63 +1832,10 @@ export default function ContentsManager() {
                               </div>
                             </div>
                           )}
-
-                          {/* Optional Block Image for text sections */}
-                          {block.type !== 'image' && (
-                            <div className="mt-2.5 border-t border-[#f0f0f0] pt-2.5 flex items-center gap-3">
-                              {block.image ? (
-                                <div className="flex items-center gap-2.5 bg-white p-1.5 border border-[#e5e5e5] rounded-xl relative group/img shadow-sm">
-                                  <img src={block.image} alt="Section Attachment" className="h-8 w-12 object-cover rounded-lg" />
-                                  <span className="text-[10px] text-gray-400 pr-6">Photo attached</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleUpdateContentBlockImage(idx, undefined)}
-                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-red-50 hover:bg-red-100 text-red-500 rounded-full flex items-center justify-center cursor-pointer transition-colors"
-                                    title="Remove Photo"
-                                  >
-                                    <X size={10} />
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const input = document.createElement('input');
-                                      input.type = 'file';
-                                      input.accept = 'image/*';
-                                      input.onchange = (e) => {
-                                        const file = (e.target as HTMLInputElement).files?.[0];
-                                        if (file) {
-                                          const url = URL.createObjectURL(file);
-                                          handleUpdateContentBlockImage(idx, url);
-                                        }
-                                      };
-                                      input.click();
-                                    }}
-                                    className="text-[11px] text-gray-500 hover:text-[#8B4949] font-medium flex items-center gap-1 bg-white hover:bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-                                  >
-                                    <Upload size={10} /> + Add Photo
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setBlogImageBlockIndex(idx);
-                                      setShowBlogImagePicker(true);
-                                    }}
-                                    className="text-[11px] text-gray-500 hover:text-[#8B4949] font-medium flex items-center gap-1 bg-white hover:bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-                                  >
-                                    <ImageIcon size={10} /> Choose Media
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )}
                         </div>
                       ))}
                     </div>
 
-                    {/* Add block tools */}
                     <div className="flex gap-2.5 flex-wrap pt-2">
                       <button
                         type="button"
@@ -1735,7 +1947,6 @@ export default function ContentsManager() {
                   </div>
                 </div>
 
-                {/* Cover Teaser Card Preview */}
                 <div className="bg-[#faf8f5] border border-[#e5e5e5] rounded-3xl p-6 select-none">
                   <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-3">Feed Teaser Preview</p>
                   <div className="bg-white border border-[#e5e5e5]/60 rounded-2xl overflow-hidden shadow-sm flex flex-col">
@@ -1750,6 +1961,577 @@ export default function ContentsManager() {
                       <h5 className="font-bold text-xs text-[#1a1410] line-clamp-1">{blogTitle || 'Article Title'}</h5>
                       <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">{blogSubtitle || 'Teaser description...'}</p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── TAB 3: LAUNCH CAMPAIGNS ──────────────────────────────── */}
+      {activeTab === 'campaigns' && (
+        <>
+          {!isEditingCampaign ? (
+            <div className="space-y-6">
+              {/* Toolbar */}
+              <div className="flex items-center justify-between flex-wrap gap-4 bg-white border border-[#e5e5e5] px-5 py-4 rounded-2xl shadow-sm">
+                <div>
+                  <h3 className="font-bold text-sm text-[#1a1410]">Product Launch Campaigns</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Build premium landing pages dynamically for new collections</p>
+                </div>
+                <button
+                  onClick={() => handleOpenCampaignEditor(null)}
+                  className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus size={15} /> Create Launch Page
+                </button>
+              </div>
+
+              {/* Grid of Campaigns */}
+              {state.campaigns.length === 0 ? (
+                <div className="admin-empty card bg-white border border-[#e5e5e5]">
+                  <Rocket size={36} className="text-gray-300 mx-auto" />
+                  <p className="mt-2 font-medium">No launch campaigns found</p>
+                  <button onClick={() => handleOpenCampaignEditor(null)} className="admin-btn admin-btn-primary admin-btn-sm mt-3">
+                    Build First Campaign
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {state.campaigns.map((camp) => (
+                    <div key={camp.id} className="bg-white border border-[#e5e5e5] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                      <div className="aspect-[16/10] bg-gray-100 relative">
+                        <img src={camp.heroImage} alt={camp.title} className="w-full h-full object-cover" />
+                        <span className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm" style={{ color: camp.accentColor }}>
+                          Theme: {camp.theme}
+                        </span>
+                        <span className={`absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm ${
+                          camp.status === 'Active' ? 'bg-green-100 text-green-700' : camp.status === 'Draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {camp.status}
+                        </span>
+                      </div>
+                      <div className="p-5 flex flex-col flex-grow">
+                        <h4 className="font-bold text-[#1a1410] text-sm leading-snug mb-1 line-clamp-1">{camp.title}</h4>
+                        <p className="text-xs text-[#8B4949] font-semibold mb-2">{camp.productName}</p>
+                        
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mb-5">
+                          <span>URL:</span>
+                          <a 
+                            href={`/launch/${camp.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#8B4949] hover:underline font-bold flex items-center gap-0.5"
+                          >
+                            /launch/{camp.slug}
+                            <ExternalLink size={10} />
+                          </a>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-[#f0f0f0] pt-4 mt-auto">
+                          <button
+                            onClick={() => handleOpenCampaignEditor(camp)}
+                            className="text-xs font-bold text-[#8B4949] hover:bg-[#8B4949]/5 px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1"
+                          >
+                            <Edit3 size={13} /> Edit Layout
+                          </button>
+                          <button
+                            onClick={() => setCampaignDeleteTarget(camp.id)}
+                            className="w-8 h-8 rounded-lg hover:bg-red-50 text-red-500 flex items-center justify-center transition-colors cursor-pointer"
+                            title="Delete Campaign"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Campaign Composer Form View */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
+              <div className="lg:col-span-8 bg-white border border-[#e5e5e5] rounded-3xl p-7 shadow-sm space-y-6">
+                <div className="flex items-center justify-between border-b border-[#f0f0f0] pb-4">
+                  <h3 className="font-bold text-[#1a1410] text-base flex items-center gap-2">
+                    <Rocket size={18} className="text-[#8B4949]" />
+                    {selectedCampaignId ? 'Edit Campaign Builder' : 'Create Launch Campaign'}
+                  </h3>
+                  <button
+                    onClick={() => setIsEditingCampaign(false)}
+                    className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+
+                <div className="space-y-5">
+                  {/* Basic Configurations */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="admin-label">Campaign Name *</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={campTitle}
+                        onChange={(e) => { setCampTitle(e.target.value); setCampDirty(true); }}
+                        placeholder="e.g. Ganesh Chaturthi Launch Collection"
+                      />
+                    </div>
+                    <div>
+                      <label className="admin-label">URL Slug (Lowercase & Hyphenated) *</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={campSlug}
+                        onChange={(e) => { setCampSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '-')); setCampDirty(true); }}
+                        placeholder="e.g. ganesh-chaturthi"
+                      />
+                    </div>
+                    <div>
+                      <label className="admin-label">Target Product Name</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={campProductName}
+                        onChange={(e) => { setCampProductName(e.target.value); setCampDirty(true); }}
+                        placeholder="e.g. Vighnaharta Premium Video Invitation"
+                      />
+                    </div>
+                    <div>
+                      <label className="admin-label">Theme Template Style</label>
+                      <select
+                        className="admin-input"
+                        value={campTheme}
+                        onChange={(e) => { setCampTheme(e.target.value as any); setCampDirty(true); }}
+                      >
+                        <option value="Royal">Royal (Gold / Ivory Classic)</option>
+                        <option value="Modern">Modern (Clean / Bold Bento)</option>
+                        <option value="Minimalist">Minimalist (Sleek Typography)</option>
+                        <option value="Floral">Floral (Soft Pastel Handcrafted)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="admin-label">Accent Color Theme (Hex Code)</label>
+                      <div className="flex gap-2.5">
+                        <input
+                          type="color"
+                          className="w-10 h-10 rounded-xl border border-[#e5e5e5] p-0.5 cursor-pointer bg-white"
+                          value={campAccentColor}
+                          onChange={(e) => { setCampAccentColor(e.target.value); setCampDirty(true); }}
+                        />
+                        <input
+                          type="text"
+                          className="admin-input flex-grow font-mono text-xs uppercase"
+                          value={campAccentColor}
+                          onChange={(e) => { setCampAccentColor(e.target.value); setCampDirty(true); }}
+                          placeholder="#D4AF37"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="admin-label">Campaign Status</label>
+                      <select
+                        className="admin-input"
+                        value={campStatus}
+                        onChange={(e) => { setCampStatus(e.target.value as any); setCampDirty(true); }}
+                      >
+                        <option value="Draft">Draft</option>
+                        <option value="Active">Active / Public</option>
+                        <option value="Archived">Archived</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Hero Settings */}
+                  <div className="bg-[#faf8f5] border border-[#e5e5e5]/60 rounded-2xl p-5 space-y-4">
+                    <h4 className="font-bold text-[#1a1410] text-xs uppercase tracking-wider">Campaign Hero Banner</h4>
+                    <div>
+                      <label className="admin-label text-xs">Hero Highlight Title</label>
+                      <input
+                        type="text"
+                        className="admin-input bg-white"
+                        value={campHeroTitle}
+                        onChange={(e) => { setCampHeroTitle(e.target.value); setCampDirty(true); }}
+                        placeholder="e.g. Invite Blessings into Your Celebration with"
+                      />
+                    </div>
+                    <div>
+                      <label className="admin-label text-xs">Hero Description Subtitle</label>
+                      <textarea
+                        className="admin-textarea bg-white"
+                        rows={2}
+                        value={campHeroSubtitle}
+                        onChange={(e) => { setCampHeroSubtitle(e.target.value); setCampDirty(true); }}
+                        placeholder="Detail about the launch or product collection..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Features Highlights */}
+                  <div className="bg-[#faf8f5] border border-[#e5e5e5]/60 rounded-2xl p-5 space-y-4">
+                    <h4 className="font-bold text-[#1a1410] text-xs uppercase tracking-wider">Bento Grid Features (Up to 3 highlights)</h4>
+                    <div className="space-y-3">
+                      {campFeatures.map((f, idx) => (
+                        <div key={idx} className="bg-white border border-[#e5e5e5] rounded-xl p-3.5 space-y-2 shadow-sm">
+                          <p className="text-[9px] font-bold text-gray-400 uppercase">Highlight {idx + 1}</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[9px] font-semibold text-gray-500 block mb-0.5">Feature Title</label>
+                              <input
+                                type="text"
+                                className="admin-input bg-white text-xs px-2.5 py-1.5"
+                                value={f.title}
+                                onChange={(e) => {
+                                  const updated = [...campFeatures];
+                                  updated[idx].title = e.target.value;
+                                  setCampFeatures(updated);
+                                  setCampDirty(true);
+                                }}
+                                placeholder="e.g. Golden Foil Art Themes"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-semibold text-gray-500 block mb-0.5">Feature Description</label>
+                              <input
+                                type="text"
+                                className="admin-input bg-white text-xs px-2.5 py-1.5"
+                                value={f.desc}
+                                onChange={(e) => {
+                                  const updated = [...campFeatures];
+                                  updated[idx].desc = e.target.value;
+                                  setCampFeatures(updated);
+                                  setCampDirty(true);
+                                }}
+                                placeholder="Describe this highlight detail..."
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pricing Packages Builder */}
+                  <div className="bg-[#faf8f5] border border-[#e5e5e5]/60 rounded-2xl p-5 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-bold text-[#1a1410] text-xs uppercase tracking-wider">Pricing Packages</h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCampPackages([...campPackages, { name: '', price: 1999, features: [''] }]);
+                          setCampDirty(true);
+                        }}
+                        className="admin-btn admin-btn-outline admin-btn-sm text-xs font-semibold px-3 py-1 flex items-center gap-1 cursor-pointer bg-white"
+                      >
+                        <Plus size={12} /> Add Package
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {campPackages.map((pkg, pkgIdx) => (
+                        <div key={pkgIdx} className="bg-white border border-[#e5e5e5] rounded-xl p-4 space-y-3 relative shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCampPackages(campPackages.filter((_, idx) => idx !== pkgIdx));
+                              setCampDirty(true);
+                            }}
+                            className="absolute top-2 right-2 w-6 h-6 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors cursor-pointer border-none"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[9px] font-semibold text-gray-500 block mb-0.5">Package Name</label>
+                              <input
+                                type="text"
+                                className="admin-input text-xs"
+                                value={pkg.name}
+                                onChange={(e) => {
+                                  const updated = [...campPackages];
+                                  updated[pkgIdx].name = e.target.value;
+                                  setCampPackages(updated);
+                                  setCampDirty(true);
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-semibold text-gray-500 block mb-0.5">Price (₹)</label>
+                              <input
+                                type="number"
+                                className="admin-input text-xs"
+                                value={pkg.price}
+                                onChange={(e) => {
+                                  const updated = [...campPackages];
+                                  updated[pkgIdx].price = Number(e.target.value);
+                                  setCampPackages(updated);
+                                  setCampDirty(true);
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Features lines */}
+                          <div className="space-y-1.5 pt-2 border-t border-dashed border-gray-100">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-[9px] font-bold text-gray-400 uppercase">Package Features</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...campPackages];
+                                  updated[pkgIdx].features.push('');
+                                  setCampPackages(updated);
+                                  setCampDirty(true);
+                                }}
+                                className="text-[9px] text-[#8B4949] hover:underline font-bold"
+                              >
+                                + Add Line
+                              </button>
+                            </div>
+                            {pkg.features.map((feat, fIdx) => (
+                              <div key={fIdx} className="flex gap-2 items-center">
+                                <input
+                                  type="text"
+                                  className="admin-input text-xs bg-gray-50 py-1.5"
+                                  value={feat}
+                                  onChange={(e) => {
+                                    const updated = [...campPackages];
+                                    updated[pkgIdx].features[fIdx] = e.target.value;
+                                    setCampPackages(updated);
+                                    setCampDirty(true);
+                                  }}
+                                  placeholder="Feature description line..."
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...campPackages];
+                                    updated[pkgIdx].features = pkg.features.filter((_, idx) => idx !== fIdx);
+                                    setCampPackages(updated);
+                                    setCampDirty(true);
+                                  }}
+                                  className="text-red-400 hover:text-red-600 p-1"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* FAQ Builder */}
+                  <div className="bg-[#faf8f5] border border-[#e5e5e5]/60 rounded-2xl p-5 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-bold text-[#1a1410] text-xs uppercase tracking-wider">Campaign FAQs Accordion</h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCampFaqs([...campFaqs, { q: '', a: '' }]);
+                          setCampDirty(true);
+                        }}
+                        className="admin-btn admin-btn-outline admin-btn-sm text-xs font-semibold px-3 py-1 flex items-center gap-1 cursor-pointer bg-white"
+                      >
+                        <Plus size={12} /> Add FAQ
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {campFaqs.map((faq, fIdx) => (
+                        <div key={fIdx} className="bg-white border border-[#e5e5e5] rounded-xl p-4 space-y-2 relative shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCampFaqs(campFaqs.filter((_, idx) => idx !== fIdx));
+                              setCampDirty(true);
+                            }}
+                            className="absolute top-2 right-2 w-6 h-6 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors cursor-pointer border-none"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                          <div>
+                            <label className="text-[9px] font-semibold text-gray-500 block mb-0.5">Question</label>
+                            <input
+                              type="text"
+                              className="admin-input text-xs font-semibold"
+                              value={faq.q}
+                              onChange={(e) => {
+                                const updated = [...campFaqs];
+                                updated[fIdx].q = e.target.value;
+                                setCampFaqs(updated);
+                                setCampDirty(true);
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-semibold text-gray-500 block mb-0.5">Answer</label>
+                            <textarea
+                              className="admin-textarea text-xs"
+                              rows={2}
+                              value={faq.a}
+                              onChange={(e) => {
+                                const updated = [...campFaqs];
+                                updated[fIdx].a = e.target.value;
+                                setCampFaqs(updated);
+                                setCampDirty(true);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer buttons */}
+                <div className="border-t border-[#f0f0f0] pt-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleCampaignSave}
+                      className="admin-btn admin-btn-primary flex items-center gap-2 shadow-sm cursor-pointer"
+                    >
+                      <Save size={15} /> Save Campaign
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingCampaign(false)}
+                      className="admin-btn admin-btn-outline cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {selectedCampaignId && (
+                    <button
+                      type="button"
+                      onClick={() => setCampaignDeleteTarget(selectedCampaignId)}
+                      className="admin-btn admin-btn-danger flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Trash2 size={14} /> Delete Campaign
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Panel for Campaign media & settings */}
+              <div className="lg:col-span-4 space-y-6">
+                {/* Hero Banner Image */}
+                <div className="bg-white border border-[#e5e5e5] rounded-3xl p-6 shadow-sm space-y-4 animate-fade-in">
+                  <h4 className="font-bold text-[#1a1410] text-sm">Hero Banner Image</h4>
+                  <div className="border border-[#e5e5e5] rounded-2xl bg-[#faf8f5] p-3 flex items-center justify-center min-h-[160px] relative overflow-hidden">
+                    {campHeroImage ? (
+                      <>
+                        <img src={campHeroImage} alt="Hero Preview" className="max-h-[140px] rounded-lg object-contain" />
+                        <button
+                          onClick={() => { setCampHeroImage(''); setCampDirty(true); }}
+                          className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black transition-colors"
+                        >
+                          <X size={13} />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center text-gray-400 space-y-1 select-none">
+                        <ImageIcon size={26} className="mx-auto text-gray-300" />
+                        <p className="text-xs">No hero image selected</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2.5">
+                    <button
+                      type="button"
+                      onClick={() => campHeroFileInputRef.current?.click()}
+                      className="w-full admin-btn admin-btn-outline flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Upload size={14} /> Upload Banner Image
+                    </button>
+                    <input
+                      ref={campHeroFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleCampHeroImageUpload}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setPickerTarget('campHero'); setShowMediaPicker(true); }}
+                      className="w-full admin-btn admin-btn-outline flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <ImageIcon size={14} /> Choose from Media
+                    </button>
+                  </div>
+                </div>
+
+                {/* Gallery Images List */}
+                <div className="bg-white border border-[#e5e5e5] rounded-3xl p-6 shadow-sm space-y-4">
+                  <h4 className="font-bold text-[#1a1410] text-sm">Bento Image Gallery</h4>
+                  
+                  {campGallery.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      {campGallery.map((url, idx) => (
+                        <div key={idx} className="relative aspect-square border border-[#e5e5e5] rounded-xl overflow-hidden bg-gray-50">
+                          <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCampGallery(campGallery.filter((_, i) => i !== idx));
+                              setCampDirty(true);
+                            }}
+                            className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 border border-dashed border-[#e5e5e5] rounded-xl text-gray-400 bg-[#faf8f5]">
+                      <p className="text-xs">No gallery photos added</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => campGalleryFileInputRef.current?.click()}
+                      className="w-full admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1.5 cursor-pointer text-xs"
+                    >
+                      <Upload size={12} /> Upload Gallery Image
+                    </button>
+                    <input
+                      ref={campGalleryFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleCampGalleryUpload}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setPickerTarget('campGallery'); setShowMediaPicker(true); }}
+                      className="w-full admin-btn admin-btn-outline admin-btn-sm flex items-center justify-center gap-1.5 cursor-pointer text-xs"
+                    >
+                      <ImageIcon size={12} /> Choose from Media Library
+                    </button>
+                  </div>
+                </div>
+
+                {/* Video URL */}
+                <div className="bg-white border border-[#e5e5e5] rounded-3xl p-6 shadow-sm space-y-4">
+                  <h4 className="font-bold text-[#1a1410] text-sm">Product Video Preview (Optional)</h4>
+                  <div>
+                    <label className="admin-label text-xs">Direct MP4 Video Link</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={campVideoUrl}
+                      onChange={(e) => { setCampVideoUrl(e.target.value); setCampDirty(true); }}
+                      placeholder="e.g. https://assets.mixkit.co/videos/..."
+                    />
                   </div>
                 </div>
               </div>
@@ -1798,6 +2580,12 @@ export default function ContentsManager() {
                         } else if (pickerTarget === 'gallery') {
                           setSectionImages(prev => [...prev, f.url]);
                           setSectionDirty(true);
+                        } else if (pickerTarget === 'campHero') {
+                          setCampHeroImage(f.url);
+                          setCampDirty(true);
+                        } else if (pickerTarget === 'campGallery') {
+                          setCampGallery(prev => [...prev, f.url]);
+                          setCampDirty(true);
                         } else {
                           setBlogImage(f.url);
                           setBlogDirty(true);
@@ -1895,6 +2683,17 @@ export default function ContentsManager() {
         confirmLabel="Delete Article"
         onConfirm={handleDeleteBlogPostConfirm}
         onCancel={() => setBlogDeleteTarget(null)}
+        danger
+      />
+
+      {/* Campaign Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={campaignDeleteTarget !== null}
+        title="Delete Launch Campaign"
+        message="This campaign landing page will be permanently removed from the website. This action cannot be undone."
+        confirmLabel="Delete Campaign"
+        onConfirm={handleDeleteCampaignConfirm}
+        onCancel={() => setCampaignDeleteTarget(null)}
         danger
       />
     </div>

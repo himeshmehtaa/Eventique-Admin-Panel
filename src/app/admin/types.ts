@@ -205,6 +205,11 @@ export interface ContentBlock {
   ctaLink?: string;
   images?: string[];
   
+  // Custom section features/badges
+  features?: { title: string; desc: string }[];
+  badgeText?: string;
+  footerText?: string;
+  
   // Custom fields for About page editing
   aboutValues?: { icon: string; title: string; desc: string }[];
   aboutStoryPoints?: { title: string; text: string; iconName: string; color: string }[];
@@ -371,6 +376,25 @@ export interface Expense {
   notes?: string;
 }
 
+// ── Launch Campaign ───────────────────────────────────────────
+export interface LaunchCampaign {
+  id: string;
+  slug: string;
+  title: string;
+  productName: string;
+  status: 'Draft' | 'Active' | 'Archived';
+  accentColor: string;
+  theme: 'Royal' | 'Modern' | 'Minimalist' | 'Floral';
+  heroTitle: string;
+  heroSubtitle: string;
+  heroImage: string;
+  features: { title: string; desc: string }[];
+  gallery: string[];
+  videoUrl?: string;
+  pricingPackages: { name: string; price: number; features: string[] }[];
+  faqs: { q: string; a: string }[];
+}
+
 // ── Admin State ───────────────────────────────────────────────
 export interface AdminState {
   products: import('../data/products').Product[];
@@ -396,6 +420,7 @@ export interface AdminState {
   vendors: Vendor[];
   vendorOrders: VendorOrder[];
   expenses: Expense[];
+  campaigns: LaunchCampaign[];
 }
 
 // ── Form mode ─────────────────────────────────────────────────

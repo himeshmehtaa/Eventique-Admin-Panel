@@ -591,14 +591,14 @@ export default function Home() {
         ctaLink={exploreBlock?.ctaLink || '/explore'}
         images={exploreBlock?.images}
         defaultImages={DEFAULT_EXPLORE_IMAGES}
-        features={[
+        features={exploreBlock?.features && exploreBlock.features.length > 0 ? exploreBlock.features : [
           { title: 'Multitudes of Occasions', desc: 'Curated designs for Weddings, Birthdays, Anniversaries, Pooja, and baby showers.' },
           { title: 'Formats for All Mediums', desc: 'Stunning Video invites, printable PDF invites, premium stationery, and wedding websites.' },
           { title: 'Fully Personalized Service', desc: 'Collaborate with our designers to customize color palettes, layouts, and guest logs.' }
         ]}
         visualPosition="left"
-        badgeText="Exquisite Collection"
-        footerText="Find your perfect theme in our catalog"
+        badgeText={exploreBlock?.badgeText || "Exquisite Collection"}
+        footerText={exploreBlock?.footerText || "Find your perfect theme in our catalog"}
         image1Index={image1Index}
         image2Index={image2Index}
         image3Index={image3Index}
@@ -614,14 +614,14 @@ export default function Home() {
         ctaLink={videoInvitesBlock?.ctaLink || '/explore'}
         images={videoInvitesBlock?.images}
         defaultImages={DEFAULT_VIDEO_IMAGES}
-        features={[
+        features={videoInvitesBlock?.features && videoInvitesBlock.features.length > 0 ? videoInvitesBlock.features : [
           { title: 'Cinematic Visuals & Music', desc: 'Engage guests with custom animations, background music, and photographs.' },
           { title: 'High-Definition Playback', desc: 'Optimized for smooth viewing on smartphones, WhatsApp, and large screens.' },
           { title: 'Quick Turnaround', desc: 'Receive your customized high-definition animated invitation within 3-5 days.' }
         ]}
         visualPosition="right"
-        badgeText="Animated E-Invites"
-        footerText="Starting from ₹1,499 onwards"
+        badgeText={videoInvitesBlock?.badgeText || "Animated E-Invites"}
+        footerText={videoInvitesBlock?.footerText || "Starting from ₹1,499 onwards"}
         image1Index={image1Index}
         image2Index={image2Index}
         image3Index={image3Index}
@@ -637,14 +637,14 @@ export default function Home() {
         ctaLink={eventWebsitesBlock?.ctaLink || '/wedding-websites'}
         images={eventWebsitesBlock?.images}
         defaultImages={DEFAULT_WEBSITE_IMAGES}
-        features={[
+        features={eventWebsitesBlock?.features && eventWebsitesBlock.features.length > 0 ? eventWebsitesBlock.features : [
           { title: 'Real-time RSVP Tracking', desc: 'Ditch the spreadsheet and track guest attendance, preferences, and count instantly.' },
           { title: 'Complete Information Hub', desc: 'Centralize travel directions, schedules, dress codes, and gift registries.' },
           { title: 'Post-Event Memory Lane', desc: 'Share official photography galleries and event highlights with your guests.' }
         ]}
         visualPosition="left"
-        badgeText="Personalized Portals"
-        footerText="Starting from ₹4,999 onwards"
+        badgeText={eventWebsitesBlock?.badgeText || "Personalized Portals"}
+        footerText={eventWebsitesBlock?.footerText || "Starting from ₹4,999 onwards"}
         image1Index={image1Index}
         image2Index={image2Index}
         image3Index={image3Index}
@@ -660,14 +660,14 @@ export default function Home() {
         ctaLink={stationeryBlock?.ctaLink || '/stationery'}
         images={stationeryBlock?.images}
         defaultImages={DEFAULT_STATIONERY_IMAGES}
-        features={[
+        features={stationeryBlock?.features && stationeryBlock.features.length > 0 ? stationeryBlock.features : [
           { title: 'Perfectly Coordinated Themes', desc: 'Match your table menus, welcome signs, and luggage tags to your invitations.' },
           { title: 'High-Resolution Files', desc: 'Get print-ready assets tailored for high-end digital or offset printing.' },
           { title: 'Custom Formatting & Fonts', desc: 'Ensure consistent brand typography and accents across every guest touchpoint.' }
         ]}
         visualPosition="right"
-        badgeText="Celebrate in Style"
-        footerText="Starting from ₹50 per piece"
+        badgeText={stationeryBlock?.badgeText || "Celebrate in Style"}
+        footerText={stationeryBlock?.footerText || "Starting from ₹50 per piece"}
         image1Index={image1Index}
         image2Index={image2Index}
         image3Index={image3Index}
@@ -685,14 +685,14 @@ export default function Home() {
         secondaryCtaLink="/contact"
         images={printedBlock?.images}
         defaultImages={DEFAULT_PRINTED_IMAGES}
-        features={[
+        features={printedBlock?.features && printedBlock.features.length > 0 ? printedBlock.features : [
           { title: 'Luxury Materials', desc: 'Premium paper stocks, silk fabrics, acrylic, wood, and metal finishes' },
           { title: 'Artisanal Finishing', desc: 'Gold foil, embossing, laser cutting, and hand-tied ribbons' },
           { title: 'Bespoke Design', desc: 'Fully customizable designs tailored to your unique vision' }
         ]}
         visualPosition="left"
-        badgeText="Premium Collection"
-        footerText="Starting from ₹50 per piece • Minimum order: 50 pieces"
+        badgeText={printedBlock?.badgeText || "Premium Collection"}
+        footerText={printedBlock?.footerText || "Starting from ₹50 per piece • Minimum order: 50 pieces"}
         image1Index={image1Index}
         image2Index={image2Index}
         image3Index={image3Index}

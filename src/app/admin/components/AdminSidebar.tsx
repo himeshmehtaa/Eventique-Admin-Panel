@@ -17,32 +17,32 @@ const NAV_GROUPS = [
   {
     label: 'Commerce',
     items: [
-      { icon: ShoppingBag,   label: 'Products',   path: '/admin/products' },
-      { icon: ClipboardList, label: 'Orders',     path: '/admin/orders' },
-      { icon: Factory,       label: 'Partners',   path: '/admin/vendors' },
-      { icon: BarChart3,     label: 'Analytics',  path: '/admin/analytics' },
-      { icon: Tag,           label: 'Promotions', path: '/admin/promotions' },
-      { icon: CreditCard,    label: 'Payments',   path: '/admin/payments' },
-      { icon: Coins,         label: 'Finance',    path: '/admin/finance' },
+      { icon: ShoppingBag,   label: 'Products',   path: '/admin/products', permission: 'products' },
+      { icon: ClipboardList, label: 'Orders',     path: '/admin/orders', permission: 'orders' },
+      { icon: Factory,       label: 'Partners',   path: '/admin/vendors', permission: 'vendors' },
+      { icon: BarChart3,     label: 'Analytics',  path: '/admin/analytics', permission: 'products' },
+      { icon: Tag,           label: 'Promotions', path: '/admin/promotions', permission: 'promotions' },
+      { icon: CreditCard,    label: 'Payments',   path: '/admin/payments', permission: 'payments' },
+      { icon: Coins,         label: 'Finance',    path: '/admin/finance', permission: 'finance' },
     ],
   },
   {
     label: 'Content',
     items: [
-      { icon: FileEdit, label: 'Contents',  path: '/admin/contents' },
+      { icon: FileEdit, label: 'Contents',  path: '/admin/contents', permission: 'contents' },
     ],
   },
   {
     label: 'People',
     items: [
-      { icon: Users,  label: 'Customers', path: '/admin/customers' },
-      { icon: Shield, label: 'Roles',     path: '/admin/roles' },
+      { icon: Users,  label: 'Customers', path: '/admin/customers', permission: 'customers' },
+      { icon: Shield, label: 'Roles',     path: '/admin/roles', permission: 'settings' },
     ],
   },
   {
     label: 'System',
     items: [
-      { icon: Settings,       label: 'Settings',         path: '/admin/settings' },
+      { icon: Settings,       label: 'Settings',         path: '/admin/settings', permission: 'settings' },
     ],
   },
 ];
@@ -54,7 +54,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   const location = useLocation();
-  const { state } = useAdmin();
+  const { state, hasPermission } = useAdmin();
 
   const pendingOrders = state.orders.filter(o => o.status === 'Processing').length;
   const pendingReviews = state.reviews.filter(r => r.status === 'Pending').length;
@@ -86,41 +86,50 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
 
       {/* Nav Groups */}
       <nav className="flex-1 px-2 py-3 space-y-4 overflow-y-auto admin-scrollbar">
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label}>
-            {!collapsed && (
-              <p className="px-2 mb-1 text-[9px] font-bold uppercase tracking-widest text-white/25">
-                {group.label}
-              </p>
-            )}
-            <div className="space-y-0.5">
-              {group.items.map(({ icon: Icon, label, path }) => {
-                const isActive = path === '/admin'
-                  ? location.pathname === '/admin'
-                  : location.pathname.startsWith(path);
-                const badge = getBadge(path);
-                return (
-                  <NavLink
-                    key={path}
-                    to={path}
-                    className={`admin-sidebar-link ${isActive ? 'active' : ''} ${collapsed ? 'justify-center' : ''}`}
-                    title={collapsed ? label : undefined}
-                  >
-                    <div className="relative flex-shrink-0">
-                      <Icon size={17} />
-                      {badge > 0 && (
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF37] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                          {badge > 9 ? '9+' : badge}
-                        </span>
-                      )}
-                    </div>
-                    {!collapsed && <span className="truncate text-[13px]">{label}</span>}
-                  </NavLink>
-                );
-              })}
+        {NAV_GROUPS.map((group) => {
+          const visibleItems = group.items.filter(item => {
+            if (!item.permission) return true;
+            return hasPermission(item.permission as any);
+          });
+          
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={group.label}>
+              {!collapsed && (
+                <p className="px-2 mb-1 text-[9px] font-bold uppercase tracking-widest text-white/25">
+                  {group.label}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {visibleItems.map(({ icon: Icon, label, path }) => {
+                  const isActive = path === '/admin'
+                    ? location.pathname === '/admin'
+                    : location.pathname.startsWith(path);
+                  const badge = getBadge(path);
+                  return (
+                    <NavLink
+                      key={path}
+                      to={path}
+                      className={`admin-sidebar-link ${isActive ? 'active' : ''} ${collapsed ? 'justify-center' : ''}`}
+                      title={collapsed ? label : undefined}
+                    >
+                      <div className="relative flex-shrink-0">
+                        <Icon size={17} />
+                        {badge > 0 && (
+                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF37] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                            {badge > 9 ? '9+' : badge}
+                          </span>
+                        )}
+                      </div>
+                      {!collapsed && <span className="truncate text-[13px]">{label}</span>}
+                    </NavLink>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Footer */}

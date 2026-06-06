@@ -25,6 +25,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsConditions from './pages/TermsConditions';
 import RefundPolicy from './pages/RefundPolicy';
 import PrintedLuxuryInvites from './pages/PrintedLuxuryInvites';
+import LaunchPage from './pages/LaunchPage';
+
 
 // ── Admin Panel ─────────────────────────────────────────────
 import AdminLayout from './admin/AdminLayout';
@@ -89,6 +91,7 @@ export const router = createBrowserRouter([
       { path: 'cart', Component: Cart },
       { path: 'profile', Component: Profile },
       { path: 'blog/:id', Component: BlogPost },
+      { path: 'launch/:slug', Component: LaunchPage },
       { path: '*', Component: NotFound },
     ],
   },

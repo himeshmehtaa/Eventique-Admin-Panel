@@ -198,10 +198,62 @@ const defaultMediaFiles: MediaFile[] = [
 // ── Mock Content Blocks ─────────────────────────────────────
 const defaultContentBlocks: ContentBlock[] = [
   { id: 'cb-1', sectionName: 'Hero', title: 'Celebrate Every Moment with Elegance', subtitle: 'Create stunning digital invitations, beautiful event websites, and premium stationery.', enabled: true, lastUpdated: '2026-05-01', imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200', ctaText: 'Explore Designs', ctaLink: '/explore' },
-  { id: 'cb-2', sectionName: 'Explore Designs', title: 'Explore Our Designs', subtitle: 'Browse hundreds of premium invitation designs for every occasion.', enabled: true, lastUpdated: '2026-05-01', ctaText: 'View Catalog', ctaLink: '/explore' },
+  { 
+    id: 'cb-2', 
+    sectionName: 'Explore Designs', 
+    title: 'Explore Our Designs', 
+    subtitle: 'Browse hundreds of premium invitation designs for every occasion.', 
+    enabled: true, 
+    lastUpdated: '2026-05-01', 
+    ctaText: 'View Catalog', 
+    ctaLink: '/explore',
+    badgeText: 'Exquisite Collection',
+    footerText: 'Find your perfect theme in our catalog',
+    features: [
+      { title: 'Multitudes of Occasions', desc: 'Curated designs for Weddings, Birthdays, Anniversaries, Pooja, and baby showers.' },
+      { title: 'Formats for All Mediums', desc: 'Stunning Video invites, printable PDF invites, premium stationery, and wedding websites.' },
+      { title: 'Fully Personalized Service', desc: 'Collaborate with our designers to customize color palettes, layouts, and guest logs.' }
+    ]
+  },
   { id: 'cb-3', sectionName: 'Packages', title: 'Our Packages', subtitle: 'Choose the perfect package for your celebration.', enabled: true, lastUpdated: '2026-05-01', ctaText: 'View Packages', ctaLink: '/packages' },
-  { id: 'cb-4', sectionName: 'Event Websites', title: 'Your Event, Your Website', subtitle: 'Beautiful personalized websites for every celebration.', enabled: true, lastUpdated: '2026-05-01', imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', ctaText: 'Create Website', ctaLink: '/wedding-websites', images: ['https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800'] },
-  { id: 'cb-5', sectionName: 'Stationery', title: 'Premium Stationery', subtitle: 'Print-ready designs for every occasion.', enabled: true, lastUpdated: '2026-05-01', imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', ctaText: 'Order Stationery', ctaLink: '/stationery', images: ['https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800'] },
+  { 
+    id: 'cb-4', 
+    sectionName: 'Event Websites', 
+    title: 'Your Event, Your Website', 
+    subtitle: 'Beautiful personalized websites for every celebration.', 
+    enabled: true, 
+    lastUpdated: '2026-05-01', 
+    imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 
+    ctaText: 'Create Website', 
+    ctaLink: '/wedding-websites', 
+    images: ['https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800'],
+    badgeText: 'Personalized Portals',
+    footerText: 'Starting from ₹4,999 onwards',
+    features: [
+      { title: 'Real-time RSVP Tracking', desc: 'Ditch the spreadsheet and track guest attendance, preferences, and count instantly.' },
+      { title: 'Complete Information Hub', desc: 'Centralize travel directions, schedules, dress codes, and gift registries.' },
+      { title: 'Post-Event Memory Lane', desc: 'Share official photography galleries and event highlights with your guests.' }
+    ]
+  },
+  { 
+    id: 'cb-5', 
+    sectionName: 'Stationery', 
+    title: 'Premium Stationery', 
+    subtitle: 'Print-ready designs for every occasion.', 
+    enabled: true, 
+    lastUpdated: '2026-05-01', 
+    imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', 
+    ctaText: 'Order Stationery', 
+    ctaLink: '/stationery', 
+    images: ['https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400'],
+    badgeText: 'Celebrate in Style',
+    footerText: 'Starting from ₹50 per piece',
+    features: [
+      { title: 'Perfectly Coordinated Themes', desc: 'Match your table menus, welcome signs, and luggage tags to your invitations.' },
+      { title: 'High-Resolution Files', desc: 'Get print-ready assets tailored for high-end digital or offset printing.' },
+      { title: 'Custom Formatting & Fonts', desc: 'Ensure consistent brand typography and accents across every guest touchpoint.' }
+    ]
+  },
   { id: 'cb-6', sectionName: 'FAQ', title: 'Frequently Asked Questions', subtitle: 'Find answers to common questions about our services.', enabled: true, lastUpdated: '2026-05-01' },
   { id: 'cb-7', sectionName: 'Footer', body: 'Eventique — Premium Digital Invitations & Event Design Studio', enabled: true, lastUpdated: '2026-05-01' },
   { id: 'cb-8', sectionName: 'About', title: 'The Story of Eventique', body: 'Where tradition meets modern design — crafting invitations that feel as special as the moments they celebrate.', enabled: true, lastUpdated: '2026-05-01',
@@ -263,9 +315,80 @@ const defaultContentBlocks: ContentBlock[] = [
   { id: 'cb-12', sectionName: 'Refund Policy', title: 'Refund Policy', body: 'We offer refunds within 7 days of purchase for eligible orders...', enabled: true, lastUpdated: '2026-05-01' },
   { id: 'cb-13', sectionName: 'Browse by Occasion', title: 'Browse by Occasion', subtitle: 'Curated designs for every celebration in your life', enabled: true, lastUpdated: '2026-05-01' },
   { id: 'cb-14', sectionName: 'Our Services', title: 'Our Services', subtitle: 'Complete solutions for all your event invitation and stationery needs', enabled: true, lastUpdated: '2026-05-01' },
-  { id: 'cb-15', sectionName: 'Printed Luxury Invites', title: 'Printed Luxury Invites', body: 'Experience the finest craftsmanship with our premium printed wedding invitations. Each piece is meticulously designed with luxurious materials, exquisite finishes, and attention to detail that makes your invitation unforgettable.', enabled: true, lastUpdated: '2026-05-01', imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', ctaText: 'Explore Collection', ctaLink: '/explore', images: ['https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800'] },
+  { 
+    id: 'cb-15', 
+    sectionName: 'Printed Luxury Invites', 
+    title: 'Printed Luxury Invites', 
+    body: 'Experience the finest craftsmanship with our premium printed wedding invitations. Each piece is meticulously designed with luxurious materials, exquisite finishes, and attention to detail that makes your invitation unforgettable.', 
+    enabled: true, 
+    lastUpdated: '2026-05-01', 
+    imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', 
+    ctaText: 'Explore Collection', 
+    ctaLink: '/explore', 
+    images: ['https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800'],
+    badgeText: 'Premium Collection',
+    footerText: 'Starting from ₹50 per piece • Minimum order: 50 pieces',
+    features: [
+      { title: 'Luxury Materials', desc: 'Premium paper stocks, silk fabrics, acrylic, wood, and metal finishes' },
+      { title: 'Artisanal Finishing', desc: 'Gold foil, embossing, laser cutting, and hand-tied ribbons' },
+      { title: 'Bespoke Design', desc: 'Fully customizable designs tailored to your unique vision' }
+    ]
+  },
   { id: 'cb-16', sectionName: 'Testimonials', title: 'What Our Clients Say', subtitle: 'Join thousands of happy customers who trusted us with their celebrations', enabled: true, lastUpdated: '2026-05-01' },
-  { id: 'cb-17', sectionName: 'Video Invites', title: 'Video Invitations', subtitle: 'Stunning animated invites that captivate your guests', enabled: true, lastUpdated: '2026-05-01', imageUrl: '', ctaText: 'Explore Designs', ctaLink: '/explore', images: ['https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800'] },
+  { 
+    id: 'cb-17', 
+    sectionName: 'Video Invites', 
+    title: 'Video Invitations', 
+    subtitle: 'Stunning animated invites that captivate your guests', 
+    enabled: true, 
+    lastUpdated: '2026-05-01', 
+    imageUrl: '', 
+    ctaText: 'Explore Designs', 
+    ctaLink: '/explore', 
+    images: ['https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800'],
+    badgeText: 'Animated E-Invites',
+    footerText: 'Starting from ₹1,499 onwards',
+    features: [
+      { title: 'Cinematic Visuals & Music', desc: 'Engage guests with custom animations, background music, and photographs.' },
+      { title: 'High-Definition Playback', desc: 'Optimized for smooth viewing on smartphones, WhatsApp, and large screens.' },
+      { title: 'Quick Turnaround', desc: 'Receive your customized high-definition animated invitation within 3-5 days.' }
+    ]
+  },
+];
+
+const defaultCampaigns: LaunchCampaign[] = [
+  {
+    id: 'camp-1',
+    slug: 'ganesh-chaturthi-invites',
+    title: 'Ganesh Chaturthi Premium Launch',
+    productName: 'Vighnaharta Premium Video Invitation',
+    status: 'Active',
+    accentColor: '#D4AF37',
+    theme: 'Royal',
+    heroTitle: 'Invite Blessings into Your Celebration with',
+    heroSubtitle: 'A premium, custom-animated video invitation celebrating the Lord of Beginnings. Perfect for home poojas, temple events, and family gatherings.',
+    heroImage: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800',
+    features: [
+      { title: 'Divine Vedic Mantras', desc: 'Pre-recorded traditional chants and custom high-fidelity background music.' },
+      { title: 'Golden Foil Art Themes', desc: 'Stunning visual templates detailed with clay-lamp motifs and modak decorations.' },
+      { title: 'Personalized Guest Greetings', desc: 'Add personalized name cards to each invitation video before sharing.' }
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1519741497674-611481863552?w=600',
+      'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600',
+      'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600',
+      'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600'
+    ],
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-celebration-colored-particles-1014-large.mp4',
+    pricingPackages: [
+      { name: 'Standard Divine Pack', price: 1999, features: ['1 Round of custom edits', 'Delivered in 48 hours', 'Standard MP4 Video File', 'Includes 1 background chant option'] },
+      { name: 'Royal Vedic Suite', price: 4499, features: ['Unlimited revisions', 'Delivered in 24 hours', 'HD Cinematic MP4 + Web link', 'Custom audio selection', 'Matching WhatsApp welcome card'] }
+    ],
+    faqs: [
+      { q: 'Can I add my family photo to the video?', a: 'Yes! The Royal Vedic Suite allows you to include up to three high-resolution photos in the animation slides.' },
+      { q: 'How will I receive the final invitation?', a: 'The invitation is delivered as a high-definition MP4 file via email/WhatsApp, plus a secure web sharing link.' }
+    ]
+  }
 ];
 
 
@@ -648,8 +771,14 @@ interface AdminContextType {
   resetToDefaults: () => void;
   // Auth
   isAuthenticated: boolean;
-  login: (password: string) => boolean;
+  currentUser: TeamMember | null;
+  login: (email: string, password: string) => boolean;
   logout: () => void;
+  hasPermission: (key: PermissionKey) => boolean;
+  // Campaigns
+  addCampaign: (c: LaunchCampaign) => void;
+  updateCampaign: (id: string, c: Partial<LaunchCampaign>) => void;
+  deleteCampaign: (id: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | null>(null);
@@ -800,6 +929,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const newProds = defaultProducts.filter(p => !storedIds.has(p.id));
     
     stored.products = [...updatedProds, ...newProds];
+
+    if (!stored.campaigns) {
+      stored.campaigns = defaultCampaigns;
+    }
+
     return stored;
   });
 
@@ -807,6 +941,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('eventique-admin-authenticated') === 'true';
+  });
+
+  const [currentUser, setCurrentUser] = useState<TeamMember | null>(() => {
+    const cached = sessionStorage.getItem('eventique-admin-user');
+    return cached ? JSON.parse(cached) : null;
   });
 
   const set = useCallback(<K extends keyof AdminState>(key: K, updater: (prev: AdminState[K]) => AdminState[K]) => {
@@ -818,28 +957,57 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     set('activityLogs', prev => [log, ...(prev as ActivityLog[]).slice(0, 99)]);
   }, [set]);
 
-  const login = useCallback((password: string) => {
-    if (password === 'eventique123') {
-      sessionStorage.setItem('eventique-admin-authenticated', 'true');
-      setIsAuthenticated(true);
-      addActivityLog('Admin Login', 'Super Admin logged in successfully', 'success');
-      return true;
+  const login = useCallback((email: string, password: string) => {
+    const emailLower = email.toLowerCase().trim();
+    const member = state.teamMembers.find(t => t.email.toLowerCase().trim() === emailLower);
+    
+    if (member) {
+      const firstName = member.name.split(' ')[0].toLowerCase();
+      const expectedPassword = `${firstName}123`;
+      
+      const isSuperAdmin = state.roles.find(r => r.id === member.roleId)?.name === 'Super Admin';
+      const isMasterPassword = isSuperAdmin && password === 'eventique123';
+      
+      if (password === expectedPassword || isMasterPassword) {
+        sessionStorage.setItem('eventique-admin-authenticated', 'true');
+        sessionStorage.setItem('eventique-admin-user', JSON.stringify(member));
+        setIsAuthenticated(true);
+        setCurrentUser(member);
+        addActivityLog('Admin Login', `${member.name} logged in successfully`, 'success');
+        return true;
+      }
     }
-    addActivityLog('Admin Login Failed', 'Invalid password attempt', 'danger');
+    
+    addActivityLog('Admin Login Failed', `Failed login attempt for: ${email}`, 'danger');
     return false;
-  }, [addActivityLog]);
+  }, [state.teamMembers, state.roles, addActivityLog]);
 
   const logout = useCallback(() => {
     sessionStorage.removeItem('eventique-admin-authenticated');
+    sessionStorage.removeItem('eventique-admin-user');
     setIsAuthenticated(false);
-    addActivityLog('Admin Logout', 'Super Admin logged out', 'info');
+    setCurrentUser(null);
+    addActivityLog('Admin Logout', 'Logged out of admin session', 'info');
   }, [addActivityLog]);
+
+  const hasPermission = useCallback((key: PermissionKey) => {
+    if (!currentUser) return false;
+    const role = state.roles.find(r => r.id === currentUser.roleId);
+    if (!role) return false;
+    
+    // Super Admin gets all permissions
+    if (role.name === 'Super Admin') return true;
+    
+    return !!role.permissions[key];
+  }, [currentUser, state.roles]);
 
   const value: AdminContextType = {
     state,
     isAuthenticated,
+    currentUser,
     login,
     logout,
+    hasPermission,
     addProduct: (p) => {
       const newProduct = { ...p, createdAt: p.createdAt || new Date().toISOString().split('T')[0] };
       set('products', prev => [...prev as Product[], newProduct]);
@@ -915,6 +1083,18 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     addActivityLog,
     purgeActivityLogs: () => set('activityLogs', () => []),
     resetToDefaults: () => setState(buildDefault()),
+    addCampaign: (c) => {
+      set('campaigns', prev => [...prev as LaunchCampaign[], c]);
+      addActivityLog('Campaign Created', c.title, 'success');
+    },
+    updateCampaign: (id, c) => {
+      set('campaigns', prev => (prev as LaunchCampaign[]).map(x => x.id === id ? { ...x, ...c } : x));
+      addActivityLog('Campaign Updated', id, 'info');
+    },
+    deleteCampaign: (id) => {
+      set('campaigns', prev => (prev as LaunchCampaign[]).filter(x => x.id !== id));
+      addActivityLog('Campaign Deleted', id, 'danger');
+    },
   };
 
   return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
