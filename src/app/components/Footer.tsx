@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
-import { Instagram, Facebook, Mail, Phone, Youtube, Linkedin } from 'lucide-react';
+import { Instagram, Facebook, Mail, Phone, Youtube, Linkedin, Sparkles } from 'lucide-react';
 import logo from 'figma:asset/18b0c663189a1e14d470c65edfce57c31a40bf8e.png';
-import { FloralDivider, LotusDecor } from './decorative/FloralDecor';
+import { LotusDecor } from './decorative/FloralDecor';
 import { useAdmin } from '../admin/context/AdminContext';
 
 export function Footer() {
@@ -24,9 +24,14 @@ export function Footer() {
       <LotusDecor className="absolute top-10 right-10 w-32 h-24 text-primary opacity-10" />
       <LotusDecor className="absolute bottom-10 left-10 w-32 h-24 text-secondary opacity-10" />
       
-      {/* Decorative divider at top */}
-      <div className="flex justify-center py-8">
-        <FloralDivider className="w-96 h-20 text-primary opacity-60" />
+      {/* Elegant, modern line divider with spinning sparkle */}
+      <div className="flex items-center justify-center gap-4 py-8">
+        <div className="h-[1.5px] w-32 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 w-8 h-8 bg-primary/5 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
+          <Sparkles className="w-5 h-5 text-primary/60 animate-rotate-slow" style={{ animationDuration: '10s' }} />
+        </div>
+        <div className="h-[1.5px] w-32 bg-gradient-to-l from-transparent via-primary/20 to-transparent" />
       </div>
       
       <div className="container mx-auto px-4 py-12 relative z-10">
@@ -99,23 +104,40 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Company links */}
           <div>
-            <h3 className="text-lg mb-4">Quick Links</h3>
+            <h3 className="text-lg mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/explore" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Explore Designs
+                <Link to="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  About
                 </Link>
               </li>
               <li>
-                <Link to="/packages" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Packages
+                <Link to="/careers" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Careers
                 </Link>
               </li>
               <li>
-                <Link to="/wedding-websites" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Event Website
+                <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Services links */}
+          <div>
+            <h3 className="text-lg mb-4">Services</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/events" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Events
+                </Link>
+              </li>
+              <li>
+                <Link to="/event-websites" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Event Websites
                 </Link>
               </li>
               <li>
@@ -124,66 +146,38 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/printed-luxury-invites" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Printed Luxury Invites
+                <Link to="/gifts" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Gifts
+                </Link>
+              </li>
+              <li>
+                <Link to="/corporate" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Corporate
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Legal links */}
           <div>
-            <h3 className="text-lg mb-4">Categories</h3>
+            <h3 className="text-lg mb-4">Legal</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/category/wedding" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Wedding
+                <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/category/engagement" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Engagement
+                <Link to="/terms-conditions" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Terms & Conditions
                 </Link>
               </li>
               <li>
-                <Link to="/category/birthday" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Birthday
-                </Link>
-              </li>
-              <li>
-                <Link to="/category/baby-shower" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Baby Shower
-                </Link>
-              </li>
-              <li>
-                <Link to="/category/pooja" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Pooja
+                <Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Refund Policy
                 </Link>
               </li>
             </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h3 className="text-lg mb-4">Contact Us</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="w-4 h-4 text-primary" />
-                <span>{phone}</span>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="w-4 h-4 text-primary" />
-                <span>{email}</span>
-              </li>
-            </ul>
-            <div className="mt-4">
-              <Link
-                to="/contact"
-                className="text-sm text-primary hover:underline"
-              >
-                Contact Form →
-              </Link>
-            </div>
           </div>
         </div>
 
@@ -199,15 +193,6 @@ export function Footer() {
               </Link>
               <Link to="/testimonials" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Testimonials
-              </Link>
-              <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                Privacy Policy
-              </Link>
-              <Link to="/terms-conditions" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                Terms & Conditions
-              </Link>
-              <Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                Refund Policy
               </Link>
               <Link to="/admin" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Admin Portal

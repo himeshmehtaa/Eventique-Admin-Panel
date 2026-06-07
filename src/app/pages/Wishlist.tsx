@@ -22,7 +22,7 @@ export default function Wishlist() {
             Start adding your favorite invitation designs to your wishlist
           </p>
           <Link
-            to="/explore"
+            to="/events"
             className="px-8 py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all inline-flex items-center gap-2"
           >
             Explore Designs

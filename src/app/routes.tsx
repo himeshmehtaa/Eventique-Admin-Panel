@@ -1,12 +1,11 @@
 import { createBrowserRouter } from 'react-router';
 import { Layout } from './components/Layout';
 import Home from './pages/Home';
-import Explore from './pages/Explore';
+import Events from './pages/Events';
 import Category from './pages/Category';
 import ProductDetail from './pages/ProductDetail';
 import InvitationDetail from './pages/InvitationDetail';
-import Packages from './pages/Packages';
-import WeddingWebsites from './pages/WeddingWebsites';
+import EventWebsites from './pages/EventWebsites';
 import Stationery from './pages/Stationery';
 import StationeryDetail from './pages/StationeryDetail';
 import Order from './pages/Order';
@@ -26,6 +25,8 @@ import TermsConditions from './pages/TermsConditions';
 import RefundPolicy from './pages/RefundPolicy';
 import PrintedLuxuryInvites from './pages/PrintedLuxuryInvites';
 import LaunchPage from './pages/LaunchPage';
+import CorporateEvents from './pages/CorporateEvents';
+import Careers from './pages/Careers';
 
 
 // ── Admin Panel ─────────────────────────────────────────────
@@ -71,11 +72,10 @@ export const router = createBrowserRouter([
     Component: Layout,
     children: [
       { index: true, Component: Home },
-      { path: 'explore', Component: Explore },
+      { path: 'events', Component: Events },
       { path: 'category/:occasion', Component: Category },
       { path: 'product/:id', Component: InvitationDetail },
-      { path: 'packages', Component: Packages },
-      { path: 'wedding-websites', Component: WeddingWebsites },
+      { path: 'event-websites', Component: EventWebsites },
       { path: 'stationery', Component: Stationery },
       { path: 'stationery/:id', Component: StationeryDetail },
       { path: 'gifts', Component: Gifts },
@@ -94,6 +94,8 @@ export const router = createBrowserRouter([
       { path: 'profile', Component: Profile },
       { path: 'blog/:id', Component: BlogPost },
       { path: 'launch/:slug', Component: LaunchPage },
+      { path: 'corporate', Component: CorporateEvents },
+      { path: 'careers', Component: Careers },
     ],
   },
   // ── Top-level Login Redirect ──────────────────────────────

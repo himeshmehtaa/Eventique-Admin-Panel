@@ -11,11 +11,11 @@ export function Header() {
   const location = useLocation();
 
   const navLinks = [
-    { name: 'Explore', path: '/explore' },
-    { name: 'Packages', path: '/packages' },
-    { name: 'Event Website', path: '/wedding-websites' },
+    { name: 'Events', path: '/events' },
+    { name: 'Event Websites', path: '/event-websites' },
     { name: 'Stationery', path: '/stationery' },
     { name: 'Gifts', path: '/gifts' },
+    { name: 'Corporate', path: '/corporate' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];

@@ -22,7 +22,7 @@ export default function Cart() {
             Add some beautiful invitation designs to your cart
           </p>
           <Link
-            to="/explore"
+            to="/events"
             className="px-8 py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all inline-flex items-center gap-2"
           >
             Start Shopping

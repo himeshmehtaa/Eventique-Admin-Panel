@@ -9,9 +9,9 @@ import type {
 } from '../types';
 
 const defaultHeroSlides: HeroSlide[] = [
-  { id: 'hero-1', badge: '🌺 Personalized Digital Invitations', title: 'Celebrate Every Moment with', highlight: 'Elegance', subtitle: 'Create stunning digital invitations, beautiful event websites, and premium stationery for all your celebrations.', cta1: { text: 'Explore Designs', link: '/explore' }, cta2: { text: 'View Packages', link: '/packages' }, tag: null, accentBg: 'from-[#faf8f5] via-white to-[#fff5f0]' },
-  { id: 'hero-2', badge: '✨ Just Launched', title: 'Discover Our Latest', highlight: 'New Arrivals', subtitle: 'Be among the first to celebrate with our freshest designs.', cta1: { text: 'Shop New Arrivals', link: '/explore' }, cta2: { text: 'Browse Occasions', link: '/category/wedding' }, tag: '🆕 New Launch', accentBg: 'from-[#fff5f0] via-white to-[#faf5e6]' },
-  { id: 'hero-3', badge: '🎉 Limited Time Offer', title: 'Exclusive Festive', highlight: 'Deals & Savings', subtitle: 'Save up to 30% on video invitations, event websites, and premium stationery bundles.', cta1: { text: 'View Packages', link: '/packages' }, cta2: { text: 'Contact for Custom', link: '/contact' }, tag: '💰 Up to 30% Off', accentBg: 'from-[#faf5e6] via-white to-[#fff5f0]' },
+  { id: 'hero-1', badge: '🌺 Personalized Digital Invitations', title: 'Celebrate Every Moment with', highlight: 'Elegance', subtitle: 'Create stunning digital invitations, beautiful event websites, and premium stationery for all your celebrations.', cta1: { text: 'Explore Designs', link: '/events' }, cta2: { text: 'View Packages', link: '/events?tab=packages' }, tag: null, accentBg: 'from-[#faf8f5] via-white to-[#fff5f0]' },
+  { id: 'hero-2', badge: '✨ Just Launched', title: 'Discover Our Latest', highlight: 'New Arrivals', subtitle: 'Be among the first to celebrate with our freshest designs.', cta1: { text: 'Shop New Arrivals', link: '/events' }, cta2: { text: 'Browse Occasions', link: '/category/wedding' }, tag: '🆕 New Launch', accentBg: 'from-[#fff5f0] via-white to-[#faf5e6]' },
+  { id: 'hero-3', badge: '🎉 Limited Time Offer', title: 'Exclusive Festive', highlight: 'Deals & Savings', subtitle: 'Save up to 30% on video invitations, event websites, and premium stationery bundles.', cta1: { text: 'View Packages', link: '/events?tab=packages' }, cta2: { text: 'Contact for Custom', link: '/contact' }, tag: '💰 Up to 30% Off', accentBg: 'from-[#faf5e6] via-white to-[#fff5f0]' },
   // Explore Designs Slides
   {
     id: 'explore-slide-1',
@@ -20,7 +20,7 @@ const defaultHeroSlides: HeroSlide[] = [
     title: 'Explore Our',
     highlight: 'Designs',
     subtitle: 'Browse hundreds of premium invitation designs for every occasion.',
-    cta1: { text: 'View Catalog', link: '/explore' },
+    cta1: { text: 'View Catalog', link: '/events' },
     cta2: { text: 'Request Custom Quote', link: '/contact' },
     tag: null,
     accentBg: 'from-[#faf8f5] via-white to-[#fff5f0]',
@@ -34,7 +34,7 @@ const defaultHeroSlides: HeroSlide[] = [
     title: 'Video',
     highlight: 'Invitations',
     subtitle: 'Stunning animated invites that captivate your guests and tell your love story in motion.',
-    cta1: { text: 'Explore Designs', link: '/explore' },
+    cta1: { text: 'Explore Designs', link: '/events' },
     cta2: { text: 'Request Custom Quote', link: '/contact' },
     tag: '🎥 Video',
     accentBg: 'from-[#fff5f0] via-white to-[#faf5e6]',
@@ -48,7 +48,7 @@ const defaultHeroSlides: HeroSlide[] = [
     title: 'Your Event, Your',
     highlight: 'Website',
     subtitle: 'Create a beautiful personalized website for your celebration to manage RSVPs and share details effortlessly.',
-    cta1: { text: 'Create Website', link: '/wedding-websites' },
+    cta1: { text: 'Create Website', link: '/event-websites' },
     cta2: { text: 'Request Custom Quote', link: '/contact' },
     tag: '🌐 Custom Domain',
     accentBg: 'from-[#faf5e6] via-white to-[#fff5f0]',
@@ -76,7 +76,7 @@ const defaultHeroSlides: HeroSlide[] = [
     title: 'Printed Luxury',
     highlight: 'Invitations',
     subtitle: 'Experience the finest craftsmanship with our premium printed wedding invitations. Each piece is meticulously designed with luxurious materials and exquisite finishes.',
-    cta1: { text: 'Explore Collection', link: '/explore' },
+    cta1: { text: 'Explore Collection', link: '/events' },
     cta2: { text: 'Request Samples', link: '/contact' },
     tag: '✨ Foil & Wax Seals',
     accentBg: 'from-[#fff5f0] via-white to-[#faf5e6]',
@@ -94,9 +94,9 @@ const defaultCategories: Category[] = [
 ];
 
 const defaultServices: Service[] = [
-  { id: 'svc-1', title: 'Digital Invites', description: 'Video Invites & PDF Invites', iconName: 'Video', link: '/explore' },
-  { id: 'svc-2', title: 'Printed Luxury Invites', description: 'Premium quality printed invitations', iconName: 'Printer', link: '/explore' },
-  { id: 'svc-3', title: 'Event Websites', description: 'Beautiful personalized websites', iconName: 'Globe', link: '/wedding-websites' },
+  { id: 'svc-1', title: 'Digital Invites', description: 'Video Invites & PDF Invites', iconName: 'Video', link: '/events' },
+  { id: 'svc-2', title: 'Printed Luxury Invites', description: 'Premium quality printed invitations', iconName: 'Printer', link: '/events' },
+  { id: 'svc-3', title: 'Event Websites', description: 'Beautiful personalized websites', iconName: 'Globe', link: '/event-websites' },
   { id: 'svc-4', title: 'Wedding Stationery', description: 'Print-ready designs', iconName: 'FileText', link: '/stationery' },
   { id: 'svc-5', title: 'Curated Gifts', description: 'Personalized hampers & keepsakes', iconName: 'Gift', link: '/gifts' },
 ];
@@ -197,7 +197,7 @@ const defaultMediaFiles: MediaFile[] = [
 
 // ── Mock Content Blocks ─────────────────────────────────────
 const defaultContentBlocks: ContentBlock[] = [
-  { id: 'cb-1', sectionName: 'Hero', title: 'Celebrate Every Moment with Elegance', subtitle: 'Create stunning digital invitations, beautiful event websites, and premium stationery.', enabled: true, lastUpdated: '2026-05-01', imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200', ctaText: 'Explore Designs', ctaLink: '/explore' },
+  { id: 'cb-1', sectionName: 'Hero', title: 'Celebrate Every Moment with Elegance', subtitle: 'Create stunning digital invitations, beautiful event websites, and premium stationery.', enabled: true, lastUpdated: '2026-05-01', imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200', ctaText: 'Explore Designs', ctaLink: '/events' },
   { 
     id: 'cb-2', 
     sectionName: 'Explore Designs', 
@@ -206,7 +206,7 @@ const defaultContentBlocks: ContentBlock[] = [
     enabled: true, 
     lastUpdated: '2026-05-01', 
     ctaText: 'View Catalog', 
-    ctaLink: '/explore',
+    ctaLink: '/events',
     badgeText: 'Exquisite Collection',
     footerText: 'Find your perfect theme in our catalog',
     features: [
@@ -215,7 +215,7 @@ const defaultContentBlocks: ContentBlock[] = [
       { title: 'Fully Personalized Service', desc: 'Collaborate with our designers to customize color palettes, layouts, and guest logs.' }
     ]
   },
-  { id: 'cb-3', sectionName: 'Packages', title: 'Our Packages', subtitle: 'Choose the perfect package for your celebration.', enabled: true, lastUpdated: '2026-05-01', ctaText: 'View Packages', ctaLink: '/packages' },
+  { id: 'cb-3', sectionName: 'Packages', title: 'Our Packages', subtitle: 'Choose the perfect package for your celebration.', enabled: true, lastUpdated: '2026-05-01', ctaText: 'View Packages', ctaLink: '/events?tab=packages' },
   { 
     id: 'cb-4', 
     sectionName: 'Event Websites', 
@@ -225,7 +225,7 @@ const defaultContentBlocks: ContentBlock[] = [
     lastUpdated: '2026-05-01', 
     imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 
     ctaText: 'Create Website', 
-    ctaLink: '/wedding-websites', 
+    ctaLink: '/event-websites', 
     images: ['https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800'],
     badgeText: 'Personalized Portals',
     footerText: 'Starting from ₹4,999 onwards',
@@ -340,7 +340,7 @@ const defaultContentBlocks: ContentBlock[] = [
     lastUpdated: '2026-05-01', 
     imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', 
     ctaText: 'Explore Collection', 
-    ctaLink: '/explore', 
+    ctaLink: '/events', 
     images: ['https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800'],
     badgeText: 'Premium Collection',
     footerText: 'Starting from ₹50 per piece • Minimum order: 50 pieces',
@@ -360,7 +360,7 @@ const defaultContentBlocks: ContentBlock[] = [
     lastUpdated: '2026-05-01', 
     imageUrl: '', 
     ctaText: 'Explore Designs', 
-    ctaLink: '/explore', 
+    ctaLink: '/events', 
     images: ['https://images.unsplash.com/photo-1519741497674-611481863552?w=800', 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800'],
     badgeText: 'Animated E-Invites',
     footerText: 'Starting from ₹1,499 onwards',

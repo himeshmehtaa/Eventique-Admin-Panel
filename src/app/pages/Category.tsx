@@ -48,7 +48,7 @@ export default function Category() {
     return (
       <div className="py-20 text-center">
         <h1 className="text-3xl mb-4">Category not found</h1>
-        <Link to="/explore" className="text-primary hover:underline">
+        <Link to="/events" className="text-primary hover:underline">
           Browse all designs
         </Link>
       </div>
@@ -66,7 +66,7 @@ export default function Category() {
       <div className="container mx-auto px-4 relative z-10">
         {/* Breadcrumb */}
         <Link
-          to="/explore"
+          to="/events"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />

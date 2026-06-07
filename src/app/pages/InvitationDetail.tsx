@@ -68,7 +68,7 @@ export default function InvitationDetail() {
         <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
           <Link to="/" className="hover:text-primary">Home</Link>
           <span>/</span>
-          <Link to="/explore" className="hover:text-primary">Explore</Link>
+          <Link to="/events" className="hover:text-primary">Events</Link>
           <span>/</span>
           <span className="text-foreground">{invitation.name}</span>
         </div>
@@ -374,7 +374,7 @@ export default function InvitationDetail() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold">Similar Designs</h2>
             <Link
-              to="/explore"
+              to="/events"
               className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1 group"
             >
               See More Designs

@@ -164,7 +164,7 @@ export default function Testimonials() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
-              to="/explore"
+              to="/events"
               className="px-8 py-4 bg-card text-foreground rounded-full hover:bg-white transition-colors"
             >
               Explore Designs

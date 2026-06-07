@@ -99,34 +99,44 @@ export function MandalaDecor({ className = "" }: { className?: string }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="100" cy="100" r="90" stroke="currentColor" strokeWidth="1" opacity="0.08" />
-      <circle cx="100" cy="100" r="70" stroke="currentColor" strokeWidth="1.5" opacity="0.1" />
-      <circle cx="100" cy="100" r="50" stroke="currentColor" strokeWidth="1" opacity="0.12" />
-      <circle cx="100" cy="100" r="30" stroke="currentColor" strokeWidth="1" opacity="0.15" />
-      
-      {/* Petals */}
-      {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+      {/* Thin minimal orbit rings */}
+      <circle cx="100" cy="100" r="90" stroke="currentColor" strokeWidth="0.75" strokeDasharray="3 3" opacity="0.12" />
+      <circle cx="100" cy="100" r="72" stroke="currentColor" strokeWidth="1" opacity="0.15" />
+      <circle cx="100" cy="100" r="54" stroke="currentColor" strokeWidth="0.75" opacity="0.18" />
+      <circle cx="100" cy="100" r="30" stroke="currentColor" strokeWidth="1" opacity="0.2" />
+
+      {/* Intersecting orbital paths */}
+      <circle cx="100" cy="54" r="46" stroke="currentColor" strokeWidth="0.5" opacity="0.1" />
+      <circle cx="100" cy="146" r="46" stroke="currentColor" strokeWidth="0.5" opacity="0.1" />
+      <circle cx="54" cy="100" r="46" stroke="currentColor" strokeWidth="0.5" opacity="0.1" />
+      <circle cx="146" cy="100" r="46" stroke="currentColor" strokeWidth="0.5" opacity="0.1" />
+
+      {/* Center premium starburst */}
+      <path d="M100 65 L103 97 L135 100 L103 103 L100 135 L97 103 L65 100 L97 97 Z" fill="currentColor" opacity="0.25" />
+      <path d="M100 78 L102 98 L122 100 L102 102 L100 122 L98 102 L78 100 L98 98 Z" fill="currentColor" opacity="0.15" />
+
+      {/* 4-pointed sparkles on the outer ring */}
+      {[45, 135, 225, 315].map((angle) => {
         const rad = (angle * Math.PI) / 180;
-        const x1 = 100 + Math.cos(rad) * 30;
-        const y1 = 100 + Math.sin(rad) * 30;
-        const x2 = 100 + Math.cos(rad) * 70;
-        const y2 = 100 + Math.sin(rad) * 70;
+        const cx = 100 + Math.cos(rad) * 72;
+        const cy = 100 + Math.sin(rad) * 72;
         return (
-          <g key={i}>
-            <ellipse
-              cx={(x1 + x2) / 2}
-              cy={(y1 + y2) / 2}
-              rx="8"
-              ry="20"
-              transform={`rotate(${angle} ${(x1 + x2) / 2} ${(y1 + y2) / 2})`}
-              fill="currentColor"
-              opacity="0.08"
-            />
-          </g>
+          <path
+            key={angle}
+            d={`M${cx} ${cy-8} Q${cx} ${cy} ${cx-8} ${cy} Q${cx} ${cy} ${cx} ${cy+8} Q${cx} ${cy} ${cx+8} ${cy} Q${cx} ${cy} ${cx} ${cy-8} Z`}
+            fill="currentColor"
+            opacity="0.25"
+          />
         );
       })}
-      
-      <circle cx="100" cy="100" r="10" fill="currentColor" opacity="0.15" />
+
+      {/* Small decorative accent dots */}
+      {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle) => {
+        const rad = (angle * Math.PI) / 180;
+        const cx = 100 + Math.cos(rad) * 54;
+        const cy = 100 + Math.sin(rad) * 54;
+        return <circle key={angle} cx={cx} cy={cy} r="1.5" fill="currentColor" opacity="0.3" />;
+      })}
     </svg>
   );
 }

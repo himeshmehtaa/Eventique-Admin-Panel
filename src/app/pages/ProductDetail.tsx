@@ -17,7 +17,7 @@ export default function ProductDetail() {
     return (
       <div className="py-20 text-center">
         <h1 className="text-3xl mb-4">Product not found</h1>
-        <Link to="/explore" className="text-primary hover:underline">
+        <Link to="/events" className="text-primary hover:underline">
           Browse all designs
         </Link>
       </div>

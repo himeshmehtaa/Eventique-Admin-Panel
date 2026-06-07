@@ -1,668 +1,345 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import Slider from 'react-slick';
+import { 
+  Check, 
+  ChevronLeft, 
+  ChevronRight, 
+  FileText, 
+  Sparkles,
+  ShoppingBag,
+  IndianRupee,
+  MessageCircle,
+  Mail
+} from 'lucide-react';
+import { MandalaDecor, LotusDecor, PaisleyDecor } from '../components/decorative/FloralDecor';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
-import { Check, Printer, FileText, ShoppingCart, ChevronLeft, ChevronRight, Upload, ImageIcon } from 'lucide-react';
-import { MandalaDecor, LotusDecor } from '../components/decorative/FloralDecor';
 import lotusImage from '../../imports/image-3.png';
-import { useAdmin } from '../admin/context/AdminContext';
+
+const STATIONERY_PRODUCTS = [
+  {
+    id: 'st1',
+    name: 'Elegant Welcome Board',
+    type: 'Welcome Boards',
+    occasion: 'wedding',
+    price: 1999,
+    description: 'Welcome your guests with a beautifully designed floral welcome board.',
+    image: 'https://images.unsplash.com/photo-1618107158953-dd4c6424b638?w=600&fit=crop',
+    features: ['Custom Monogram', 'Large Format PDF', 'Gold Foil Accents']
+  },
+  {
+    id: 'st2',
+    name: 'Bespoke Wedding Menu Card',
+    type: 'Menu Cards',
+    occasion: 'wedding',
+    price: 1499,
+    description: 'Detail your celebration menu courses with custom typography designs.',
+    image: 'https://images.unsplash.com/photo-1581978154820-45d31f11a060?w=600&fit=crop',
+    features: ['Double-Sided Design', 'Premium Font Choice', 'Traditional Motifs']
+  },
+  {
+    id: 'st3',
+    name: 'Easel Seating Chart Display',
+    type: 'Seating Charts',
+    occasion: 'wedding',
+    price: 2499,
+    description: 'Showcase guest table arrangements clearly with an elegant alphabetized seating chart.',
+    image: 'https://images.unsplash.com/photo-1592677818395-72868c4b3c03?w=600&fit=crop',
+    features: ['High-Res Vector Format', 'Custom Seating Tables', 'Print-Ready Layout']
+  },
+  {
+    id: 'st4',
+    name: 'Calligraphy Name Place Card',
+    type: 'Place Cards',
+    occasion: 'wedding',
+    price: 999,
+    description: 'Folded name place cards for guest tables featuring custom branding calligraphy.',
+    image: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&fit=crop',
+    features: ['Individual Guest Names', 'Fold Line Markers', 'Double-Sided Design']
+  },
+  {
+    id: 'st5',
+    name: 'Classic Table Numbers Set',
+    type: 'Table Numbers',
+    occasion: 'wedding',
+    price: 999,
+    description: 'Numbered tent cards (1-20) to guide guests to their dining tables.',
+    image: 'https://images.unsplash.com/photo-1635126039221-5f64c186162a?w=600&fit=crop',
+    features: ['Numbers 1-20 included', 'Tent Card Fold Format', 'Matching Monogram']
+  },
+  {
+    id: 'st6',
+    name: 'Directional Event Signage',
+    type: 'Signage',
+    occasion: 'wedding',
+    price: 1999,
+    description: 'Help guests navigate between ceremony venues, bars, and reception zones.',
+    image: 'https://images.unsplash.com/photo-1600349183244-044448ebf637?w=600&fit=crop',
+    features: ['Set of 5 custom signs', 'Modern Icons included', 'High Resolution']
+  },
+  {
+    id: 'st7',
+    name: 'Floral Thank You Card',
+    type: 'Thank You Cards',
+    occasion: 'baby-shower',
+    price: 1299,
+    description: 'Thank-you cards customized with your baby shower visual theme.',
+    image: 'https://images.unsplash.com/photo-1758810741366-aff0d0e37e7f?w=600&fit=crop',
+    features: ['Custom Message', 'Personal Signature Block', 'Matching Envelopes']
+  },
+  {
+    id: 'st8',
+    name: 'Linen Paper Gift Tag',
+    type: 'Gift Tags',
+    occasion: 'anniversary',
+    price: 999,
+    description: 'Custom print tags to tie to return gift packages and boxes.',
+    image: 'https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=600&fit=crop',
+    features: ['Lanyard Hole punches', 'Gold Border Accents', 'Personalized Text']
+  },
+  {
+    id: 'st9',
+    name: 'Theme Sticker Pack',
+    type: 'Stickers',
+    occasion: 'birthday',
+    price: 799,
+    description: 'Custom adhesive stickers matching your kids party or birthday theme.',
+    image: 'https://images.unsplash.com/photo-1595116971913-b52f8ccca4c0?w=600&fit=crop',
+    features: ['Round shape cuts', 'Vibrant CMYK Colors', 'Multiple designs']
+  },
+  {
+    id: 'st10',
+    name: 'Mandala Envelope Seals',
+    type: 'Envelope Seals',
+    occasion: 'pooja',
+    price: 799,
+    description: 'Gold foil round seals featuring sacred motifs to seal invitations.',
+    image: 'https://images.unsplash.com/photo-1692098075460-6bdb6009b33e?w=600&fit=crop',
+    features: ['Adhesive circular cuts', 'Traditional Mandala Art', 'Gold Foil Embossed look']
+  }
+];
+
+const OCCASIONS = [
+  { value: 'all', label: 'All Occasions' },
+  { value: 'wedding', label: 'Weddings' },
+  { value: 'engagement', label: 'Engagements' },
+  { value: 'anniversary', label: 'Anniversaries' },
+  { value: 'baby-shower', label: 'Baby Showers' },
+  { value: 'birthday', label: 'Birthdays' },
+  { value: 'kids', label: 'Kids Parties' },
+  { value: 'housewarming', label: 'Housewarming' },
+  { value: 'pooja', label: 'Pooja & Religious' },
+];
+
+const STATIONERY_TYPES = [
+  { value: 'all', label: 'All Products' },
+  { value: 'Welcome Boards', label: 'Welcome Boards' },
+  { value: 'Menu Cards', label: 'Menu Cards' },
+  { value: 'Seating Charts', label: 'Seating Charts' },
+  { value: 'Place Cards', label: 'Place Cards' },
+  { value: 'Table Numbers', label: 'Table Numbers' },
+  { value: 'Signage', label: 'Signage' },
+  { value: 'Thank You Cards', label: 'Thank You Cards' },
+  { value: 'Gift Tags', label: 'Gift Tags' },
+  { value: 'Stickers', label: 'Stickers' },
+  { value: 'Envelope Seals', label: 'Envelope Seals' }
+];
 
 export default function Stationery() {
-  const { state } = useAdmin();
-  const stationeryBlock = state.contentBlocks.find((cb) => cb.sectionName === 'Stationery');
-  const [cart, setCart] = useState<string[]>([]);
-  const [activeImageIndexes, setActiveImageIndexes] = useState<{ [key: number]: number }>({});
-  const [showAllItems, setShowAllItems] = useState(false);
-  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [selectedOccasion, setSelectedOccasion] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
 
-  const heroImages = [
-    'https://images.unsplash.com/photo-1606800052052-a08af7148866?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920',
-    'https://images.unsplash.com/photo-1519741497674-611481863552?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920',
-    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920',
-  ];
+  const filteredProducts = STATIONERY_PRODUCTS.filter((item) => {
+    let matchesOccasion = true;
+    if (selectedOccasion !== 'all') {
+      if (selectedOccasion === 'kids') {
+        matchesOccasion = item.occasion === 'birthday' && 
+          (item.name.toLowerCase().includes('kids') || item.description.toLowerCase().includes('kids') || item.type === 'Stickers');
+      } else if (selectedOccasion === 'housewarming') {
+        matchesOccasion = item.occasion === 'pooja' && 
+          (item.name.toLowerCase().includes('house') || item.name.toLowerCase().includes('griha'));
+      } else {
+        matchesOccasion = item.occasion === selectedOccasion;
+      }
+    }
 
-  const stationeryCategories = [
-    {
-      name: 'Save the Date',
-      image: 'https://images.unsplash.com/photo-1674227832118-df9f372bff25?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Envelopes',
-      image: 'https://images.unsplash.com/photo-1606377992446-f48e2db5d5b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Menu Cards',
-      image: 'https://images.unsplash.com/photo-1581978154820-45d31f11a060?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Table Numbers',
-      image: 'https://images.unsplash.com/photo-1635126039221-5f64c186162a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Signage',
-      image: 'https://images.unsplash.com/photo-1600349183244-044448ebf637?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Thank You Cards',
-      image: 'https://images.unsplash.com/photo-1758810741366-aff0d0e37e7f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Seating Chart',
-      image: 'https://images.unsplash.com/photo-1592677818395-72868c4b3c03?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Custom Logos',
-      image: 'https://images.unsplash.com/photo-1692098075460-6bdb6009b33e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Place Cards',
-      image: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Invitation Cards',
-      image: 'https://images.unsplash.com/photo-1519741497674-611481863552?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Ceremony Programs',
-      image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Wedding Favors',
-      image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Gift Tags',
-      image: 'https://images.unsplash.com/photo-1607344645866-009c320b63e0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Drink Menus',
-      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Welcome Signs',
-      image: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Napkin Rings',
-      image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Escort Cards',
-      image: 'https://images.unsplash.com/photo-1478145046317-39f10e56b5e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'RSVP Cards',
-      image: 'https://images.unsplash.com/photo-1452827073306-6e6e661baf57?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Wishing Well Cards',
-      image: 'https://images.unsplash.com/photo-1487700160041-babef9c3cb55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Guest Books',
-      image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Bookmarks',
-      image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-    {
-      name: 'Coasters',
-      image: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400',
-    },
-  ];
+    let matchesType = true;
+    if (selectedType !== 'all') {
+      matchesType = item.type === selectedType;
+    }
 
-  const NextArrow = (props: any) => {
-    const { onClick } = props;
-    return (
-      <button
-        onClick={onClick}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-all shadow-lg"
-        aria-label="Next"
-      >
-        <ChevronRight className="w-6 h-6 text-primary" />
-      </button>
-    );
-  };
-
-  const PrevArrow = (props: any) => {
-    const { onClick } = props;
-    return (
-      <button
-        onClick={onClick}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-all shadow-lg"
-        aria-label="Previous"
-      >
-        <ChevronLeft className="w-6 h-6 text-primary" />
-      </button>
-    );
-  };
-
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 4000,
-    nextArrow: <NextArrow />,
-    prevArrow: <PrevArrow />,
-  };
-
-  const stationeryItems = [
-    {
-      name: 'Custom Logo Design',
-      description: 'Unique monogram or logo for your event branding',
-      designPrice: 2499,
-      printPrice: 4999,
-      deliveryTime: '3-4 days',
-      images: [
-        'https://images.unsplash.com/photo-1692098075460-6bdb6009b33e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1606800052052-a08af7148866?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: 'Printed on premium paper with gold foiling',
-      category: 'Wedding',
-      moq: 50,
-    },
-    {
-      name: 'Save the Date Cards',
-      description: 'Announce your event date with elegant cards',
-      designPrice: 1499,
-      printPrice: 3999,
-      deliveryTime: '2-3 days',
-      images: [
-        'https://images.unsplash.com/photo-1674227832118-df9f372bff25?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1606800052052-a08af7148866?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: '50 cards - Premium cardstock (350 GSM)',
-      category: 'Wedding',
-      moq: 50,
-    },
-    {
-      name: 'Welcome Cards',
-      description: 'Greet your guests with beautiful welcome cards',
-      designPrice: 1299,
-      printPrice: 3499,
-      deliveryTime: '2-3 days',
-      images: [
-        'https://images.unsplash.com/photo-1618107158953-dd4c6424b638?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1519741497674-611481863552?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: '50 cards - Art cardstock (300 GSM)',
-      category: 'Engagement',
-      moq: 50,
-    },
-    {
-      name: 'Thank You Cards',
-      description: 'Express gratitude with personalized thank you cards',
-      designPrice: 1299,
-      printPrice: 3499,
-      deliveryTime: '2-3 days',
-      images: [
-        'https://images.unsplash.com/photo-1758810741366-aff0d0e37e7f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1606800052052-a08af7148866?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: '50 cards with envelopes - Premium paper',
-      category: 'Anniversary',
-      moq: 50,
-    },
-    {
-      name: 'Menu Cards',
-      description: 'Display your food menu in style',
-      designPrice: 1499,
-      printPrice: 4499,
-      deliveryTime: '2-3 days',
-      images: [
-        'https://images.unsplash.com/photo-1581978154820-45d31f11a060?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1519741497674-611481863552?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: '100 menu cards - Matte finish cardstock',
-      category: 'Wedding',
-      moq: 100,
-    },
-    {
-      name: 'Itinerary Cards',
-      description: 'Event schedule and timeline cards for guests',
-      designPrice: 1599,
-      printPrice: 4199,
-      deliveryTime: '2-3 days',
-      images: [
-        'https://images.unsplash.com/photo-1712903276040-c99b32a057eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1604608672516-688347c4d953?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: '50 cards - Double-sided printing',
-      category: 'Pooja',
-      moq: 50,
-    },
-    {
-      name: 'Seating Chart',
-      description: 'Beautiful seating arrangement display design',
-      designPrice: 1799,
-      printPrice: 5999,
-      deliveryTime: '3-4 days',
-      images: [
-        'https://images.unsplash.com/photo-1592677818395-72868c4b3c03?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: 'Large format print (24x36") with stand',
-      category: 'Kids',
-      moq: 1,
-    },
-    {
-      name: 'Event Signage',
-      description: 'Custom signage for various event locations',
-      designPrice: 1999,
-      printPrice: 6999,
-      deliveryTime: '3-4 days',
-      images: [
-        'https://images.unsplash.com/photo-1600349183244-044448ebf637?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1519741497674-611481863552?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: 'Set of 5 signs - Foamboard or acrylic',
-      category: 'Party',
-      moq: 5,
-    },
-    {
-      name: 'Table Numbers',
-      description: 'Elegant table number cards for reception',
-      designPrice: 999,
-      printPrice: 2999,
-      deliveryTime: '1-2 days',
-      images: [
-        'https://images.unsplash.com/photo-1635126039221-5f64c186162a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-        'https://images.unsplash.com/photo-1606800052052-a08af7148866?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-      ],
-      printDetails: 'Set of 20 numbers - Tent card style',
-      category: 'Wedding',
-      moq: 20,
-    },
-  ];
-
-  const handleAddToCart = (itemName: string) => {
-    setCart(prev => [...prev, itemName]);
-    alert(`${itemName} added to cart!`);
-  };
+    return matchesOccasion && matchesType;
+  });
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Floating Decorative Elements */}
-      <LotusDecor className="absolute top-32 right-16 w-40 h-40 text-primary opacity-40 animate-float" />
-      <MandalaDecor className="absolute top-96 left-12 w-56 h-56 text-secondary opacity-35 animate-rotate-slow" />
-      <LotusDecor className="absolute bottom-1/3 right-1/3 w-32 h-32 text-accent opacity-40 animate-float" style={{ animationDelay: '3s' }} />
+    <div className="py-12 relative overflow-hidden bg-[#faf8f5]">
+      {/* Background Floral Elements */}
+      <MandalaDecor className="absolute top-20 right-10 w-64 h-64 text-primary opacity-20 animate-rotate-slow pointer-events-none" />
+      <PaisleyDecor className="absolute top-1/3 left-10 w-48 h-48 text-secondary opacity-25 pointer-events-none" />
+      <LotusDecor className="absolute bottom-1/4 right-1/4 w-32 h-32 text-accent opacity-30 pointer-events-none" />
 
-      {/* Hero Header */}
-      <section className="relative bg-gradient-to-br from-[#fdf8f0] via-white to-[#fff5f0] py-16 md:py-24 border-b border-primary/5 mb-8">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Column — Content */}
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                <span>✨ Premium Event Stationery</span>
-              </div>
-              <h1 className="text-4xl md:text-6xl mb-5 text-[#1a1410] font-serif leading-[1.15] tracking-tight">
-                {stationeryBlock?.title || 'Premium Wedding'} <br />
-                <span className="text-primary italic">Stationery</span>
-              </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">
-                {stationeryBlock?.subtitle || 'Beautiful designs for every detail of your special day. Select Design Only or Design + Print services.'}
-              </p>
-              <div className="flex flex-wrap gap-4 pt-2">
+      <div className="container mx-auto px-4 relative z-10 max-w-7xl">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <div className="flex justify-center mb-4">
+            <img 
+              src={lotusImage} 
+              alt="Lotus logo icon" 
+              className="w-40 h-10 object-contain opacity-25" 
+              style={{ filter: 'brightness(0) saturate(100%) invert(38%) sepia(18%) saturate(1285%) hue-rotate(316deg) brightness(91%) contrast(87%)' }} 
+            />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+            Event Stationery Catalog
+          </h1>
+          <p className="text-lg text-slate-500 max-w-xl mx-auto font-light leading-relaxed">
+            Cohesive printed and digital stationery items designed to elevate the visual theme of your celebration.
+          </p>
+        </div>
+
+        {/* Occasion Filters */}
+        <div className="mb-8 w-full">
+          <div className="flex justify-start md:justify-center overflow-x-auto hide-scrollbar scroll-smooth">
+            <div className="bg-[#8B4949] rounded-full p-1.5 flex gap-1.5 whitespace-nowrap min-w-max">
+              {OCCASIONS.map((occ) => (
                 <button
+                  key={occ.value}
                   onClick={() => {
-                    const el = document.getElementById('collection');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    setSelectedOccasion(occ.value);
                   }}
-                  className="px-6 py-3 bg-primary text-white rounded-full hover:bg-primary/95 hover:scale-105 transition-all shadow-md font-semibold text-sm cursor-pointer"
+                  className={`px-5 py-2.5 rounded-full transition-all duration-300 whitespace-nowrap text-xs md:text-sm font-semibold cursor-pointer ${
+                    selectedOccasion === occ.value
+                      ? 'bg-[#F5E6D8] text-[#8B4949] shadow-sm'
+                      : 'text-white hover:text-white/80'
+                  }`}
                 >
-                  Explore Collection
+                  {occ.label}
                 </button>
-                <Link
-                  to="/contact"
-                  className="px-6 py-3 bg-white text-gray-700 border border-primary/20 rounded-full hover:bg-primary/5 hover:scale-105 transition-all shadow-sm text-sm"
-                >
-                  Get Custom Quote
-                </Link>
-              </div>
-
-              {/* Bullet points */}
-              <div className="flex flex-wrap gap-x-6 gap-y-3 pt-6 border-t border-[#f0ebe0]">
-                {['Design Only or Printed Options', 'Premium Matte & Foil Finishes', 'Express Delivery Worldwide'].map((item) => (
-                  <div key={item} className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-primary" />
-                    <span className="text-xs font-semibold text-gray-600">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right Column — Collage Mockup */}
-            <div className="relative flex items-center justify-center lg:justify-end">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 rounded-3xl blur-3xl opacity-50" />
-              <div className="grid grid-cols-2 gap-4 w-full max-w-[480px] relative z-10">
-                {heroImages.slice(0, 3).map((src, i) => (
-                  <div
-                    key={i}
-                    className={`rounded-2xl overflow-hidden shadow-xl border-2 border-white/60 hover:scale-[1.03] transition-all duration-500 ${
-                      i === 0 ? 'col-span-2 aspect-[16/9]' : 'aspect-square'
-                    }`}
-                  >
-                    <ImageWithFallback src={src} alt={`Stationery design ${i + 1}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </div>
-      </section>
 
-      <div className="py-12" id="collection">
-        <div className="container mx-auto px-4">
-          {/* Header */}
-          <div className="text-center mb-12 relative">
-            <MandalaDecor className="absolute -top-10 left-10 w-40 h-40 text-primary opacity-30 animate-rotate-slow" />
-            <MandalaDecor className="absolute -top-10 right-10 w-40 h-40 text-secondary opacity-30 animate-rotate-slow" style={{ animationDelay: '2s' }} />
-
-            <div className="flex justify-center mb-6">
-              <img src={lotusImage} alt="" className="w-96 h-20 object-contain opacity-35" style={{ filter: 'brightness(0) saturate(100%) invert(38%) sepia(18%) saturate(1285%) hue-rotate(316deg) brightness(91%) contrast(87%)' }} />
+        {/* Product Type Filters */}
+        <div className="mb-12 w-full">
+          <div className="flex justify-start md:justify-center overflow-x-auto hide-scrollbar scroll-smooth">
+            <div className="flex gap-2 whitespace-nowrap min-w-max px-4">
+              {STATIONERY_TYPES.map((type) => (
+                <button
+                  key={type.value}
+                  onClick={() => setSelectedType(type.value)}
+                  className={`px-5 py-2.5 rounded-full transition-all duration-300 text-xs md:text-sm font-semibold cursor-pointer ${
+                    selectedType === type.value
+                      ? 'bg-[#8B4949] text-white shadow-sm'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {type.label}
+                </button>
+              ))}
             </div>
-
-            <h2 className="text-3xl md:text-4xl mb-4 relative z-10">Print Stationery</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto relative z-10">
-              Get beautifully designed stationery - choose Design Only or Design + Print services
-            </p>
           </div>
+        </div>
 
-          {/* Stationery Categories */}
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl md:text-4xl">Explore Our Best Seller Stationeries</h2>
-              {stationeryCategories.length > 9 && !showAllCategories && (
-                <button
-                  onClick={() => setShowAllCategories(true)}
-                  className="text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1 group"
-                >
-                  View All Categories
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-              )}
-            </div>
+        {/* Count */}
+        <div className="flex items-center justify-between border-b border-[#f0ebe0] pb-4 mb-6">
+          <p className="text-slate-500 font-light text-sm">
+            Showing {filteredProducts.length} product{filteredProducts.length === 1 ? '' : 's'}
+          </p>
+        </div>
 
-            {showAllCategories ? (
-              // Grid view for all categories
-              <div className="mb-8">
-                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
-                  {stationeryCategories.map((cat, index) => (
-                    <div
-                      key={index}
-                      className="text-center group cursor-pointer"
-                    >
-                      <div className="w-24 h-24 rounded-full overflow-hidden mb-3 border-2 border-border group-hover:border-primary transition-all shadow-md group-hover:shadow-lg mx-auto">
-                        <ImageWithFallback
-                          src={cat.image}
-                          alt={cat.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                      </div>
-                      <p className="text-sm font-medium group-hover:text-primary transition-colors">
-                        {cat.name}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <div className="text-center mt-6">
-                  <button
-                    onClick={() => setShowAllCategories(false)}
-                    className="text-sm text-primary hover:text-primary/80 font-medium"
-                  >
-                    Show Less
-                  </button>
-                </div>
-              </div>
-            ) : (
-              // Horizontal scroll view for limited categories
-              <div className="relative max-w-6xl mx-auto mb-8">
-                <button
-                  onClick={() => {
-                    const container = document.getElementById('categories-scroll');
-                    if (container) container.scrollLeft -= 200;
-                  }}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition-all"
-                  aria-label="Scroll Left"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <div
-                  id="categories-scroll"
-                  className="flex gap-6 overflow-x-auto scroll-smooth px-12 hide-scrollbar"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  {(stationeryCategories.length > 9 ? stationeryCategories.slice(0, 9) : stationeryCategories).map((cat, index) => (
-                    <div
-                      key={index}
-                      className="flex-shrink-0 text-center group cursor-pointer"
-                    >
-                      <div className="w-24 h-24 rounded-full overflow-hidden mb-3 border-2 border-border group-hover:border-primary transition-all shadow-md group-hover:shadow-lg">
-                        <ImageWithFallback
-                          src={cat.image}
-                          alt={cat.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                      </div>
-                      <p className="text-sm font-medium group-hover:text-primary transition-colors whitespace-nowrap">
-                        {cat.name}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => {
-                    const container = document.getElementById('categories-scroll');
-                    if (container) container.scrollLeft += 200;
-                  }}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary hover:text-white transition-all"
-                  aria-label="Scroll Right"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            )}
-          </div>
-
-        {/* Stationery Grid */}
-        {stationeryItems.length > 0 ? (
-          <>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {(showAllItems ? stationeryItems : stationeryItems.slice(0, 8)).map((item, index) => {
-              const currentImageIndex = activeImageIndexes[index] || 0;
-              return (
-                <div
-                  key={index}
-                  className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-xl transition-all group"
-                >
-                  {/* Image Carousel */}
-                  <div className="aspect-[4/3] bg-muted relative overflow-hidden">
-                    <ImageWithFallback
-                      src={item.images[currentImageIndex]}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
-
-                    {/* Carousel Controls - Visible on hover */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {item.images.length > 1 && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setActiveImageIndexes(prev => ({
-                                ...prev,
-                                [index]: currentImageIndex > 0 ? currentImageIndex - 1 : item.images.length - 1
-                              }));
-                            }}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-all shadow-md z-10"
-                            aria-label="Previous image"
-                          >
-                            <ChevronLeft className="w-4 h-4 text-primary" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setActiveImageIndexes(prev => ({
-                                ...prev,
-                                [index]: currentImageIndex < item.images.length - 1 ? currentImageIndex + 1 : 0
-                              }));
-                            }}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-all shadow-md z-10"
-                            aria-label="Next image"
-                          >
-                            <ChevronRight className="w-4 h-4 text-primary" />
-                          </button>
-                        </>
-                      )}
-
-                      {/* Personalize & Buy Overlay */}
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-16">
-                        <Link
-                          to={`/stationery/${index}`}
-                          className="w-full py-3 bg-white text-primary rounded-full hover:bg-primary hover:text-white transition-all flex items-center justify-center font-semibold text-sm"
-                        >
-                          Personalize & Buy
-                        </Link>
-                      </div>
-                    </div>
-
-                    {/* Dots Indicator */}
-                    {item.images.length > 1 && (
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-                        {item.images.map((_, imgIndex) => (
-                          <button
-                            key={imgIndex}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setActiveImageIndexes(prev => ({ ...prev, [index]: imgIndex }));
-                            }}
-                            className={`h-1.5 rounded-full transition-all ${
-                              imgIndex === currentImageIndex
-                                ? 'w-6 bg-white'
-                                : 'w-1.5 bg-white/50'
-                            }`}
-                            aria-label={`View image ${imgIndex + 1}`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-4">
-                    <Link to={`/stationery/${index}`}>
-                      <h3 className="text-base font-semibold hover:text-primary transition-colors line-clamp-1 mb-1">
-                        {item.name}
-                      </h3>
-                    </Link>
-                    <p className="text-xs text-muted-foreground mb-3 line-clamp-1">
-                      Premium handcrafted design for special occasions
-                    </p>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-lg font-bold text-primary">
-                        ₹{item.designPrice.toLocaleString('en-IN')}
-                      </span>
-                      <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
-                        {item.category}
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Min. Order: {item.moq} pcs
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {stationeryItems.length > 8 && !showAllItems && (
-            <div className="text-center mb-16">
-              <button
-                onClick={() => setShowAllItems(true)}
-                className="px-8 py-3 bg-primary text-white rounded-full hover:bg-primary/90 transition-all shadow-md hover:shadow-lg font-semibold"
+        {/* Products Grid */}
+        {filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredProducts.map((item) => (
+              <div 
+                key={item.id} 
+                className="group bg-white rounded-2xl overflow-hidden border border-slate-150 hover:shadow-xl transition-all duration-500 hover:-translate-y-1 flex flex-col justify-between"
               >
-                View All ({stationeryItems.length} items)
-              </button>
-            </div>
-          )}
-          </>
+                <div>
+                  <div className="aspect-[4/3] overflow-hidden bg-slate-50 relative border-b border-slate-100">
+                    <ImageWithFallback 
+                      src={item.image} 
+                      alt={item.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute top-3 right-3 z-10">
+                      <span className="px-2.5 py-1 bg-white/95 text-slate-700 text-[10px] font-bold rounded-full shadow-sm border border-slate-200">
+                        {item.type}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-5 space-y-2">
+                    <h3 className="text-base font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">
+                      {item.name}
+                    </h3>
+                    <p className="text-xs text-slate-500 leading-relaxed font-light">
+                      {item.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {item.features.map((f, idx) => (
+                        <span key={idx} className="text-[9px] font-medium px-2 py-0.5 bg-[#8B4949]/5 text-[#8B4949] rounded-full border border-[#8B4949]/10">
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-50 mt-4">
+                  <div className="flex items-center text-[#8B4949]">
+                    <IndianRupee className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-base font-bold">{item.price.toLocaleString('en-IN')}</span>
+                    <span className="text-[10px] text-slate-400 font-light ml-0.5">onwards</span>
+                  </div>
+                  <Link
+                    to="/contact"
+                    className="text-xs px-4 py-2 bg-slate-900 text-white rounded-full hover:bg-primary font-semibold transition-colors duration-300 flex items-center gap-1"
+                  >
+                    Inquire
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
-          <div className="text-center py-16 mb-16">
-            <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-              <FileText className="w-12 h-12 text-muted-foreground" />
-            </div>
-            <h3 className="text-2xl mb-2">No items found</h3>
-            <p className="text-muted-foreground mb-6">
-              No stationery items available at the moment.
-            </p>
+          <div className="text-center py-20 bg-white rounded-3xl border border-slate-150 p-8 shadow-sm">
+            <p className="text-xl text-slate-500 mb-2 font-semibold">No stationery products found</p>
+            <p className="text-slate-400 mb-6 font-light">Try selecting a different occasion or product category.</p>
+            <button
+              onClick={() => {
+                setSelectedOccasion('all');
+                setSelectedType('all');
+              }}
+              className="px-6 py-3 bg-primary text-white rounded-full hover:bg-primary/95 transition-all font-semibold text-sm cursor-pointer"
+            >
+              Reset Filters
+            </button>
           </div>
         )}
 
-        {/* Complete Set CTA */}
-        <div className="max-w-4xl mx-auto bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 rounded-2xl p-8 md:p-12 text-center">
-          <h2 className="text-3xl md:text-4xl mb-4">Need Complete Stationery Set?</h2>
-          <p className="text-lg text-muted-foreground mb-6">
-            Get all stationery items bundled together at a discounted price. 
-            Perfect for cohesive event branding.
+        {/* Cohesive Set CTA Banner */}
+        <div className="max-w-4xl mx-auto bg-gradient-to-br from-white via-[#fffdfb] to-[#faf5e6] rounded-3xl p-8 md:p-12 text-center border border-primary/10 overflow-hidden shadow-sm mt-20">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-2xl pointer-events-none" />
+          <h2 className="text-2xl md:text-3xl mb-3 font-bold text-slate-900" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+            Need a Fully Branded Stationery Set?
+          </h2>
+          <p className="text-slate-500 max-w-xl mx-auto mb-8 font-light leading-relaxed">
+            Get all welcome boards, menu cards, table numbers, place cards, and stickers designed together for a cohesive theme layout.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
-              to="/packages"
-              className="px-8 py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
+              to="/events"
+              className="px-6 py-3 bg-primary text-white rounded-full hover:bg-primary/95 hover:scale-105 transition-all shadow-md font-semibold text-sm"
             >
-              View Packages
+              View Design Packages
             </Link>
             <Link
-              to="/order"
-              className="px-8 py-4 bg-card text-foreground border border-border rounded-full hover:bg-muted transition-colors"
+              to="/contact"
+              className="px-6 py-3 bg-white text-slate-700 border border-primary/20 rounded-full hover:bg-primary/5 hover:scale-105 transition-all shadow-sm font-semibold text-sm"
             >
-              Order Custom Set
+              Request Custom Set
             </Link>
           </div>
-        </div>
-
-        {/* Features */}
-        <div className="mt-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl mb-4">Why Choose Our Stationery?</h2>
-          </div>
-          <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📐</span>
-              </div>
-              <h3 className="text-lg mb-2">Print Ready</h3>
-              <p className="text-sm text-muted-foreground">High-resolution files ready for printing</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🎨</span>
-              </div>
-              <h3 className="text-lg mb-2">Customizable</h3>
-              <p className="text-sm text-muted-foreground">Fully personalized to match your theme</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">✨</span>
-              </div>
-              <h3 className="text-lg mb-2">Premium Quality</h3>
-              <p className="text-sm text-muted-foreground">Professional designs that impress</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">⚡</span>
-              </div>
-              <h3 className="text-lg mb-2">Fast Delivery</h3>
-              <p className="text-sm text-muted-foreground">Quick turnaround times</p>
-            </div>
-          </div>
-        </div>
         </div>
       </div>
     </div>

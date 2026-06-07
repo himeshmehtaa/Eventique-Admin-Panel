@@ -202,7 +202,7 @@ const catalog: Record<string, CatalogProduct> = {
       { label: 'Envelope',    value: 'Gold-lined envelope included' },
       { label: 'Delivery',    value: '10-12 business days (Printed Cards)' },
     ],
-    backPath: '/explore', backLabel: 'Explore',
+    backPath: '/events', backLabel: 'Events',
   },
 
   'invite/wax-seal-envelope-suite': {
@@ -227,7 +227,7 @@ const catalog: Record<string, CatalogProduct> = {
       { label: 'Personalization', value: 'Bride & groom names, venue, date, time' },
       { label: 'Delivery',      value: '14-18 business days (Standard)' },
     ],
-    backPath: '/explore', backLabel: 'Explore',
+    backPath: '/events', backLabel: 'Events',
   },
 
   'invite/classic-ivory-card': {
@@ -252,7 +252,7 @@ const catalog: Record<string, CatalogProduct> = {
       { label: 'Envelope',  value: 'Ivory peel-and-seal envelope' },
       { label: 'Delivery',  value: '10-14 business days (Standard)' },
     ],
-    backPath: '/explore', backLabel: 'Explore',
+    backPath: '/events', backLabel: 'Events',
   },
 
   'stationery/luxury-wedding-suite': {
@@ -407,7 +407,7 @@ export default function ProductPage() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
         <h1 className="text-3xl mb-4 text-[#1a1410]">Product Not Found</h1>
         <p className="text-gray-500 mb-8">This product doesn't exist or may have moved.</p>
-        <Link to="/explore" className="px-8 py-3 bg-[#8B4949] text-white rounded-full font-semibold hover:bg-[#7a3f3f] transition-all">
+        <Link to="/events" className="px-8 py-3 bg-[#8B4949] text-white rounded-full font-semibold hover:bg-[#7a3f3f] transition-all">
           Browse Products
         </Link>
       </div>
@@ -771,7 +771,7 @@ export default function ProductPage() {
         <section className="mt-20 mb-12">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl md:text-3xl text-[#1a1410]">You May Also Like</h2>
-            <Link to="/explore" className="text-sm text-[#8B4949] hover:text-[#7a3f3f] font-medium flex items-center gap-1 group">
+            <Link to="/events" className="text-sm text-[#8B4949] hover:text-[#7a3f3f] font-medium flex items-center gap-1 group">
               View All
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>

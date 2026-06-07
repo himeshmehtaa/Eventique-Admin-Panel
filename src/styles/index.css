@@ -214,3 +214,293 @@ body {
 .carousel-right { animation: marquee-right 34s linear infinite; will-change: transform; }
 .carousel-pause:hover .carousel-left,
 .carousel-pause:hover .carousel-right { animation-play-state: paused; }
+
+/* ── Scroll Reveal Animations — smooth zoom-in ───────────────────── */
+.scroll-animate {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+@supports ((animation-timeline: view()) and (animation-range: entry)) {
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes scroll-fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .scroll-animate {
+      animation: scroll-fade-in auto ease-out both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 28%;
+    }
+  }
+}
+
+@supports not ((animation-timeline: view()) and (animation-range: entry)) {
+  .scroll-animate:not(.in-view) {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+}
+
+/* ── Custom Homepage Animations ── */
+@keyframes kenburns {
+  0%  { transform: scale(1.01); }
+  100%{ transform: scale(1.08); }
+}
+.kenburns-active {
+  animation: kenburns 7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+}
+
+@keyframes dash-flow {
+  to { stroke-dashoffset: -20; }
+}
+.animate-dash-flow {
+  animation: dash-flow 1s linear infinite;
+}
+
+.glow-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-hover:hover {
+  box-shadow: 0 20px 40px rgba(139, 73, 73, 0.12), 0 0 0 1px rgba(139, 73, 73, 0.05);
+  transform: translateY(-4px);
+}
+
+/* ── PREMIUM MOTION SYSTEM ─────────────────────────────────── */
+
+/* 1. Stagger-in children: add .stagger-parent, children get .stagger-child */
+@keyframes stagger-rise {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+.stagger-child {
+  opacity: 0;
+  animation: stagger-rise 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.stagger-child:nth-child(1)  { animation-delay: 0.05s; }
+.stagger-child:nth-child(2)  { animation-delay: 0.12s; }
+.stagger-child:nth-child(3)  { animation-delay: 0.19s; }
+.stagger-child:nth-child(4)  { animation-delay: 0.26s; }
+.stagger-child:nth-child(5)  { animation-delay: 0.33s; }
+.stagger-child:nth-child(6)  { animation-delay: 0.40s; }
+.stagger-child:nth-child(7)  { animation-delay: 0.47s; }
+.stagger-child:nth-child(8)  { animation-delay: 0.54s; }
+.stagger-child:nth-child(9)  { animation-delay: 0.61s; }
+.stagger-child:nth-child(10) { animation-delay: 0.68s; }
+.stagger-child:nth-child(11) { animation-delay: 0.75s; }
+.stagger-child:nth-child(12) { animation-delay: 0.82s; }
+
+/* Stagger only activates when parent has .in-view or scroll-timeline fires */
+.stagger-parent .stagger-child { animation-play-state: paused; }
+.stagger-parent.in-view .stagger-child,
+.stagger-parent.stagger-active .stagger-child { animation-play-state: running; }
+
+/* 2. Gradient flowing text */
+@keyframes gradient-flow {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+.text-gradient-flow {
+  background: linear-gradient(270deg, #8B4949, #D4AF37, #c47b2b, #8B4949);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 5s ease infinite;
+}
+
+/* 3. Floating particles */
+@keyframes particle-drift {
+  0%   { transform: translateY(0)   translateX(0)   rotate(0deg);   opacity: 0.6; }
+  33%  { transform: translateY(-22px) translateX(8px)  rotate(90deg);  opacity: 0.9; }
+  66%  { transform: translateY(-8px)  translateX(-6px) rotate(200deg); opacity: 0.5; }
+  100% { transform: translateY(0)   translateX(0)   rotate(360deg); opacity: 0.6; }
+}
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particle-drift linear infinite;
+  will-change: transform, opacity;
+}
+
+/* 4. 3-D card tilt on hover */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+  perspective: 900px;
+}
+.card-3d:hover {
+  transform: rotateX(-4deg) rotateY(4deg) translateY(-8px) scale(1.02);
+  box-shadow: 0 32px 60px rgba(139, 73, 73, 0.18), 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* 5. Clip-path hero text reveal */
+@keyframes clip-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0);   }
+}
+.clip-reveal {
+  animation: clip-reveal 0.9s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+.clip-reveal-delay { animation: clip-reveal 0.9s 0.2s cubic-bezier(0.77, 0, 0.175, 1) both; }
+.clip-reveal-delay2{ animation: clip-reveal 0.9s 0.4s cubic-bezier(0.77, 0, 0.175, 1) both; }
+
+/* 6. Number pop counter */
+@keyframes num-pop {
+  0%   { transform: scale(0.6) translateY(12px); opacity: 0; }
+  70%  { transform: scale(1.1) translateY(-3px);  opacity: 1; }
+  100% { transform: scale(1)   translateY(0);      opacity: 1; }
+}
+.num-pop { animation: num-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* 7. Magnetic button ripple on click */
+@keyframes ripple-out {
+  from { transform: scale(0); opacity: 0.35; }
+  to   { transform: scale(3); opacity: 0;    }
+}
+.ripple-btn { position: relative; overflow: hidden; }
+.ripple-btn::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  pointer-events: none;
+}
+.ripple-btn:active::after {
+  animation: ripple-out 0.5s ease-out forwards;
+}
+
+/* 8. Wavy underline for section headings */
+@keyframes wave-move {
+  0%   { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+.wavy-underline {
+  display: inline;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='8'%3E%3Cpath d='M0 4 Q10 0 20 4 Q30 8 40 4' stroke='%238B4949' stroke-width='2' fill='none' stroke-opacity='0.5'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  background-size: 40px 8px;
+  padding-bottom: 10px;
+  animation: wave-move 2s linear infinite;
+}
+
+/* 9. Slide-in from sides */
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-50px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(50px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in-left  { animation: slide-in-left  0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.slide-in-right { animation: slide-in-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.slide-in-left-delay  { animation: slide-in-left  0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.slide-in-right-delay { animation: slide-in-right 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* 10. Glowing orb pulse */
+@keyframes orb-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.18; filter: blur(40px); }
+  50%       { transform: scale(1.15); opacity: 0.30; filter: blur(48px); }
+}
+.orb-pulse { animation: orb-pulse 8s ease-in-out infinite; }
+
+/* 11. Badge badge badge pop-in on scroll */
+@keyframes badge-pop {
+  from { transform: scale(0.7) rotate(-6deg); opacity: 0; }
+  to   { transform: scale(1)   rotate(0deg);  opacity: 1; }
+}
+.badge-pop { animation: badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* 12. Scroll-driven stagger for .scroll-animate children */
+@supports ((animation-timeline: view()) and (animation-range: entry)) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stagger-parent .stagger-child {
+      animation-name: stagger-rise;
+      animation-fill-mode: both;
+      animation-duration: 0.7s;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+      opacity: 1;
+    }
+  }
+}
+
+/* 13. Image parallax scroll hint */
+@keyframes hint-scroll {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  60%       { transform: translateY(6px); opacity: 0.5; }
+}
+.scroll-hint { animation: hint-scroll 2s ease-in-out infinite; }
+
+/* 14. Sparkle blink */
+@keyframes sparkle-blink {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  50%       { opacity: 0.4; transform: scale(0.8) rotate(20deg); }
+}
+.sparkle-blink { animation: sparkle-blink 2.5s ease-in-out infinite; }
+
+/* 15. Blur-to-sharp reveal */
+@keyframes blur-reveal {
+  from { filter: blur(12px); opacity: 0; transform: scale(0.98); }
+  to   { filter: blur(0);    opacity: 1; transform: scale(1);    }
+}
+.blur-reveal       { animation: blur-reveal 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.blur-reveal-delay { animation: blur-reveal 1s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* 16. Luxury word color shift & text shadow flow */
+@keyframes luxury-glow-flow {
+  0% {
+    background-position: 0% 50%;
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(212,175,55,0);
+  }
+  50% {
+    background-position: 100% 50%;
+    transform: scale(1.03) rotate(-1deg);
+    text-shadow: 0 0 15px rgba(212,175,55,0.2);
+  }
+  100% {
+    background-position: 0% 50%;
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(212,175,55,0);
+  }
+}
+.animate-luxury-word {
+  display: inline-block;
+  background: linear-gradient(135deg, #8B4949 0%, #D4AF37 40%, #f6e3a4 50%, #D4AF37 60%, #8B4949 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: luxury-glow-flow 6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Reduce motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+

@@ -83,10 +83,10 @@ export default function FAQs() {
         <div className="mt-12 text-center">
           <p className="text-muted-foreground mb-4">Explore more</p>
           <div className="flex flex-wrap gap-6 justify-center">
-            <Link to="/explore" className="text-primary hover:underline">
+            <Link to="/events" className="text-primary hover:underline">
               Browse Designs
             </Link>
-            <Link to="/packages" className="text-primary hover:underline">
+            <Link to="/events?tab=packages" className="text-primary hover:underline">
               View Packages
             </Link>
             <Link to="/about" className="text-primary hover:underline">
