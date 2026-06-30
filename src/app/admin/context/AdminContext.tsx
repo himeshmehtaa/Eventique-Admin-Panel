@@ -5,7 +5,8 @@ import type {
   FAQ, HeroSlide, Category, Service, SectionConfig, AdminState,
   Order, Customer, Review, Promotion, Payment, Role, MediaFile,
   ContentBlock, ActivityLog, AppSettings, PermissionKey, TeamMember,
-  BlogPost, Vendor, VendorOrder, Expense, ExpenseCategory
+  BlogPost, Vendor, VendorOrder, Expense, ExpenseCategory,
+  ClientLead, VendorLead, PlannerLead, CorporateLead, CorporateOrder
 } from '../types';
 
 const defaultHeroSlides: HeroSlide[] = [
@@ -171,10 +172,39 @@ const defaultPayments: Payment[] = [
 
 // ── Mock Roles ──────────────────────────────────────────────
 const defaultRoles: Role[] = [
-  { id: 'role-1', name: 'Super Admin', color: '#8B4949', membersCount: 1, permissions: { products: true, orders: true, upload_files: true, contents: true, customers: true, payments: true, settings: true, promotions: true, vendors: true, finance: true, marketing: true } },
-  { id: 'role-2', name: 'Designer', color: '#6366F1', membersCount: 2, permissions: { products: true, orders: false, upload_files: true, contents: true, customers: false, payments: false, settings: false, promotions: false, vendors: false, finance: false, marketing: false } },
-  { id: 'role-3', name: 'Content Editor', color: '#D4AF37', membersCount: 1, permissions: { products: false, orders: false, upload_files: false, contents: true, customers: false, payments: false, settings: false, promotions: true, vendors: false, finance: false, marketing: true } },
-  { id: 'role-4', name: 'Support', color: '#4A7C59', membersCount: 2, permissions: { products: false, orders: true, upload_files: true, contents: false, customers: true, payments: false, settings: false, promotions: false, vendors: false, finance: false, marketing: false } },
+  { id: 'role-1', name: 'Super Admin', color: '#8B4949', membersCount: 1, permissions: { products: true, orders: true, upload_files: true, contents: true, customers: true, payments: true, settings: true, promotions: true, vendors: true, finance: true, marketing: true, leads: true, corporate: true } },
+  { id: 'role-2', name: 'Designer', color: '#6366F1', membersCount: 2, permissions: { products: true, orders: false, upload_files: true, contents: true, customers: false, payments: false, settings: false, promotions: false, vendors: false, finance: false, marketing: false, leads: false, corporate: false } },
+  { id: 'role-3', name: 'Content Editor', color: '#D4AF37', membersCount: 1, permissions: { products: false, orders: false, upload_files: false, contents: true, customers: false, payments: false, settings: false, promotions: true, vendors: false, finance: false, marketing: true, leads: false, corporate: false } },
+  { id: 'role-4', name: 'Support', color: '#4A7C59', membersCount: 2, permissions: { products: false, orders: true, upload_files: true, contents: false, customers: true, payments: false, settings: false, promotions: false, vendors: false, finance: false, marketing: false, leads: false, corporate: false } },
+];
+
+const defaultClientLeads: ClientLead[] = [
+  { id: 'L-101', name: 'Amit Sharma', phone: '+91 98765 43210', email: 'amit@gmail.com', eventType: 'Wedding', interestedProduct: 'Premium Video Invite', budget: 25000, source: 'Website Form', status: 'Converted', assignedTo: 'Rohan Verma', notes: 'Shared design drafts. Coupon applied.', tag: 'Invitations', createdAt: '2026-06-01' },
+  { id: 'L-102', name: 'Neha Gupta', phone: '+91 99999 88888', email: 'neha@yahoo.com', eventType: 'Wedding', interestedProduct: 'Printed Luxury Box Set', budget: 65000, source: 'Instagram', status: 'New', assignedTo: 'Pooja Mehta', notes: 'Requested premium gold theme options.', tag: 'Printed Invites', createdAt: '2026-06-06' },
+  { id: 'L-103', name: 'Vikram Singh', phone: '+91 91234 56789', email: 'vikram@outlook.com', eventType: 'Anniversary', interestedProduct: 'Interactive Website', budget: 15000, source: 'WhatsApp', status: 'Contacted', assignedTo: 'Rohan Verma', notes: 'Sent domain mapping pricing list.', tag: 'Event Websites', createdAt: '2026-06-04' },
+  { id: 'L-104', name: 'Priya Patel', phone: '+91 88888 77777', email: 'priya@gmail.com', eventType: 'Corporate', interestedProduct: 'E-Stationery Designs', budget: 30000, source: 'Referral', status: 'Follow-up', assignedTo: 'Pooja Mehta', notes: 'Call scheduled on Monday at 3PM.', tag: 'Stationery', createdAt: '2026-06-03' },
+  { id: 'L-105', name: 'Rohan Deshmukh', phone: '+91 77777 66666', email: 'rohan@gmail.com', eventType: 'Birthday', interestedProduct: 'E-Card Template', budget: 5000, source: 'Facebook', status: 'Lost', assignedTo: 'Rohan Verma', notes: 'Budget too low for custom assets.', tag: 'Gifts', createdAt: '2026-06-02' },
+  { id: 'L-106', name: 'Kavita Rao', phone: '+91 98989 88888', email: 'kavita@gmail.com', eventType: 'Wedding', interestedProduct: 'Wedding Website Deluxe', budget: 18000, source: 'Direct Call', status: 'Converted', assignedTo: 'Pooja Mehta', notes: 'Payment confirmed. Live at kavita-wedding.in', tag: 'Corporate', createdAt: '2026-06-05' }
+];
+
+const defaultVendorLeads: VendorLead[] = [
+  { id: 'VL-201', companyName: 'Chawla Paper Mills', contactName: 'Rajesh Chawla', phone: '+91 98300 12345', email: 'rajesh@chawlapaper.com', category: 'Printed Stationery', status: 'Deal', expectedMargin: 45, notes: 'Negotiating wholesale rates for 350gsm cotton sheets.', createdAt: '2026-06-10' },
+  { id: 'VL-202', companyName: 'Royal Box Crafters', contactName: 'Harpreet Singh', phone: '+91 91111 22222', email: 'harpreet@royalboxes.in', category: 'Printed Invites', status: 'Closed', expectedMargin: 35, notes: 'Signed contract for rigid box sourcing.', createdAt: '2026-06-12' },
+  { id: 'VL-203', companyName: 'Organic Hampers & Co.', contactName: 'Shweta Sen', phone: '+91 88899 00000', email: 'shweta@organichampers.com', category: 'Gifts', status: 'Paused', expectedMargin: 40, notes: 'Sample boxes received, quality needs improvement.', createdAt: '2026-06-14' }
+];
+
+const defaultPlannerLeads: PlannerLead[] = [
+  { id: 'PL-301', agencyName: 'Red Velvet Events', contactName: 'Meghna Kapoor', phone: '+91 98900 98900', email: 'meghna@redvelvet.in', commissionRate: 10, status: 'Active Partnership', notes: 'Agreed on 10% referral commission for all digital invites.', createdAt: '2026-06-08' },
+  { id: 'PL-302', agencyName: 'Vows & Beyond', contactName: 'Devika Roy', phone: '+91 97777 88888', email: 'devika@vowsbeyond.com', commissionRate: 15, status: 'Prospect', notes: 'Discussed co-branded wedding packages. Proposal pending.', createdAt: '2026-06-11' }
+];
+
+const defaultCorporateLeads: CorporateLead[] = [
+  { id: 'CL-901', company: 'Infosys Bangalore', contact: 'Sudha Murthy', email: 'corporate.events@infosys.com', phone: '+91 80285 20261', product: 'Anniversary Stationery Set', qty: 2500, budget: 1500000, status: 'Negotiation', notes: 'Requested recycled handmade paper with silver emboss.', createdAt: '2026-05-20' },
+  { id: 'CL-902', company: 'Wipro Limited', contact: 'Rishad Premji', email: 'rishad@wipro.com', phone: '+91 80284 40011', product: 'New Year Gift Boxes', qty: 1000, budget: 800000, status: 'Proposal Sent', notes: 'Proposal sent with sample pricing details.', createdAt: '2026-06-02' }
+];
+
+const defaultCorporateOrders: CorporateOrder[] = [
+  { id: 'CO-1001', company: 'Tata Consultancy Services', contact: 'Natarajan C.', email: 'natarajan@tcs.com', phone: '+91 22677 89999', product: 'Printed Platinum Invites', qty: 1500, pricePerUnit: 120, total: 180000, gst: '27AAACT1234F1Z9', status: 'Printing', date: '2026-05-24' }
 ];
 
 // ── Mock Team Members ────────────────────────────────────────
@@ -797,6 +827,29 @@ interface AdminContextType {
   addCampaign: (c: LaunchCampaign) => void;
   updateCampaign: (id: string, c: Partial<LaunchCampaign>) => void;
   deleteCampaign: (id: string) => void;
+  // Client Leads
+  addClientLead: (l: ClientLead) => void;
+  updateClientLead: (id: string, l: Partial<ClientLead>) => void;
+  deleteClientLead: (id: string) => void;
+  // Vendor Leads
+  addVendorLead: (l: VendorLead) => void;
+  updateVendorLead: (id: string, l: Partial<VendorLead>) => void;
+  deleteVendorLead: (id: string) => void;
+  // Planner Leads
+  addPlannerLead: (l: PlannerLead) => void;
+  updatePlannerLead: (id: string, l: Partial<PlannerLead>) => void;
+  deletePlannerLead: (id: string) => void;
+  // Corporate Leads
+  addCorporateLead: (l: CorporateLead) => void;
+  updateCorporateLead: (id: string, l: Partial<CorporateLead>) => void;
+  deleteCorporateLead: (id: string) => void;
+  // Corporate Orders
+  addCorporateOrder: (o: CorporateOrder) => void;
+  updateCorporateOrder: (id: string, o: Partial<CorporateOrder>) => void;
+  deleteCorporateOrder: (id: string) => void;
+  // Actions
+  convertCorporateLeadToOrder: (leadId: string, pricePerUnit: number, gst: string) => void;
+  simulateLiveInquiry: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | null>(null);
@@ -836,6 +889,12 @@ function buildDefault(): AdminState {
     vendors: defaultVendors,
     vendorOrders: defaultVendorOrders,
     expenses: defaultExpenses,
+    campaigns: defaultCampaigns,
+    clientLeads: defaultClientLeads,
+    vendorLeads: defaultVendorLeads,
+    plannerLeads: defaultPlannerLeads,
+    corporateLeads: defaultCorporateLeads,
+    corporateOrders: defaultCorporateOrders,
   };
 }
 
@@ -952,6 +1011,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     if (!stored.campaigns) {
       stored.campaigns = defaultCampaigns;
     }
+    if (!stored.clientLeads) stored.clientLeads = defaultClientLeads;
+    if (!stored.vendorLeads) stored.vendorLeads = defaultVendorLeads;
+    if (!stored.plannerLeads) stored.plannerLeads = defaultPlannerLeads;
+    if (!stored.corporateLeads) stored.corporateLeads = defaultCorporateLeads;
+    if (!stored.corporateOrders) stored.corporateOrders = defaultCorporateOrders;
 
     return stored;
   });
@@ -1121,6 +1185,129 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     deleteCampaign: (id) => {
       set('campaigns', prev => (prev as LaunchCampaign[]).filter(x => x.id !== id));
       addActivityLog('Campaign Deleted', id, 'danger');
+    },
+    addClientLead: (l) => {
+      set('clientLeads', prev => [...prev as ClientLead[], l]);
+      addActivityLog('Client Lead Added', l.name, 'success');
+    },
+    updateClientLead: (id, l) => {
+      set('clientLeads', prev => (prev as ClientLead[]).map(x => x.id === id ? { ...x, ...l } : x));
+      addActivityLog('Client Lead Updated', id, 'info');
+    },
+    deleteClientLead: (id) => {
+      set('clientLeads', prev => (prev as ClientLead[]).filter(x => x.id !== id));
+      addActivityLog('Client Lead Deleted', id, 'danger');
+    },
+    addVendorLead: (vl) => {
+      set('vendorLeads', prev => [...prev as VendorLead[], vl]);
+      addActivityLog('Vendor Lead Added', vl.companyName, 'success');
+    },
+    updateVendorLead: (id, vl) => {
+      set('vendorLeads', prev => (prev as VendorLead[]).map(x => x.id === id ? { ...x, ...vl } : x));
+      addActivityLog('Vendor Lead Updated', id, 'info');
+    },
+    deleteVendorLead: (id) => {
+      set('vendorLeads', prev => (prev as VendorLead[]).filter(x => x.id !== id));
+      addActivityLog('Vendor Lead Deleted', id, 'danger');
+    },
+    addPlannerLead: (pl) => {
+      set('plannerLeads', prev => [...prev as PlannerLead[], pl]);
+      addActivityLog('Planner Lead Added', pl.agencyName, 'success');
+    },
+    updatePlannerLead: (id, pl) => {
+      set('plannerLeads', prev => (prev as PlannerLead[]).map(x => x.id === id ? { ...x, ...pl } : x));
+      addActivityLog('Planner Lead Updated', id, 'info');
+    },
+    deletePlannerLead: (id) => {
+      set('plannerLeads', prev => (prev as PlannerLead[]).filter(x => x.id !== id));
+      addActivityLog('Planner Lead Deleted', id, 'danger');
+    },
+    addCorporateLead: (cl) => {
+      set('corporateLeads', prev => [...prev as CorporateLead[], cl]);
+      addActivityLog('Corporate Lead Added', cl.company, 'success');
+    },
+    updateCorporateLead: (id, cl) => {
+      set('corporateLeads', prev => (prev as CorporateLead[]).map(x => x.id === id ? { ...x, ...cl } : x));
+      addActivityLog('Corporate Lead Updated', id, 'info');
+    },
+    deleteCorporateLead: (id) => {
+      set('corporateLeads', prev => (prev as CorporateLead[]).filter(x => x.id !== id));
+      addActivityLog('Corporate Lead Deleted', id, 'danger');
+    },
+    addCorporateOrder: (co) => {
+      set('corporateOrders', prev => [...prev as CorporateOrder[], co]);
+      addActivityLog('Corporate Order Added', co.company, 'success');
+    },
+    updateCorporateOrder: (id, co) => {
+      set('corporateOrders', prev => (prev as CorporateOrder[]).map(x => x.id === id ? { ...x, ...co } : x));
+      addActivityLog('Corporate Order Updated', id, 'info');
+    },
+    deleteCorporateOrder: (id) => {
+      set('corporateOrders', prev => (prev as CorporateOrder[]).filter(x => x.id !== id));
+      addActivityLog('Corporate Order Deleted', id, 'danger');
+    },
+    convertCorporateLeadToOrder: (leadId, pricePerUnit, gst) => {
+      setState(prev => {
+        const lead = prev.corporateLeads.find(l => l.id === leadId);
+        if (!lead) return prev;
+        const newOrder: CorporateOrder = {
+          id: `CO-${Date.now().toString().slice(-4)}`,
+          company: lead.company,
+          contact: lead.contact,
+          email: lead.email,
+          phone: lead.phone,
+          product: lead.product,
+          qty: lead.qty,
+          pricePerUnit,
+          total: lead.qty * pricePerUnit,
+          gst,
+          status: 'Planning',
+          date: new Date().toISOString().split('T')[0]
+        };
+        const nextState = {
+          ...prev,
+          corporateLeads: prev.corporateLeads.filter(l => l.id !== leadId),
+          corporateOrders: [...prev.corporateOrders, newOrder]
+        };
+        saveToStorage(nextState);
+        return nextState;
+      });
+      addActivityLog('B2B Lead Converted', `Converted lead ${leadId} to Order`, 'success');
+    },
+    simulateLiveInquiry: () => {
+      const names = ['Karan Johar', 'Ranbir Kapoor', 'Alia Bhatt', 'Deepika Padukone', 'Ranveer Singh', 'Anushka Sharma', 'Virat Kohli'];
+      const phones = ['+91 99887 76655', '+91 88776 65544', '+91 77665 54433', '+91 66554 43322'];
+      const emails = ['karan@dharmaprod.com', 'ranbir@kapoor.com', 'alia@bhatt.in', 'deepika@padukone.com', 'ranveer@singh.com'];
+      const products = ['Floral Wedding Suite', 'Modern E-Invite', 'Ganesh Chaturthi Video Card', 'Royal Box Printed Cards', 'Corporate Gift Box Set'];
+      const tagsFiltered: ClientLeadTag[] = ['Invitations', 'Stationery', 'Gifts', 'Corporate'];
+      const eventTypes = ['Wedding', 'Birthday', 'Corporate', 'Anniversary', 'Other'];
+      const sources = ['Website Form', 'WhatsApp', 'Instagram', 'Facebook', 'Referral', 'Direct Call'];
+
+      const newLead: ClientLead = {
+        id: `L-${Math.floor(Math.random() * 900 + 100)}`,
+        name: names[Math.floor(Math.random() * names.length)],
+        phone: phones[Math.floor(Math.random() * phones.length)],
+        email: emails[Math.floor(Math.random() * emails.length)],
+        eventType: eventTypes[Math.floor(Math.random() * eventTypes.length)] as any,
+        interestedProduct: products[Math.floor(Math.random() * products.length)],
+        budget: Math.floor(Math.random() * 50 + 5) * 5000,
+        source: sources[Math.floor(Math.random() * sources.length)] as any,
+        status: 'New',
+        assignedTo: 'Rohan Verma',
+        notes: 'Automatically captured via simulator.',
+        tag: tagsFiltered[Math.floor(Math.random() * tagsFiltered.length)],
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+
+      setState(prev => {
+        const nextState = {
+          ...prev,
+          clientLeads: [...prev.clientLeads, newLead]
+        };
+        saveToStorage(nextState);
+        return nextState;
+      });
+      addActivityLog('Simulated Inquiry Captured', `${newLead.name} - ${newLead.interestedProduct}`, 'success');
     },
   };
 

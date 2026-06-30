@@ -137,7 +137,7 @@ export interface Payment {
 }
 
 // ── Role ──────────────────────────────────────────────────────
-export type PermissionKey = 'products' | 'orders' | 'upload_files' | 'contents' | 'customers' | 'payments' | 'settings' | 'promotions' | 'vendors' | 'finance' | 'marketing';
+export type PermissionKey = 'products' | 'orders' | 'upload_files' | 'contents' | 'customers' | 'payments' | 'settings' | 'promotions' | 'vendors' | 'finance' | 'marketing' | 'leads' | 'corporate';
 
 export interface Role {
   id: string;
@@ -430,6 +430,93 @@ export interface AdminState {
   vendorOrders: VendorOrder[];
   expenses: Expense[];
   campaigns: LaunchCampaign[];
+  clientLeads: ClientLead[];
+  vendorLeads: VendorLead[];
+  plannerLeads: PlannerLead[];
+  corporateLeads: CorporateLead[];
+  corporateOrders: CorporateOrder[];
+}
+
+// ── B2C Client Leads ──────────────────────────────────────────
+export type ClientLeadTag = 'Invitations' | 'Stationery' | 'Gifts' | 'Corporate';
+export type ClientLeadStatus = 'New' | 'Contacted' | 'Follow-up' | 'Converted' | 'Lost';
+export interface ClientLead {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  eventType: 'Wedding' | 'Birthday' | 'Corporate' | 'Anniversary' | 'Other';
+  interestedProduct: string;
+  budget: number;
+  source: 'Website Form' | 'WhatsApp' | 'Instagram' | 'Facebook' | 'Referral' | 'Direct Call';
+  status: ClientLeadStatus;
+  assignedTo: string;
+  notes: string;
+  tag: ClientLeadTag;
+  createdAt: string;
+}
+
+// ── B2B Vendor Partner Leads ──────────────────────────────────
+export type VendorLeadStatus = 'Deal' | 'Closed' | 'Paused';
+export interface VendorLead {
+  id: string;
+  companyName: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  category: 'Printed Stationery' | 'Printed Invites' | 'Gifts';
+  status: VendorLeadStatus;
+  expectedMargin: number;
+  notes: string;
+  createdAt: string;
+}
+
+// ── Event Management/Planner Leads ────────────────────────────
+export type PlannerLeadStatus = 'Prospect' | 'Active Partnership' | 'Inactive';
+export interface PlannerLead {
+  id: string;
+  agencyName: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  commissionRate: number;
+  status: PlannerLeadStatus;
+  notes: string;
+  createdAt: string;
+}
+
+// ── B2B Corporate Leads ───────────────────────────────────────
+export type CorporateLeadStatus = 'New' | 'Proposal Sent' | 'Negotiation' | 'Lost';
+export interface CorporateLead {
+  id: string;
+  company: string;
+  contact: string;
+  email: string;
+  phone: string;
+  product: string;
+  qty: number;
+  budget: number;
+  status: CorporateLeadStatus;
+  notes: string;
+  proposalUrl?: string;
+  createdAt: string;
+}
+
+// ── B2B Corporate Bulk Orders ─────────────────────────────────
+export type CorporateOrderStatus = 'Planning' | 'Sourcing' | 'Printing' | 'Packaging' | 'Dispatched' | 'Delivered';
+export interface CorporateOrder {
+  id: string;
+  company: string;
+  contact: string;
+  email: string;
+  phone: string;
+  product: string;
+  qty: number;
+  pricePerUnit: number;
+  total: number;
+  gst: string;
+  status: CorporateOrderStatus;
+  date: string;
 }
 
 // ── Form mode ─────────────────────────────────────────────────

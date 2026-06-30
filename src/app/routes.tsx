@@ -39,7 +39,9 @@ import Dashboard from './admin/pages/Dashboard';
 // Commerce
 import ProductsManager from './admin/pages/ProductsManager';
 import OrdersManager from './admin/pages/OrdersManager';
+import LeadsPage from './admin/pages/LeadsPage';
 import VendorsManager from './admin/pages/VendorsManager';
+import CorporateManager from './admin/pages/CorporateManager';
 import AnalyticsPage from './admin/pages/AnalyticsPage';
 import PromotionsManager from './admin/pages/PromotionsManager';
 import MarketingHub from './admin/pages/MarketingHub';
@@ -115,7 +117,9 @@ export const router = createBrowserRouter([
       // Commerce
       { path: 'products',   Component: ProductsManager },
       { path: 'orders',     Component: OrdersManager },
+      { path: 'leads',      Component: LeadsPage },
       { path: 'vendors',    Component: VendorsManager },
+      { path: 'corporate',  Component: CorporateManager },
       { path: 'analytics',  Component: AnalyticsPage },
       { path: 'promotions', Component: PromotionsManager },
       { path: 'marketing',  Component: MarketingHub },

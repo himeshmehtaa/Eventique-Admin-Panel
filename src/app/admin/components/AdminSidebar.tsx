@@ -2,7 +2,8 @@ import { NavLink, useLocation } from 'react-router';
 import {
   LayoutDashboard, ShoppingBag, ClipboardList, BarChart3, Tag,
   FileEdit, Users, Shield, CreditCard, Sliders, Settings,
-  ExternalLink, ChevronLeft, ChevronRight, Factory, Coins, Megaphone
+  ExternalLink, ChevronLeft, ChevronRight, Factory, Coins, Megaphone,
+  Briefcase
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import logo from 'figma:asset/18b0c663189a1e14d470c65edfce57c31a40bf8e.png';
@@ -19,7 +20,9 @@ const NAV_GROUPS = [
     items: [
       { icon: ShoppingBag,   label: 'Products',   path: '/admin/products', permission: 'products' },
       { icon: ClipboardList, label: 'Orders',     path: '/admin/orders', permission: 'orders' },
+      { icon: Users,         label: 'Leads',      path: '/admin/leads', permission: 'leads' },
       { icon: Factory,       label: 'Partners',   path: '/admin/vendors', permission: 'vendors' },
+      { icon: Briefcase,     label: 'Corporate',  path: '/admin/corporate', permission: 'corporate' },
       { icon: BarChart3,     label: 'Analytics',  path: '/admin/analytics', permission: 'products' },
       { icon: Tag,           label: 'Promotions', path: '/admin/promotions', permission: 'promotions' },
       { icon: Megaphone,     label: 'Marketing',  path: '/admin/marketing', permission: 'marketing' },

@@ -12,7 +12,7 @@ import type { Vendor, VendorProduct, VendorOrder, VendorCategory, VendorOrderSta
 export default function VendorsManager() {
   const { state, addVendor, updateVendor, deleteVendor, addVendorOrder, updateVendorOrder, deleteVendorOrder } = useAdmin();
 
-  const PARTNER_CATEGORIES = ['Event Planner', 'Wedding Planner', 'Corporate Planner'];
+  const PARTNER_CATEGORIES = ['Printed Stationery', 'Printed Invites', 'Gifts'];
   const isPartner = (category: string) => PARTNER_CATEGORIES.includes(category);
 
   const [mainTab, setMainTab] = useState<'vendors' | 'partners'>('vendors');
@@ -186,7 +186,7 @@ export default function VendorsManager() {
     setPhone('');
     setSocialId('');
     setWebsite('');
-    setVendorCategory(mainTab === 'partners' ? 'Event Planner' : 'Printed Stationery');
+    setVendorCategory(mainTab === 'partners' ? 'Printed Stationery' : 'Event Planner');
     setServicesInput('');
     setVendorStatus('Deal');
   };
@@ -853,7 +853,7 @@ export default function VendorsManager() {
       {/* ── MODAL: Configure Product & Package Cost ── */}
       {showProductModal && (() => {
         const selectedVendorForProd = state.vendors.find(v => v.id === productVendorId);
-        const isEventPlanner = selectedVendorForProd?.category === 'Event Planner';
+        const isPartnerCategory = selectedVendorForProd ? isPartner(selectedVendorForProd.category) : false;
         
         return (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -864,26 +864,26 @@ export default function VendorsManager() {
               </button>
               <h3 className="text-lg font-bold text-[#1a1410] mb-4">
                 {selectedProduct 
-                  ? (isEventPlanner ? 'Update Partner Pricing' : 'Update Product Cost Link') 
-                  : isEventPlanner 
+                  ? (isPartnerCategory ? 'Update Partner Pricing' : 'Update Product Cost Link') 
+                  : isPartnerCategory 
                   ? 'Configure Partner Product & Package' 
                   : 'Link Product Sourcing Cost'}
               </h3>
               <form onSubmit={handleProductSave} className="space-y-4">
                 <div>
-                  <label className="admin-label">{isEventPlanner ? 'B2B Partner Company' : 'Sourcing Vendor'}</label>
+                  <label className="admin-label">{isPartnerCategory ? 'B2B Partner Company' : 'Sourcing Vendor'}</label>
                   <select required disabled={!!selectedProduct} value={productVendorId} onChange={(e) => setProductVendorId(e.target.value)} className="admin-input">
                     <option value="">-- Choose {mainTab === 'partners' ? 'Partner' : 'Vendor'} --</option>
                     {state.vendors
-                      .filter(v => mainTab === 'partners' ? v.category === 'Event Planner' : v.category !== 'Event Planner')
+                      .filter(v => mainTab === 'partners' ? isPartner(v.category) : !isPartner(v.category))
                       .map(v => (
                         <option key={v.id} value={v.id}>{v.companyName} ({v.category})</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="admin-label">{isEventPlanner ? 'Product / Package Name' : 'Product / Service Name'}</label>
-                  <input type="text" required value={productName} onChange={(e) => setProductName(e.target.value)} placeholder={isEventPlanner ? "e.g. B2B Stationery Package" : "e.g. Laser Cut Wedding Box"} className="admin-input" />
+                  <label className="admin-label">{isPartnerCategory ? 'Product / Package Name' : 'Product / Service Name'}</label>
+                  <input type="text" required value={productName} onChange={(e) => setProductName(e.target.value)} placeholder={isPartnerCategory ? "e.g. B2B Stationery Package" : "e.g. Laser Cut Wedding Box"} className="admin-input" />
                 </div>
                 <div>
                   <label className="admin-label">Pricing / Item Type</label>
@@ -895,11 +895,11 @@ export default function VendorsManager() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="admin-label">{isEventPlanner ? 'Actual Production Cost (₹)' : 'Wholesale Cost Price (₹)'}</label>
+                    <label className="admin-label">{isPartnerCategory ? 'Actual Production Cost (₹)' : 'Wholesale Cost Price (₹)'}</label>
                     <input type="number" required min={0} value={costPrice} onChange={(e) => setCostPrice(Number(e.target.value))} className="admin-input" />
                   </div>
                   <div>
-                    <label className="admin-label">{isEventPlanner ? 'Selling Price to Partner (₹)' : 'Client Retail Price (₹)'}</label>
+                    <label className="admin-label">{isPartnerCategory ? 'Selling Price to Partner (₹)' : 'Client Retail Price (₹)'}</label>
                     <input type="number" required min={0} value={retailPrice} onChange={(e) => setRetailPrice(Number(e.target.value))} className="admin-input" />
                   </div>
                 </div>
@@ -907,10 +907,10 @@ export default function VendorsManager() {
                 {costPrice > 0 && retailPrice > 0 && (
                   <div className="p-3 bg-[#faf8f5] rounded-xl border border-gray-150 text-xs space-y-1">
                     <p className="font-bold text-[#8B4949] uppercase tracking-wider text-[10px]">
-                      {isEventPlanner ? 'Partner Margin Analysis' : 'Calculated Margin Analysis'}
+                      {isPartnerCategory ? 'Partner Margin Analysis' : 'Calculated Margin Analysis'}
                     </p>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">{isEventPlanner ? 'Partner Markup Margin (₹):' : 'Gross Profit Margin (₹):'}</span>
+                      <span className="text-gray-400">{isPartnerCategory ? 'Partner Markup Margin (₹):' : 'Gross Profit Margin (₹):'}</span>
                       <span className="font-bold text-green-600">₹{(retailPrice - costPrice).toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
@@ -923,7 +923,7 @@ export default function VendorsManager() {
                 <div className="flex gap-3 pt-3">
                   <button type="button" onClick={() => setShowProductModal(false)} className="flex-1 py-2.5 border border-[#e5e5e5] rounded-xl text-gray-500 font-bold text-xs hover:bg-[#faf8f5]">Cancel</button>
                   <button type="submit" className="flex-1 py-2.5 bg-[#8B4949] text-white rounded-xl font-bold text-xs hover:bg-[#723b3b]">
-                    {selectedProduct ? 'Save Changes' : isEventPlanner ? 'Add Partner Item' : 'Link Cost'}
+                    {selectedProduct ? 'Save Changes' : isPartnerCategory ? 'Add Partner Item' : 'Link Cost'}
                   </button>
                 </div>
               </form>
@@ -965,7 +965,7 @@ export default function VendorsManager() {
                     <select required value={orderVendorId} onChange={(e) => setOrderVendorId(e.target.value)} className="admin-input">
                       <option value="">-- Choose {mainTab === 'partners' ? 'Partner' : 'Vendor'} --</option>
                       {state.vendors
-                        .filter(v => mainTab === 'partners' ? v.category === 'Event Planner' : v.category !== 'Event Planner')
+                        .filter(v => mainTab === 'partners' ? isPartner(v.category) : !isPartner(v.category))
                         .map(v => (
                           <option key={v.id} value={v.id}>{v.companyName} ({v.category})</option>
                       ))}

@@ -15,7 +15,9 @@ function getRequiredPermission(pathname: string): PermissionKey | null {
   if (path === '/admin') return null; // dashboard is public to admins
   if (path.startsWith('/admin/products')) return 'products';
   if (path.startsWith('/admin/orders')) return 'orders';
+  if (path.startsWith('/admin/leads')) return 'leads';
   if (path.startsWith('/admin/vendors')) return 'vendors';
+  if (path.startsWith('/admin/corporate')) return 'corporate';
   if (path.startsWith('/admin/analytics')) return 'products'; // analytics matches products
   if (path.startsWith('/admin/promotions')) return 'promotions';
   if (path.startsWith('/admin/marketing')) return 'marketing';
