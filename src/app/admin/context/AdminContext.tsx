@@ -1056,6 +1056,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       stored.campaigns = defaultCampaigns;
     }
     if (!stored.clientLeads) stored.clientLeads = defaultClientLeads;
+    stored.clientLeads = stored.clientLeads.map((cl: any) => ({
+      ...cl,
+      createdAt: cl.id === 'L-101' || cl.id === 'L-102' || cl.id === 'L-103' ? '2026-07-01' : cl.createdAt
+    }));
     if (!stored.vendorLeads) stored.vendorLeads = defaultVendorLeads;
     stored.vendorLeads = stored.vendorLeads.map((vl: any) => ({
       ...vl,

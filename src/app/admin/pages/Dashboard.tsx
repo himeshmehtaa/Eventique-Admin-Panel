@@ -391,7 +391,8 @@ export default function Dashboard() {
     if (len === 5) return 'grid-cols-2 sm:grid-cols-5 max-w-5xl';
     if (len === 6) return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-6';
     if (len === 7) return 'grid-cols-2 sm:grid-cols-4 md:grid-cols-7';
-    return 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8';
+    if (len === 8) return 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8';
+    return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9';
   }, [visibleActions.length]);
 
   const activeOverviewCount = useMemo(() => {
