@@ -468,7 +468,7 @@ export default function ProductsManager() {
 
                 {/* Dynamic Specifications */}
                 {(previewProduct.size || previewProduct.moq || previewProduct.material || previewProduct.paperQuality || previewProduct.shape || previewProduct.color || previewProduct.videoUrl || previewProduct.demoUrl || previewProduct.canPersonalise) && (
-                  <div className="mt-4 p-3 bg-[#faf8f5] rounded-xl border border-gray-150 space-y-2 text-xs">
+                  <div className="mt-4 p-3 bg-[#faf8f5] rounded-xl border border-[#f0ece4] space-y-2 text-xs">
                     <p className="font-bold text-[#8B4949] uppercase tracking-wider text-[10px]">Specifications</p>
                     {previewProduct.size && (
                       <div className="flex justify-between">

@@ -28,6 +28,27 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string }> = {
   // Product
   Published:   { bg: '#F0FDF4', text: '#166534' },
   Draft:       { bg: '#FFF5E0', text: '#B7770D' },
+  // Client & B2B Leads
+  New:               { bg: '#EFF6FF', text: '#1D4ED8' },
+  Contacted:         { bg: '#F5F3FF', text: '#6D28D9' },
+  'Follow-up':       { bg: '#FFF7ED', text: '#C2410C' },
+  Converted:         { bg: '#F0FDF4', text: '#166534' },
+  Lost:              { bg: '#FEF2F2', text: '#DC2626' },
+  // Corporate Lead / Order statuses
+  'Proposal Sent':   { bg: '#F0FDFA', text: '#0F766E' },
+  Negotiation:       { bg: '#EEF2FF', text: '#4338CA' },
+  Planning:          { bg: '#EFF6FF', text: '#1D4ED8' },
+  Sourcing:          { bg: '#FFFBEB', text: '#B45309' },
+  Printing:          { bg: '#FDF2F8', text: '#BE185D' },
+  Packaging:         { bg: '#FFF7ED', text: '#C2410C' },
+  Dispatched:        { bg: '#F5F3FF', text: '#6D28D9' },
+  Delivered:         { bg: '#F0FDF4', text: '#166534' },
+  // Vendor / Planner statuses
+  Deal:              { bg: '#FFFBEB', text: '#B45309' },
+  Closed:            { bg: '#F0FDF4', text: '#166534' },
+  Prospect:          { bg: '#FFFBEB', text: '#B45309' },
+  'Active Partnership': { bg: '#F0FDF4', text: '#166534' },
+  Inactive:          { bg: '#F3F4F6', text: '#4B5563' }
 };
 
 interface StatusBadgeProps {

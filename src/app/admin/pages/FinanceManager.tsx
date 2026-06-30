@@ -1148,7 +1148,7 @@ export default function FinanceManager() {
               Confirm Salary Disbursement
             </h3>
             
-            <div className="p-3 bg-[#faf8f5] rounded-xl border border-gray-150 mb-4 space-y-2 text-xs">
+            <div className="p-3 bg-[#faf8f5] rounded-xl border border-[#f0ece4] mb-4 space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-400">Employee:</span>
                 <span className="font-bold text-[#1a1410]">{payingMember.name}</span>

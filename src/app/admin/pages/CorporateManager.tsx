@@ -336,8 +336,8 @@ export default function CorporateManager() {
       </div>
 
       {/* ── Toolbar / Filter deck ── */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-gray-150 shadow-sm">
-        <div className="flex items-center gap-2 bg-[#faf8f5] border border-gray-250 rounded-xl px-3 py-2 w-full sm:w-80 focus-within:border-[#8B4949] transition-all">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-[#f0ece4] shadow-sm">
+        <div className="flex items-center gap-2 bg-[#faf8f5] border border-[#e5e5e5] rounded-xl px-3 py-2 w-full sm:w-80 focus-within:border-[#8B4949] transition-all">
           <Search size={14} className="text-gray-400" />
           <input
             type="text"
@@ -512,7 +512,7 @@ export default function CorporateManager() {
                         <select
                           value={order.status}
                           onChange={(e) => updateCorporateOrder(order.id, { status: e.target.value as CorporateOrderStatus })}
-                          className="admin-input !py-1 !px-2 !w-auto text-[11px] font-bold border-gray-250 cursor-pointer"
+                          className="admin-input !py-1 !px-2 !w-auto text-[11px] font-bold border border-[#e5e5e5] cursor-pointer"
                         >
                           <option value="Planning">Planning</option>
                           <option value="Sourcing">Sourcing</option>

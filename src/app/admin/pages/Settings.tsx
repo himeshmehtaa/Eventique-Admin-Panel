@@ -1805,7 +1805,7 @@ export default function Settings() {
                             key={preset.hex}
                             type="button"
                             onClick={() => set('brand', { themeColor: preset.hex })}
-                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gray-250 bg-white hover:border-[#8B4949] transition-all text-xs font-semibold"
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[#e5e5e5] bg-white hover:border-[#8B4949] transition-all text-xs font-semibold"
                           >
                             <span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: preset.hex }} />
                             {preset.name}

@@ -38,6 +38,8 @@ export default function LeadsPage() {
   // Planner leads filters
   const [plannerStatusFilter, setPlannerStatusFilter] = useState<PlannerLeadStatus | 'All'>('All');
 
+  const [followUpContact, setFollowUpContact] = useState<{ name: string; phone: string; email: string } | null>(null);
+
   // Modals state
   const [showClientModal, setShowClientModal] = useState(false);
   const [selectedClientLead, setSelectedClientLead] = useState<ClientLead | null>(null);
@@ -430,8 +432,8 @@ export default function LeadsPage() {
       </div>
 
       {/* ── Toolbar: Search & KPI Tag Filters ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-150 shadow-sm">
-        <div className="flex items-center gap-2 bg-[#faf8f5] border border-gray-250 rounded-xl px-3 py-2 w-full md:w-80 focus-within:border-[#8B4949] transition-all">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-[#f0ece4] shadow-sm">
+        <div className="flex items-center gap-2 bg-[#faf8f5] border border-[#e5e5e5] rounded-xl px-3 py-2 w-full md:w-80 focus-within:border-[#8B4949] transition-all">
           <Search size={14} className="text-gray-400" />
           <input
             type="text"
@@ -563,8 +565,47 @@ export default function LeadsPage() {
                       <td>
                         <span className="text-xs text-gray-400 font-semibold">{lead.source}</span>
                       </td>
-                      <td>
-                        <StatusBadge status={lead.status} />
+                      <td className="whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          {(() => {
+                            const config = {
+                              New:         { bg: '#EFF6FF', text: '#1D4ED8' },
+                              Contacted:   { bg: '#F5F3FF', text: '#6D28D9' },
+                              'Follow-up': { bg: '#FFF7ED', text: '#C2410C' },
+                              Converted:   { bg: '#F0FDF4', text: '#166534' },
+                              Lost:        { bg: '#FEF2F2', text: '#DC2626' }
+                            }[lead.status] || { bg: '#f5f0e8', text: '#4a4a4a' };
+                            return (
+                              <select
+                                value={lead.status}
+                                onChange={(e) => {
+                                  const val = e.target.value as ClientLeadStatus;
+                                  updateClientLead(lead.id, { status: val });
+                                  if (val === 'Follow-up') {
+                                    setFollowUpContact({ name: lead.name, phone: lead.phone, email: lead.email });
+                                  }
+                                }}
+                                style={{ backgroundColor: config.bg, color: config.text }}
+                                className="px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer text-center"
+                              >
+                                <option value="New">New</option>
+                                <option value="Contacted">Contacted</option>
+                                <option value="Follow-up">Follow-up</option>
+                                <option value="Converted">Converted</option>
+                                <option value="Lost">Lost</option>
+                              </select>
+                            );
+                          })()}
+                          {lead.status === 'Follow-up' && (
+                            <button
+                              onClick={() => setFollowUpContact({ name: lead.name, phone: lead.phone, email: lead.email })}
+                              className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-full transition-colors"
+                              title="Initiate Follow-up (Call / WhatsApp)"
+                            >
+                              <Phone size={12} />
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="text-right">
                         <div className="inline-flex gap-1">
@@ -631,13 +672,25 @@ export default function LeadsPage() {
                         {lead.expectedMargin}% profit
                       </td>
                       <td>
-                        <span className={`admin-badge text-[10px] font-bold ${
-                          lead.status === 'Closed' ? 'admin-badge-success' :
-                          lead.status === 'Deal' ? 'admin-badge-warning' :
-                          'admin-badge-danger'
-                        }`}>
-                          {lead.status === 'Deal' ? 'Negotiating' : lead.status === 'Closed' ? 'Partnered' : 'On Hold'}
-                        </span>
+                        {(() => {
+                          const config = {
+                            Closed: { bg: '#F0FDF4', text: '#166534' },
+                            Deal:   { bg: '#FFFBEB', text: '#B45309' },
+                            Paused: { bg: '#F3F4F6', text: '#4B5563' }
+                          }[lead.status] || { bg: '#f5f0e8', text: '#4a4a4a' };
+                          return (
+                            <select
+                              value={lead.status}
+                              onChange={(e) => updateVendorLead(lead.id, { status: e.target.value as VendorLeadStatus })}
+                              style={{ backgroundColor: config.bg, color: config.text }}
+                              className="px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer text-center"
+                            >
+                              <option value="Deal">Negotiating</option>
+                              <option value="Closed">Partnered</option>
+                              <option value="Paused">On Hold</option>
+                            </select>
+                          );
+                        })()}
                       </td>
                       <td>
                         <span className="text-xs text-gray-400 font-medium">{lead.createdAt}</span>
@@ -703,13 +756,25 @@ export default function LeadsPage() {
                         {lead.commissionRate}% comm.
                       </td>
                       <td>
-                        <span className={`admin-badge text-[10px] font-bold ${
-                          lead.status === 'Active Partnership' ? 'admin-badge-success' :
-                          lead.status === 'Prospect' ? 'admin-badge-warning' :
-                          'admin-badge-danger'
-                        }`}>
-                          {lead.status}
-                        </span>
+                        {(() => {
+                          const config = {
+                            'Active Partnership': { bg: '#F0FDF4', text: '#166534' },
+                            Prospect:             { bg: '#FFFBEB', text: '#B45309' },
+                            Inactive:            { bg: '#F3F4F6', text: '#4B5563' }
+                          }[lead.status] || { bg: '#f5f0e8', text: '#4a4a4a' };
+                          return (
+                            <select
+                              value={lead.status}
+                              onChange={(e) => updatePlannerLead(lead.id, { status: e.target.value as PlannerLeadStatus })}
+                              style={{ backgroundColor: config.bg, color: config.text }}
+                              className="px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer text-center"
+                            >
+                              <option value="Prospect">Prospect</option>
+                              <option value="Active Partnership">Active Partnership</option>
+                              <option value="Inactive">Inactive</option>
+                            </select>
+                          );
+                        })()}
                       </td>
                       <td>
                         <span className="text-xs text-gray-400 font-medium">{lead.createdAt}</span>
@@ -1017,6 +1082,43 @@ export default function LeadsPage() {
         onCancel={() => setDeletePlannerLeadId(null)}
         danger
       />
+
+      {/* ── MODAL: Contact Follow-up ── */}
+      {followUpContact && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 animate-fade-in">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setFollowUpContact(null)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 admin-scale-in border border-[#f0ece4]">
+            <button onClick={() => setFollowUpContact(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X size={16} />
+            </button>
+            <h3 className="text-lg font-bold text-[#1a1410] mb-2 flex items-center gap-2">
+              <Sparkles className="text-amber-500" size={20} />
+              Initiate Follow-up
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">Choose how you want to reach out to <strong>{followUpContact.name}</strong>:</p>
+            
+            <div className="space-y-3">
+              <a
+                href={`tel:${followUpContact.phone}`}
+                className="flex items-center justify-center gap-3 w-full py-3 bg-[#8B4949] hover:bg-[#723b3b] text-white rounded-xl font-bold text-sm shadow-sm transition-colors"
+              >
+                <Phone size={16} /> Call {followUpContact.phone}
+              </a>
+              <a
+                href={`https://wa.me/${followUpContact.phone.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-3 w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-sm shadow-sm transition-colors"
+              >
+                <Megaphone size={16} strokeWidth={2} /> WhatsApp Message
+              </a>
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-400">
+              <span>Email: {followUpContact.email}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

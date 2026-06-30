@@ -242,7 +242,7 @@ Looking forward to hearing from you!`;
       {/* Chat Window */}
       {isOpen && (
         <div 
-          className="fixed z-[1000] bg-white flex flex-col overflow-hidden transition-all duration-300 ease-out border-gray-150
+          className="fixed z-[1000] bg-white flex flex-col overflow-hidden transition-all duration-300 ease-out border-[#f0ece4]
             /* Mobile layout: Fullscreen */
             inset-0 w-full h-[100dvh] rounded-none
             /* Tablet & Desktop layout: Floating */
@@ -445,7 +445,7 @@ Looking forward to hearing from you!`;
 
                 {/* Step 7: Completed Summary Card */}
                 {step === 7 && (
-                  <div className="bg-white border border-gray-150 rounded-xl p-4 shadow-md space-y-3 mx-1 animate-in fade-in-50 zoom-in-95 duration-200 overscroll-behavior-contain">
+                  <div className="bg-white border border-[#f0ece4] rounded-xl p-4 shadow-md space-y-3 mx-1 animate-in fade-in-50 zoom-in-95 duration-200 overscroll-behavior-contain">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-primary pb-2 border-b border-gray-100 select-none">
                       <Sparkles className="w-4 h-4 text-secondary" />
                       Your Design Brief Summary

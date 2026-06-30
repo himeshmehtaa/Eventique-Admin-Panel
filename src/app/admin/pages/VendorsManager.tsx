@@ -905,7 +905,7 @@ export default function VendorsManager() {
                 </div>
 
                 {costPrice > 0 && retailPrice > 0 && (
-                  <div className="p-3 bg-[#faf8f5] rounded-xl border border-gray-150 text-xs space-y-1">
+                  <div className="p-3 bg-[#faf8f5] rounded-xl border border-[#f0ece4] text-xs space-y-1">
                     <p className="font-bold text-[#8B4949] uppercase tracking-wider text-[10px]">
                       {isPartnerCategory ? 'Partner Margin Analysis' : 'Calculated Margin Analysis'}
                     </p>
@@ -1094,7 +1094,7 @@ export default function VendorsManager() {
                       <p className="text-xs text-gray-400 italic">No cost items linked to this vendor</p>
                     ) : (
                       detailVendor.products.map(p => (
-                        <div key={p.id} className="flex items-center justify-between p-2 bg-[#faf8f5] rounded-xl border border-gray-150 text-xs">
+                        <div key={p.id} className="flex items-center justify-between p-2 bg-[#faf8f5] rounded-xl border border-[#f0ece4] text-xs">
                           <span className="font-medium text-gray-700 truncate max-w-[180px]">{p.name}</span>
                           <span className="text-gray-400">
                             Cost: <strong className="text-gray-600">₹{p.costPrice}</strong> · Margin: <strong className="text-green-600">{Math.round(((p.retailPrice - p.costPrice) / p.retailPrice) * 100)}%</strong>
