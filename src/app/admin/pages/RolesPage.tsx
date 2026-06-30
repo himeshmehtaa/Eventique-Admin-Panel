@@ -906,10 +906,10 @@ export default function RolesPage() {
         <div className="space-y-6">
           {/* Section 1: Active Job Openings */}
           <div className="space-y-3">
-            <div className="flex justify-between items-center bg-white px-6 py-4 rounded-2xl border border-[#f0ece4] shadow-sm">
+            <div className="px-1 flex justify-between items-center">
               <div>
                 <h3 className="text-base font-bold text-[#1a1410]">Active Job Openings</h3>
-                <p className="text-xs text-gray-400">Listings visible on the careers page portal</p>
+                <p className="text-xs text-gray-400 mt-0.5">Listings visible on the careers page portal</p>
               </div>
             </div>
 
@@ -951,9 +951,11 @@ export default function RolesPage() {
 
           {/* Section 2: Submitted Applications */}
           <div className="space-y-3 pt-2">
-            <div className="admin-card">
-              <h3 className="text-base font-bold text-[#1a1410] mb-1">Received Applications</h3>
-              <p className="text-xs text-gray-400">Review, reject or hire candidates applying from the careers portal</p>
+            <div className="px-1 pt-1 flex justify-between items-center">
+              <div>
+                <h3 className="text-base font-bold text-[#1a1410]">Received Applications</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Review, reject or hire candidates applying from the careers portal</p>
+              </div>
             </div>
 
           <div className="admin-card !p-0 overflow-hidden">

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import {
   ShoppingBag, Upload, ClipboardList, Tag, FileEdit, Users,
@@ -52,6 +52,7 @@ const QUICK_ACTIONS = [
 
 export default function Dashboard() {
   const { state, hasPermission, currentUser } = useAdmin();
+  const [dashboardTab, setDashboardTab] = useState<'orders' | 'leads'>('orders');
 
   // Find user's role name
   const userRole = currentUser ? state.roles.find(r => r.id === currentUser.roleId) : null;
@@ -161,6 +162,13 @@ export default function Dashboard() {
   const recentOrders = [...state.orders]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 6);
+
+  // ── Recent client leads (last 6) ───────────────────────────
+  const recentLeads = useMemo(() => {
+    return [...(state.clientLeads || [])]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 6);
+  }, [state.clientLeads]);
 
   // ── Calculate top selling products ─────────────────────────
   const topProducts = useMemo(() => {
@@ -805,53 +813,143 @@ export default function Dashboard() {
       {/* ── Recent Orders Table (Filtered by permission) ─────────────────── */}
       {hasOrdersAccess && (
         <div className="admin-card">
-          <div className="admin-card-header">
-            <h3 className="font-semibold text-[#1a1410]">Recent Orders</h3>
-            <Link to="/admin/orders" className="text-xs text-[#8B4949] flex items-center gap-1 hover:underline font-medium">
-              View all <ArrowRight size={12} />
+          <div className="admin-card-header !pb-0 border-b border-gray-100 flex justify-between items-center flex-wrap gap-4">
+            <div className="flex gap-4">
+              <button
+                onClick={() => setDashboardTab('orders')}
+                className={`pb-3 text-sm font-extrabold transition-all relative cursor-pointer ${
+                  dashboardTab === 'orders'
+                    ? 'text-[#8B4949]'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                Recent Orders
+                {dashboardTab === 'orders' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#8B4949] rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => setDashboardTab('leads')}
+                className={`pb-3 text-sm font-extrabold transition-all relative cursor-pointer ${
+                  dashboardTab === 'leads'
+                    ? 'text-[#8B4949]'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                Recent Leads
+                {dashboardTab === 'leads' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#8B4949] rounded-full" />
+                )}
+              </button>
+            </div>
+            
+            <Link
+              to={dashboardTab === 'orders' ? "/admin/orders" : "/admin/leads"}
+              className="pb-3 text-xs text-[#8B4949] flex items-center gap-1 hover:underline font-semibold"
+            >
+              View all {dashboardTab === 'orders' ? 'orders' : 'leads'} <ArrowRight size={12} />
             </Link>
           </div>
-          <div className="overflow-x-auto">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Customer</th>
-                  <th>Product</th>
-                  <th>Type</th>
-                  <th>Order Status</th>
-                  <th>Payment</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="font-mono text-xs text-[#8B4949] font-semibold">{order.id}</td>
-                    <td>
-                      <div className="whitespace-nowrap">
-                        <p className="font-medium text-[#1a1410] text-sm">{order.customerName}</p>
-                        <p className="text-[10px] text-gray-400">{order.customerEmail}</p>
-                      </div>
-                    </td>
-                    <td className="text-sm text-[#4a4a4a] max-w-[240px] truncate">{order.productName}</td>
-                    <td>
-                      <TypeBadge type={order.productType as OrderProductType} size="sm" />
-                    </td>
-                    <td>
-                      <StatusBadge status={order.status} size="sm" />
-                    </td>
-                    <td>
-                      <StatusBadge status={order.paymentStatus} size="sm" />
-                    </td>
-                    <td className="font-semibold text-[#8B4949] whitespace-nowrap">
-                      {hasFinancialAccess ? `₹${order.amount.toLocaleString('en-IN')}` : '₹ -'}
-                    </td>
+
+          {dashboardTab === 'orders' ? (
+            <div className="overflow-x-auto">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Order Status</th>
+                    <th>Payment</th>
+                    <th>Amount</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => (
+                    <tr key={order.id}>
+                      <td className="font-mono text-xs text-[#8B4949] font-semibold">{order.id}</td>
+                      <td>
+                        <div className="whitespace-nowrap">
+                          <p className="font-medium text-[#1a1410] text-sm">{order.customerName}</p>
+                          <p className="text-[10px] text-gray-400">{order.customerEmail}</p>
+                        </div>
+                      </td>
+                      <td className="text-sm text-[#4a4a4a] max-w-[240px] truncate">{order.productName}</td>
+                      <td>
+                        <TypeBadge type={order.productType as OrderProductType} size="sm" />
+                      </td>
+                      <td>
+                        <StatusBadge status={order.status} size="sm" />
+                      </td>
+                      <td>
+                        <StatusBadge status={order.paymentStatus} size="sm" />
+                      </td>
+                      <td className="font-semibold text-[#8B4949] whitespace-nowrap">
+                        {hasFinancialAccess ? `₹${order.amount.toLocaleString('en-IN')}` : '₹ -'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Inquiry Details</th>
+                    <th>KPI Tag</th>
+                    <th>Lead Source</th>
+                    <th>Status</th>
+                    <th>Budget</th>
+                    <th>Created At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentLeads.map((lead) => {
+                    const statusConfig = {
+                      New:         { bg: '#EFF6FF', text: '#1D4ED8' },
+                      Contacted:   { bg: '#F5F3FF', text: '#6D28D9' },
+                      'Follow-up': { bg: '#FFF7ED', text: '#C2410C' },
+                      Converted:   { bg: '#F0FDF4', text: '#166534' },
+                      Lost:        { bg: '#FEF2F2', text: '#DC2626' }
+                    }[lead.status] || { bg: '#f5f0e8', text: '#4a4a4a' };
+
+                    return (
+                      <tr key={lead.id} className="hover:bg-[#faf8f5]/30 transition-colors">
+                        <td>
+                          <p className="font-extrabold text-[#1a1410] text-sm">{lead.name}</p>
+                          <span className="text-[10px] text-gray-400 font-medium">{lead.phone}</span>
+                        </td>
+                        <td>
+                          <p className="text-xs font-semibold text-[#1a1410]">{lead.interestedProduct}</p>
+                          <span className="text-[10px] text-gray-400">{lead.email}</span>
+                        </td>
+                        <td>
+                          <TypeBadge type={lead.tag as any} size="sm" />
+                        </td>
+                        <td className="text-xs text-[#4a4a4a] font-medium">{lead.source}</td>
+                        <td>
+                          <span
+                            style={{ backgroundColor: statusConfig.bg, color: statusConfig.text }}
+                            className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                          >
+                            {lead.status}
+                          </span>
+                        </td>
+                        <td className="font-semibold text-[#8B4949] whitespace-nowrap">
+                          ₹{lead.budget.toLocaleString('en-IN')}
+                        </td>
+                        <td className="text-[11px] text-gray-400 font-medium">{lead.createdAt}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
