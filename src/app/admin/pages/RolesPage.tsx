@@ -911,12 +911,6 @@ export default function RolesPage() {
                 <h3 className="text-base font-bold text-[#1a1410]">Active Job Openings</h3>
                 <p className="text-xs text-gray-400">Listings visible on the careers page portal</p>
               </div>
-              <button
-                onClick={() => setShowAddOpeningModal(true)}
-                className="px-3.5 py-1.5 bg-[#8B4949] hover:bg-[#723b3b] text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1.5"
-              >
-                <Plus size={14} /> Add Opening
-              </button>
             </div>
 
             {!state.jobOpenings || state.jobOpenings.length === 0 ? (
@@ -998,14 +992,9 @@ export default function RolesPage() {
                         <td>
                           <div className="flex flex-col gap-1 text-xs">
                             {app.resumeUrl ? (
-                              <>
-                                <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="text-[#8B4949] font-bold hover:underline flex items-center gap-0.5">
-                                  📄 View Resume
-                                </a>
-                                <a href={app.resumeUrl} download={`Resume-${app.name.replace(/\s+/g, '_')}.pdf`} className="text-green-700 font-bold hover:underline flex items-center gap-0.5">
-                                  📥 Download
-                                </a>
-                              </>
+                              <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="text-[#8B4949] font-bold hover:underline flex items-center gap-0.5">
+                                📄 View Resume
+                              </a>
                             ) : (
                               <span className="text-gray-400">No Resume</span>
                             )}
