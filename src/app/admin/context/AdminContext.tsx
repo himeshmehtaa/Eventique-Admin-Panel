@@ -6,7 +6,8 @@ import type {
   Order, Customer, Review, Promotion, Payment, Role, MediaFile,
   ContentBlock, ActivityLog, AppSettings, PermissionKey, TeamMember,
   BlogPost, Vendor, VendorOrder, Expense, ExpenseCategory,
-  ClientLead, VendorLead, PlannerLead, CorporateLead, CorporateOrder
+  ClientLead, VendorLead, PlannerLead, CorporateLead, CorporateOrder,
+  JobApplication
 } from '../types';
 
 const defaultHeroSlides: HeroSlide[] = [
@@ -205,6 +206,12 @@ const defaultCorporateLeads: CorporateLead[] = [
 
 const defaultCorporateOrders: CorporateOrder[] = [
   { id: 'CO-1001', company: 'Tata Consultancy Services', contact: 'Natarajan C.', email: 'natarajan@tcs.com', phone: '+91 22677 89999', product: 'Printed Platinum Invites', qty: 1500, pricePerUnit: 120, total: 180000, gst: '27AAACT1234F1Z9', status: 'Printing', date: '2026-05-24' }
+];
+
+const defaultJobApplications: JobApplication[] = [
+  { id: 'APP-101', name: 'Rohan Sharma', email: 'rohan.sharma@gmail.com', phone: '+91 98888 12345', position: 'Video Editor', experience: '3 Years (Premiere, After Effects)', portfolioUrl: 'https://vimeo.com/rohanshama', status: 'Pending', appliedAt: '2026-06-25' },
+  { id: 'APP-102', name: 'Ananya Iyer', email: 'ananya.iyer@gmail.com', phone: '+91 97777 54321', position: 'Graphic Designer', experience: '5 Years (Illustrator, Luxury Branding)', portfolioUrl: 'https://behance.net/ananyaiyer', status: 'Approved', appliedAt: '2026-06-22' },
+  { id: 'APP-103', name: 'Vikram Malhotra', email: 'vikram.m@gmail.com', phone: '+91 96666 98765', position: 'Event Coordinator', experience: '2 Years (On-ground Operations)', portfolioUrl: 'https://linkedin.com/in/vikramm', status: 'Rejected', appliedAt: '2026-06-18' }
 ];
 
 // ── Mock Team Members ────────────────────────────────────────
@@ -850,6 +857,11 @@ interface AdminContextType {
   // Actions
   convertCorporateLeadToOrder: (leadId: string, pricePerUnit: number, gst: string) => void;
   simulateLiveInquiry: () => void;
+  // Job Applications
+  addJobApplication: (app: JobApplication) => void;
+  updateJobApplication: (id: string, app: Partial<JobApplication>) => void;
+  deleteJobApplication: (id: string) => void;
+  hireApplicant: (appId: string, roleId: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | null>(null);
@@ -895,6 +907,7 @@ function buildDefault(): AdminState {
     plannerLeads: defaultPlannerLeads,
     corporateLeads: defaultCorporateLeads,
     corporateOrders: defaultCorporateOrders,
+    jobApplications: defaultJobApplications,
   };
 }
 
@@ -1016,6 +1029,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     if (!stored.plannerLeads) stored.plannerLeads = defaultPlannerLeads;
     if (!stored.corporateLeads) stored.corporateLeads = defaultCorporateLeads;
     if (!stored.corporateOrders) stored.corporateOrders = defaultCorporateOrders;
+    if (!stored.jobApplications) stored.jobApplications = defaultJobApplications;
 
     return stored;
   });
@@ -1308,6 +1322,43 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         return nextState;
       });
       addActivityLog('Simulated Inquiry Captured', `${newLead.name} - ${newLead.interestedProduct}`, 'success');
+    },
+    addJobApplication: (app) => {
+      set('jobApplications', prev => [...prev as JobApplication[], app]);
+      addActivityLog('Job Application Received', `${app.name} - ${app.position}`, 'info');
+    },
+    updateJobApplication: (id, app) => {
+      set('jobApplications', prev => (prev as JobApplication[]).map(x => x.id === id ? { ...x, ...app } : x));
+      addActivityLog('Job Application Updated', id, 'info');
+    },
+    deleteJobApplication: (id) => {
+      set('jobApplications', prev => (prev as JobApplication[]).filter(x => x.id !== id));
+      addActivityLog('Job Application Deleted', id, 'danger');
+    },
+    hireApplicant: (appId, roleId) => {
+      setState(prev => {
+        const app = prev.jobApplications.find(x => x.id === appId);
+        if (!app) return prev;
+        const newMember: TeamMember = {
+          id: `m-${Date.now().toString().slice(-4)}`,
+          name: app.name,
+          email: app.email,
+          phone: app.phone,
+          roleId: roleId,
+          status: 'Active',
+          joinedAt: new Date().toISOString().split('T')[0],
+          salary: 45000,
+          paymentFrequency: 'Monthly'
+        };
+        const nextState = {
+          ...prev,
+          jobApplications: prev.jobApplications.map(x => x.id === appId ? { ...x, status: 'Approved' } : x),
+          teamMembers: [...prev.teamMembers, newMember]
+        };
+        saveToStorage(nextState);
+        return nextState;
+      });
+      addActivityLog('Applicant Hired', `Hired applicant ${appId} into the team`, 'success');
     },
   };
 

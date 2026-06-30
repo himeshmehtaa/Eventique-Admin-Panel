@@ -22,7 +22,6 @@ const NAV_GROUPS = [
       { icon: ClipboardList, label: 'Orders',     path: '/admin/orders', permission: 'orders' },
       { icon: Users,         label: 'Leads',      path: '/admin/leads', permission: 'leads' },
       { icon: Factory,       label: 'Partners',   path: '/admin/vendors', permission: 'vendors' },
-      { icon: Briefcase,     label: 'Corporate',  path: '/admin/corporate', permission: 'corporate' },
       { icon: BarChart3,     label: 'Analytics',  path: '/admin/analytics', permission: 'products' },
       { icon: Tag,           label: 'Promotions', path: '/admin/promotions', permission: 'promotions' },
       { icon: Megaphone,     label: 'Marketing',  path: '/admin/marketing', permission: 'marketing' },

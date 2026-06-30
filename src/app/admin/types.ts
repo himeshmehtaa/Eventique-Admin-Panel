@@ -435,6 +435,20 @@ export interface AdminState {
   plannerLeads: PlannerLead[];
   corporateLeads: CorporateLead[];
   corporateOrders: CorporateOrder[];
+  jobApplications: JobApplication[];
+}
+
+// ── Careers & Job Applications ──────────────────────────────
+export interface JobApplication {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  experience: string;
+  portfolioUrl: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  appliedAt: string;
 }
 
 // ── B2C Client Leads ──────────────────────────────────────────

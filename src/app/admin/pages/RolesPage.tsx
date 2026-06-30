@@ -151,12 +151,30 @@ function ToggleRow({ label, enabled, accent, index, disabled, onChange }: Toggle
 
 // ── Main Component ────────────────────────────────────────────
 export default function RolesPage() {
-  const { state, updateRole, addRole, deleteRole, addTeamMember, updateTeamMember, deleteTeamMember, addActivityLog } = useAdmin();
+  const {
+    state,
+    updateRole,
+    addRole,
+    deleteRole,
+    addTeamMember,
+    updateTeamMember,
+    deleteTeamMember,
+    addActivityLog,
+    rejectApplicant,
+    hireApplicant
+  } = useAdmin();
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(state.roles[0]?.id ?? null);
   const [savedFlash, setSavedFlash] = useState(false);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<'permissions' | 'team'>('permissions');
+  const [activeTab, setActiveTab] = useState<'permissions' | 'team' | 'applications'>('permissions');
+
+  // Hire applicant modal state
+  const [showHireModal, setShowHireModal] = useState(false);
+  const [hiringApplicantId, setHiringApplicantId] = useState<string | null>(null);
+  const [hiringApplicantName, setHiringApplicantName] = useState('');
+  const [hiringApplicantEmail, setHiringApplicantEmail] = useState('');
+  const [hiringRoleId, setHiringRoleId] = useState(state.roles[0]?.id || '');
 
   // Modal State (Role)
   const [showAddModal, setShowAddModal] = useState(false);
@@ -319,7 +337,7 @@ export default function RolesPage() {
             <Plus size={15} />
             <span>Add New Role</span>
           </button>
-        ) : (
+        ) : activeTab === 'team' ? (
           <button
             onClick={() => setShowAddMemberModal(true)}
             className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer shadow-sm hover:shadow"
@@ -327,11 +345,11 @@ export default function RolesPage() {
             <Plus size={15} />
             <span>Add Team Member</span>
           </button>
-        )}
+        ) : null}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 bg-white border border-[#e5e5e5] rounded-xl p-1.5 w-fit">
+      <div className="flex gap-2 bg-white border border-[#e5e5e5] rounded-xl p-1.5 w-fit flex-wrap">
         <button
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
             activeTab === 'permissions'
@@ -351,6 +369,16 @@ export default function RolesPage() {
           onClick={() => setActiveTab('team')}
         >
           Team Directory
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+            activeTab === 'applications'
+              ? 'bg-[#8B4949] text-white shadow-sm'
+              : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
+          }`}
+          onClick={() => setActiveTab('applications')}
+        >
+          Job Applications ({state.jobApplications?.length ?? 0})
         </button>
       </div>
 
@@ -838,6 +866,142 @@ export default function RolesPage() {
             </form>
           </div>
         </>
+      )}
+
+      {/* ── TAB 3: JOB APPLICATIONS ────────────────────────────── */}
+      {activeTab === 'applications' && (
+        <div className="space-y-4">
+          <div className="admin-card">
+            <h3 className="text-base font-bold text-[#1a1410] mb-1">Open Job Applications</h3>
+            <p className="text-xs text-gray-400">Review, reject or hire candidates applying from the careers portal</p>
+          </div>
+
+          <div className="admin-card !p-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Candidate</th>
+                    <th>Position Details</th>
+                    <th>Experience & Rate</th>
+                    <th>Portfolio Link</th>
+                    <th>Status</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {!state.jobApplications || state.jobApplications.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-12 text-gray-450 text-sm">No job applications submitted.</td>
+                    </tr>
+                  ) : (
+                    state.jobApplications.map(app => (
+                      <tr key={app.id} className="hover:bg-[#faf8f5]/50 transition-colors">
+                        <td>
+                          <p className="font-extrabold text-[#1a1410] text-sm">{app.name}</p>
+                          <span className="text-xs text-gray-500">{app.email}</span>
+                          <p className="text-[10px] text-gray-450 font-medium">{app.phone}</p>
+                        </td>
+                        <td>
+                          <p className="font-bold text-xs text-[#1a1410]">{app.position}</p>
+                          <span className="text-[10px] text-gray-450">{app.appliedDate}</span>
+                        </td>
+                        <td>
+                          <p className="text-xs font-semibold text-[#1a1410]">{app.experience} Years Exp.</p>
+                          <span className="text-[10px] text-amber-600 font-bold">₹{app.expectedCtc.toLocaleString('en-IN')}/hr</span>
+                        </td>
+                        <td>
+                          {app.portfolioUrl ? (
+                            <a href={app.portfolioUrl} target="_blank" rel="noreferrer" className="text-xs text-[#8B4949] font-bold hover:underline">
+                              View Portfolio →
+                            </a>
+                          ) : (
+                            <span className="text-xs text-gray-400">None</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className={`admin-badge text-[10px] font-bold py-1 px-2.5 rounded-full ${
+                            app.status === 'Hired' ? 'bg-green-50 text-green-700' :
+                            app.status === 'Rejected' ? 'bg-red-50 text-red-700' :
+                            'bg-amber-50 text-amber-700'
+                          }`}>
+                            {app.status}
+                          </span>
+                        </td>
+                        <td className="text-right">
+                          {app.status === 'Pending' && (
+                            <div className="inline-flex gap-2 justify-end">
+                              <button
+                                onClick={() => {
+                                  setHiringApplicantId(app.id);
+                                  setHiringApplicantName(app.name);
+                                  setHiringApplicantEmail(app.email);
+                                  setHiringRoleId(state.roles[0]?.id || '');
+                                  setShowHireModal(true);
+                                }}
+                                className="px-3 py-1 bg-[#8B4949] hover:bg-[#723b3b] text-white font-bold rounded-lg text-[10px] transition-colors"
+                              >
+                                Hire Candidate
+                              </button>
+                              <button
+                                onClick={() => rejectApplicant(app.id)}
+                                className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg text-[10px] transition-colors border border-red-200/50"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: Hire Candidate ── */}
+      {showHireModal && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 animate-fade-in">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowHireModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 admin-scale-in border border-[#f0ece4]">
+            <button onClick={() => setShowHireModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X size={16} />
+            </button>
+            <h3 className="text-lg font-bold text-[#1a1410] mb-2">Hire & Add to Team</h3>
+            <p className="text-xs text-gray-400 mb-4">Assign a role and onboard <strong>{hiringApplicantName}</strong> to the organization:</p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (hiringApplicantId) {
+                  hireApplicant(hiringApplicantId, hiringRoleId);
+                  setShowHireModal(false);
+                  setHiringApplicantId(null);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="admin-label">Email Address</label>
+                <input type="email" readOnly value={hiringApplicantEmail} className="admin-input bg-gray-50 text-gray-500 font-bold" />
+              </div>
+              <div>
+                <label className="admin-label">Assign Role *</label>
+                <select value={hiringRoleId} onChange={(e) => setHiringRoleId(e.target.value)} className="admin-input font-bold">
+                  {state.roles.map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowHireModal(false)} className="flex-1 py-2.5 border border-[#e5e5e5] rounded-xl text-gray-500 font-bold text-xs hover:bg-[#faf8f5]">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 bg-green-600 text-white rounded-xl font-bold text-xs hover:bg-green-700">Appoint & Welcome</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
