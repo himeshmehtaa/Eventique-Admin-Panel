@@ -752,7 +752,7 @@ export default function LeadsPage() {
             <>
               <div className="flex items-center gap-1.5">
                 <label className="text-xs text-gray-400 font-bold uppercase tracking-wider">KPI Tag:</label>
-                <select value={tagFilter} onChange={(e) => setTagFilter(e.target.value as any)} className="admin-input !py-1.5 !px-3 !w-auto text-xs">
+                <select value={tagFilter} onChange={(e) => setTagFilter(e.target.value as any)} className="admin-select !py-1.5 !pl-3 !pr-8 !w-auto text-xs">
                   <option value="All">All Categories</option>
                   <option value="Invitations">Invitations</option>
                   <option value="Stationery">Stationery</option>
@@ -762,7 +762,7 @@ export default function LeadsPage() {
               </div>
               <div className="flex items-center gap-1.5">
                 <label className="text-xs text-gray-400 font-bold uppercase tracking-wider">Status:</label>
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)} className="admin-input !py-1.5 !px-3 !w-auto text-xs">
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)} className="admin-select !py-1.5 !pl-3 !pr-8 !w-auto text-xs">
                   <option value="All">All Statuses</option>
                   <option value="New">New</option>
                   <option value="Contacted">Contacted</option>
@@ -779,7 +779,7 @@ export default function LeadsPage() {
               {corporateSubTab === 'leads' ? (
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs text-gray-400 font-bold uppercase tracking-wider">Status:</label>
-                  <select value={corporateLeadStatusFilter} onChange={(e) => setCorporateLeadStatusFilter(e.target.value as any)} className="admin-input !py-1.5 !px-3 !w-auto text-xs">
+                  <select value={corporateLeadStatusFilter} onChange={(e) => setCorporateLeadStatusFilter(e.target.value as any)} className="admin-select !py-1.5 !pl-3 !pr-8 !w-auto text-xs">
                     <option value="All">All Statuses</option>
                     <option value="New">New</option>
                     <option value="Proposal Sent">Proposal Sent</option>
@@ -790,7 +790,7 @@ export default function LeadsPage() {
               ) : (
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs text-gray-400 font-bold uppercase tracking-wider">Status:</label>
-                  <select value={corporateOrderStatusFilter} onChange={(e) => setCorporateOrderStatusFilter(e.target.value as any)} className="admin-input !py-1.5 !px-3 !w-auto text-xs">
+                  <select value={corporateOrderStatusFilter} onChange={(e) => setCorporateOrderStatusFilter(e.target.value as any)} className="admin-select !py-1.5 !pl-3 !pr-8 !w-auto text-xs">
                     <option value="All">All Statuses</option>
                     <option value="Planning">Planning</option>
                     <option value="Sourcing">Sourcing</option>
@@ -808,7 +808,7 @@ export default function LeadsPage() {
             <>
               <div className="flex items-center gap-1.5">
                 <label className="text-xs text-gray-400 font-bold uppercase tracking-wider">Sourcing:</label>
-                <select value={vendorCategoryFilter} onChange={(e) => setVendorCategoryFilter(e.target.value as any)} className="admin-input !py-1.5 !px-3 !w-auto text-xs">
+                <select value={vendorCategoryFilter} onChange={(e) => setVendorCategoryFilter(e.target.value as any)} className="admin-select !py-1.5 !pl-3 !pr-8 !w-auto text-xs">
                   <option value="All">All Categories</option>
                   <option value="Printed Stationery">Stationery</option>
                   <option value="Printed Invites">Printed Invites</option>
@@ -817,7 +817,7 @@ export default function LeadsPage() {
               </div>
               <div className="flex items-center gap-1.5">
                 <label className="text-xs text-gray-400 font-bold uppercase tracking-wider">Deal Stage:</label>
-                <select value={vendorStatusFilter} onChange={(e) => setVendorStatusFilter(e.target.value as any)} className="admin-input !py-1.5 !px-3 !w-auto text-xs">
+                <select value={vendorStatusFilter} onChange={(e) => setVendorStatusFilter(e.target.value as any)} className="admin-select !py-1.5 !pl-3 !pr-8 !w-auto text-xs">
                   <option value="All">All Deals</option>
                   <option value="Deal">In Discussion (Deal)</option>
                   <option value="Closed">Closed Partnership</option>
@@ -830,7 +830,7 @@ export default function LeadsPage() {
           {activeTab === 'planner' && (
             <div className="flex items-center gap-1.5">
               <label className="text-xs text-gray-400 font-bold uppercase tracking-wider">Status:</label>
-              <select value={plannerStatusFilter} onChange={(e) => setPlannerStatusFilter(e.target.value as any)} className="admin-input !py-1.5 !px-3 !w-auto text-xs">
+              <select value={plannerStatusFilter} onChange={(e) => setPlannerStatusFilter(e.target.value as any)} className="admin-select !py-1.5 !pl-3 !pr-8 !w-auto text-xs">
                 <option value="All">All Statuses</option>
                 <option value="Prospect">Prospect</option>
                 <option value="Active Partnership">Active Partnership</option>
@@ -914,7 +914,7 @@ export default function LeadsPage() {
                                   }
                                 }}
                                 style={{ backgroundColor: config.bg, color: config.text }}
-                                className="px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer text-center"
+                                className="admin-status-select px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer"
                               >
                                 <option value="New">New</option>
                                 <option value="Contacted">Contacted</option>
@@ -1039,7 +1039,7 @@ export default function LeadsPage() {
                                   value={lead.status}
                                   onChange={(e) => updateCorporateLead(lead.id, { status: e.target.value as CorporateLeadStatus })}
                                   style={{ backgroundColor: config.bg, color: config.text }}
-                                  className="px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer text-center"
+                                  className="admin-status-select px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer"
                                 >
                                   <option value="New">New</option>
                                   <option value="Proposal Sent">Proposal Sent</option>
@@ -1143,7 +1143,7 @@ export default function LeadsPage() {
                                   value={order.status}
                                   onChange={(e) => updateCorporateOrder(order.id, { status: e.target.value as CorporateOrderStatus })}
                                   style={{ backgroundColor: config.bg, color: config.text }}
-                                  className="px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer text-center"
+                                  className="admin-status-select px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer"
                                 >
                                   <option value="Planning">Planning</option>
                                   <option value="Sourcing">Sourcing</option>
@@ -1256,7 +1256,7 @@ export default function LeadsPage() {
                                 }
                               }}
                               style={{ backgroundColor: config.bg, color: config.text }}
-                              className="px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer text-center"
+                              className="admin-status-select px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer"
                             >
                               <option value="Deal">Negotiating</option>
                               <option value="Closed">Partnered</option>
@@ -1360,7 +1360,7 @@ export default function LeadsPage() {
                                 }
                               }}
                               style={{ backgroundColor: config.bg, color: config.text }}
-                              className="px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer text-center"
+                              className="admin-status-select px-2.5 py-1 text-xs font-bold rounded-full border-none focus:outline-none cursor-pointer"
                             >
                               <option value="Prospect">Prospect</option>
                               <option value="Active Partnership">Active Partnership</option>

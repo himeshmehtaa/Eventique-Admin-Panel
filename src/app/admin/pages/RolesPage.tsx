@@ -883,7 +883,7 @@ export default function RolesPage() {
                   <tr>
                     <th>Candidate</th>
                     <th>Position Details</th>
-                    <th>Experience & Rate</th>
+                    <th>Experience Details</th>
                     <th>Portfolio Link</th>
                     <th>Status</th>
                     <th className="text-right">Actions</th>
@@ -904,11 +904,10 @@ export default function RolesPage() {
                         </td>
                         <td>
                           <p className="font-bold text-xs text-[#1a1410]">{app.position}</p>
-                          <span className="text-[10px] text-gray-450">{app.appliedDate}</span>
+                          <span className="text-[10px] text-gray-450">{app.appliedAt}</span>
                         </td>
                         <td>
-                          <p className="text-xs font-semibold text-[#1a1410]">{app.experience} Years Exp.</p>
-                          <span className="text-[10px] text-amber-600 font-bold">₹{app.expectedCtc.toLocaleString('en-IN')}/hr</span>
+                          <p className="text-xs font-semibold text-[#1a1410]">{app.experience}</p>
                         </td>
                         <td>
                           {app.portfolioUrl ? (
@@ -921,11 +920,11 @@ export default function RolesPage() {
                         </td>
                         <td>
                           <span className={`admin-badge text-[10px] font-bold py-1 px-2.5 rounded-full ${
-                            app.status === 'Hired' ? 'bg-green-50 text-green-700' :
+                            app.status === 'Approved' ? 'bg-green-50 text-green-700' :
                             app.status === 'Rejected' ? 'bg-red-50 text-red-700' :
                             'bg-amber-50 text-amber-700'
                           }`}>
-                            {app.status}
+                            {app.status === 'Approved' ? 'Hired' : app.status}
                           </span>
                         </td>
                         <td className="text-right">
