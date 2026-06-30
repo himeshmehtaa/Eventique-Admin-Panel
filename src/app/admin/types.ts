@@ -447,6 +447,7 @@ export interface JobApplication {
   position: string;
   experience: string;
   portfolioUrl: string;
+  resumeUrl: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   appliedAt: string;
 }

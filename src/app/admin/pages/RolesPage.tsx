@@ -884,7 +884,7 @@ export default function RolesPage() {
                     <th>Candidate</th>
                     <th>Position Details</th>
                     <th>Experience Details</th>
-                    <th>Portfolio Link</th>
+                    <th>Documents & Portfolio</th>
                     <th>Status</th>
                     <th className="text-right">Actions</th>
                   </tr>
@@ -910,13 +910,22 @@ export default function RolesPage() {
                           <p className="text-xs font-semibold text-[#1a1410]">{app.experience}</p>
                         </td>
                         <td>
-                          {app.portfolioUrl ? (
-                            <a href={app.portfolioUrl} target="_blank" rel="noreferrer" className="text-xs text-[#8B4949] font-bold hover:underline">
-                              View Portfolio →
-                            </a>
-                          ) : (
-                            <span className="text-xs text-gray-400">None</span>
-                          )}
+                          <div className="flex flex-col gap-1 text-xs">
+                            {app.resumeUrl ? (
+                              <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="text-[#8B4949] font-bold hover:underline flex items-center gap-1">
+                                📄 View Resume
+                              </a>
+                            ) : (
+                              <span className="text-gray-400">No Resume</span>
+                            )}
+                            {app.portfolioUrl ? (
+                              <a href={app.portfolioUrl} target="_blank" rel="noreferrer" className="text-[#D4AF37] font-bold hover:underline flex items-center gap-1">
+                                🌐 View Portfolio
+                              </a>
+                            ) : (
+                              <span className="text-gray-400">No Portfolio</span>
+                            )}
+                          </div>
                         </td>
                         <td>
                           <span className={`admin-badge text-[10px] font-bold py-1 px-2.5 rounded-full ${

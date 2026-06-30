@@ -209,9 +209,9 @@ const defaultCorporateOrders: CorporateOrder[] = [
 ];
 
 const defaultJobApplications: JobApplication[] = [
-  { id: 'APP-101', name: 'Rohan Sharma', email: 'rohan.sharma@gmail.com', phone: '+91 98888 12345', position: 'Video Editor', experience: '3 Years (Premiere, After Effects)', portfolioUrl: 'https://vimeo.com/rohanshama', status: 'Pending', appliedAt: '2026-06-25' },
-  { id: 'APP-102', name: 'Ananya Iyer', email: 'ananya.iyer@gmail.com', phone: '+91 97777 54321', position: 'Graphic Designer', experience: '5 Years (Illustrator, Luxury Branding)', portfolioUrl: 'https://behance.net/ananyaiyer', status: 'Approved', appliedAt: '2026-06-22' },
-  { id: 'APP-103', name: 'Vikram Malhotra', email: 'vikram.m@gmail.com', phone: '+91 96666 98765', position: 'Event Coordinator', experience: '2 Years (On-ground Operations)', portfolioUrl: 'https://linkedin.com/in/vikramm', status: 'Rejected', appliedAt: '2026-06-18' }
+  { id: 'APP-101', name: 'Rohan Sharma', email: 'rohan.sharma@gmail.com', phone: '+91 98888 12345', position: 'Video Editor', experience: '3 Years (Premiere, After Effects)', portfolioUrl: 'https://vimeo.com/rohanshama', resumeUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', status: 'Pending', appliedAt: '2026-06-25' },
+  { id: 'APP-102', name: 'Ananya Iyer', email: 'ananya.iyer@gmail.com', phone: '+91 97777 54321', position: 'Graphic Designer', experience: '5 Years (Illustrator, Luxury Branding)', portfolioUrl: 'https://behance.net/ananyaiyer', resumeUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', status: 'Approved', appliedAt: '2026-06-22' },
+  { id: 'APP-103', name: 'Vikram Malhotra', email: 'vikram.m@gmail.com', phone: '+91 96666 98765', position: 'Event Coordinator', experience: '2 Years (On-ground Operations)', portfolioUrl: 'https://linkedin.com/in/vikramm', resumeUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', status: 'Rejected', appliedAt: '2026-06-18' }
 ];
 
 // ── Mock Team Members ────────────────────────────────────────
