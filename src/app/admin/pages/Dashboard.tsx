@@ -4,7 +4,8 @@ import {
   ShoppingBag, Upload, ClipboardList, Tag, FileEdit, Users,
   CreditCard, Image, IndianRupee, Package, UserCheck, ArrowRight,
   ExternalLink, TrendingUp, Award, BarChart3, Factory, Coins,
-  TrendingDown, Calendar, Sparkles, FolderEdit, Rocket, BookOpen
+  TrendingDown, Calendar, Sparkles, FolderEdit, Rocket, BookOpen,
+  UserPlus
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { StatsCard } from '../components/StatsCard';
@@ -43,6 +44,7 @@ const QUICK_ACTIONS = [
   { label: 'Add Product',     icon: ShoppingBag,   to: '/admin/products',    color: '#8B4949', permission: 'products' },
   { label: 'Upload Files',    icon: Upload,         to: '/admin/orders',      color: '#6366F1', permission: 'upload_files' },
   { label: 'Add Order',       icon: ClipboardList,  to: '/admin/orders',      color: '#D4AF37', permission: 'orders' },
+  { label: 'Add Lead',        icon: UserPlus,       to: '/admin/leads',       color: '#10B981', permission: 'customers' },
   { label: 'Create Promo',    icon: Tag,            to: '/admin/promotions',  color: '#4A7C59', permission: 'promotions' },
   { label: 'Edit Contents',   icon: FileEdit,       to: '/admin/contents',    color: '#EC4899', permission: 'contents' },
   { label: 'View Customers',  icon: Users,          to: '/admin/customers',   color: '#F59E0B', permission: 'customers' },

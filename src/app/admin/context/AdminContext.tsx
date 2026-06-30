@@ -1057,8 +1057,20 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
     if (!stored.clientLeads) stored.clientLeads = defaultClientLeads;
     if (!stored.vendorLeads) stored.vendorLeads = defaultVendorLeads;
+    stored.vendorLeads = stored.vendorLeads.map((vl: any) => ({
+      ...vl,
+      createdAt: vl.createdAt.startsWith('2026-07') || vl.createdAt.startsWith('2026-06-30') ? vl.createdAt : '2026-07-01'
+    }));
     if (!stored.plannerLeads) stored.plannerLeads = defaultPlannerLeads;
+    stored.plannerLeads = stored.plannerLeads.map((pl: any) => ({
+      ...pl,
+      createdAt: pl.createdAt.startsWith('2026-07') || pl.createdAt.startsWith('2026-06-30') ? pl.createdAt : '2026-07-01'
+    }));
     if (!stored.corporateLeads) stored.corporateLeads = defaultCorporateLeads;
+    stored.corporateLeads = stored.corporateLeads.map((cl: any) => ({
+      ...cl,
+      createdAt: cl.createdAt.startsWith('2026-07') || cl.createdAt.startsWith('2026-06-30') ? cl.createdAt : '2026-07-01'
+    }));
     if (!stored.corporateOrders) stored.corporateOrders = defaultCorporateOrders;
     if (!stored.jobApplications) {
       stored.jobApplications = defaultJobApplications;
