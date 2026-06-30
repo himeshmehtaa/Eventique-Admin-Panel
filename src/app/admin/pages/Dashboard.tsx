@@ -163,12 +163,72 @@ export default function Dashboard() {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 6);
 
-  // ── Recent client leads (last 6) ───────────────────────────
+  // ── Recent leads (merged clients, corporate, vendors, planners; last 6) ─────
   const recentLeads = useMemo(() => {
-    return [...(state.clientLeads || [])]
+    const clients = (state.clientLeads || []).map(lead => ({
+      id: lead.id,
+      name: lead.name,
+      entityName: undefined as string | undefined,
+      email: lead.email,
+      phone: lead.phone,
+      inquiryDetails: lead.interestedProduct,
+      typeLabel: 'Client',
+      tag: lead.tag,
+      source: lead.source,
+      status: lead.status,
+      budget: lead.budget,
+      createdAt: lead.createdAt
+    }));
+
+    const corporate = (state.corporateLeads || []).map(lead => ({
+      id: lead.id,
+      name: lead.contact,
+      entityName: lead.company,
+      email: lead.email,
+      phone: lead.phone,
+      inquiryDetails: `${lead.product} (${lead.qty} units)`,
+      typeLabel: 'Corporate',
+      tag: 'Corporate',
+      source: 'B2B Corporate',
+      status: lead.status,
+      budget: lead.budget,
+      createdAt: lead.createdAt
+    }));
+
+    const vendors = (state.vendorLeads || []).map(lead => ({
+      id: lead.id,
+      name: lead.contactName,
+      entityName: lead.companyName,
+      email: lead.email,
+      phone: lead.phone,
+      inquiryDetails: `Sourcing - ${lead.category}`,
+      typeLabel: 'Vendor',
+      tag: lead.category === 'Printed Stationery' ? 'Stationery' : lead.category === 'Printed Invites' ? 'Invitations' : 'Gifts',
+      source: 'Vendor Partner',
+      status: lead.status === 'Deal' ? 'Negotiating' : lead.status === 'Closed' ? 'Partnered' : 'On Hold',
+      budget: `Margin: ${lead.expectedMargin}%`,
+      createdAt: lead.createdAt
+    }));
+
+    const planners = (state.plannerLeads || []).map(lead => ({
+      id: lead.id,
+      name: lead.contactName,
+      entityName: lead.agencyName,
+      email: lead.email,
+      phone: lead.phone,
+      inquiryDetails: 'Planner Partnership',
+      typeLabel: 'Planner',
+      tag: 'Corporate',
+      source: 'Event Planner',
+      status: lead.status,
+      budget: `Comm: ${lead.commissionRate}%`,
+      createdAt: lead.createdAt
+    }));
+
+    return [...clients, ...corporate, ...vendors, ...planners]
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, 6);
-  }, [state.clientLeads]);
+  }, [state.clientLeads, state.corporateLeads, state.vendorLeads, state.plannerLeads]);
 
   // ── Calculate top selling products ─────────────────────────
   const topProducts = useMemo(() => {
@@ -899,32 +959,54 @@ export default function Dashboard() {
                 <thead>
                   <tr>
                     <th>Name</th>
+                    <th>Type</th>
                     <th>Inquiry Details</th>
                     <th>KPI Tag</th>
                     <th>Lead Source</th>
                     <th>Status</th>
-                    <th>Budget</th>
+                    <th>Budget / Terms</th>
                     <th>Created At</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentLeads.map((lead) => {
                     const statusConfig = {
-                      New:         { bg: '#EFF6FF', text: '#1D4ED8' },
-                      Contacted:   { bg: '#F5F3FF', text: '#6D28D9' },
-                      'Follow-up': { bg: '#FFF7ED', text: '#C2410C' },
-                      Converted:   { bg: '#F0FDF4', text: '#166534' },
-                      Lost:        { bg: '#FEF2F2', text: '#DC2626' }
+                      New:                  { bg: '#EFF6FF', text: '#1D4ED8' },
+                      Contacted:            { bg: '#F5F3FF', text: '#6D28D9' },
+                      'Follow-up':          { bg: '#FFF7ED', text: '#C2410C' },
+                      Converted:            { bg: '#F0FDF4', text: '#166534' },
+                      Lost:                 { bg: '#FEF2F2', text: '#DC2626' },
+                      'Proposal Sent':      { bg: '#F5F3FF', text: '#6D28D9' },
+                      Negotiation:          { bg: '#FFF7ED', text: '#C2410C' },
+                      Negotiating:          { bg: '#FFF7ED', text: '#C2410C' },
+                      Partnered:            { bg: '#F0FDF4', text: '#166534' },
+                      'On Hold':            { bg: '#FEF2F2', text: '#DC2626' },
+                      Prospect:             { bg: '#EFF6FF', text: '#1D4ED8' },
+                      'Active Partnership': { bg: '#F0FDF4', text: '#166534' },
+                      Inactive:             { bg: '#FEF2F2', text: '#DC2626' }
                     }[lead.status] || { bg: '#f5f0e8', text: '#4a4a4a' };
 
                     return (
                       <tr key={lead.id} className="hover:bg-[#faf8f5]/30 transition-colors">
                         <td>
-                          <p className="font-extrabold text-[#1a1410] text-sm">{lead.name}</p>
-                          <span className="text-[10px] text-gray-400 font-medium">{lead.phone}</span>
+                          <p className="font-extrabold text-[#1a1410] text-sm">
+                            {lead.name}
+                            {lead.entityName && <span className="font-normal text-xs text-gray-500 block mt-0.5">{lead.entityName}</span>}
+                          </p>
+                          <span className="text-[10px] text-gray-450 font-medium">{lead.phone}</span>
                         </td>
                         <td>
-                          <p className="text-xs font-semibold text-[#1a1410]">{lead.interestedProduct}</p>
+                          <span className={`inline-block px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wider ${
+                            lead.typeLabel === 'Client' ? 'bg-teal-50 text-teal-700 border border-teal-200/50' :
+                            lead.typeLabel === 'Corporate' ? 'bg-indigo-50 text-indigo-750 border border-indigo-200/50' :
+                            lead.typeLabel === 'Vendor' ? 'bg-amber-50 text-amber-700 border border-amber-200/50' :
+                            'bg-purple-50 text-purple-700 border border-purple-200/50'
+                          }`}>
+                            {lead.typeLabel}
+                          </span>
+                        </td>
+                        <td>
+                          <p className="text-xs font-semibold text-[#1a1410]">{lead.inquiryDetails}</p>
                           <span className="text-[10px] text-gray-400">{lead.email}</span>
                         </td>
                         <td>
@@ -940,7 +1022,7 @@ export default function Dashboard() {
                           </span>
                         </td>
                         <td className="font-semibold text-[#8B4949] whitespace-nowrap">
-                          ₹{lead.budget.toLocaleString('en-IN')}
+                          {typeof lead.budget === 'number' ? `₹${lead.budget.toLocaleString('en-IN')}` : lead.budget}
                         </td>
                         <td className="text-[11px] text-gray-400 font-medium">{lead.createdAt}</td>
                       </tr>
