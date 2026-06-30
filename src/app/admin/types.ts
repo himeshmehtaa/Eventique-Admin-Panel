@@ -436,6 +436,16 @@ export interface AdminState {
   corporateLeads: CorporateLead[];
   corporateOrders: CorporateOrder[];
   jobApplications: JobApplication[];
+  jobOpenings: JobOpening[];
+}
+
+export interface JobOpening {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  type: 'Full-Time' | 'Part-Time' | 'Contract' | 'Internship';
+  description: string;
 }
 
 // ── Careers & Job Applications ──────────────────────────────

@@ -161,7 +161,9 @@ export default function RolesPage() {
     deleteTeamMember,
     addActivityLog,
     rejectApplicant,
-    hireApplicant
+    hireApplicant,
+    addJobOpening,
+    deleteJobOpening
   } = useAdmin();
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(state.roles[0]?.id ?? null);
   const [savedFlash, setSavedFlash] = useState(false);
@@ -175,6 +177,14 @@ export default function RolesPage() {
   const [hiringApplicantName, setHiringApplicantName] = useState('');
   const [hiringApplicantEmail, setHiringApplicantEmail] = useState('');
   const [hiringRoleId, setHiringRoleId] = useState(state.roles[0]?.id || '');
+
+  // Job Opening Modal State
+  const [showAddOpeningModal, setShowAddOpeningModal] = useState(false);
+  const [newJobTitle, setNewJobTitle] = useState('');
+  const [newJobDept, setNewJobDept] = useState('Creative Design');
+  const [newJobLocation, setNewJobLocation] = useState('Remote');
+  const [newJobType, setNewJobType] = useState<'Full-Time' | 'Part-Time' | 'Contract' | 'Internship'>('Full-Time');
+  const [newJobDesc, setNewJobDesc] = useState('');
 
   // Modal State (Role)
   const [showAddModal, setShowAddModal] = useState(false);
@@ -267,6 +277,21 @@ export default function RolesPage() {
     setShowAddMemberModal(false);
   }
 
+  function handleAddOpeningSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newJobTitle.trim() || !newJobDesc.trim()) return;
+    addJobOpening({
+      title: newJobTitle.trim(),
+      department: newJobDept,
+      location: newJobLocation.trim(),
+      type: newJobType,
+      description: newJobDesc.trim()
+    });
+    setNewJobTitle('');
+    setNewJobDesc('');
+    setShowAddOpeningModal(false);
+  }
+
   function handleEditMemberSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedMember) return;
@@ -344,6 +369,14 @@ export default function RolesPage() {
           >
             <Plus size={15} />
             <span>Add Team Member</span>
+          </button>
+        ) : activeTab === 'applications' ? (
+          <button
+            onClick={() => setShowAddOpeningModal(true)}
+            className="admin-btn admin-btn-primary flex items-center gap-2 cursor-pointer shadow-sm hover:shadow"
+          >
+            <Plus size={15} />
+            <span>Add Job Opening</span>
           </button>
         ) : null}
       </div>
@@ -870,11 +903,64 @@ export default function RolesPage() {
 
       {/* ── TAB 3: JOB APPLICATIONS ────────────────────────────── */}
       {activeTab === 'applications' && (
-        <div className="space-y-4">
-          <div className="admin-card">
-            <h3 className="text-base font-bold text-[#1a1410] mb-1">Open Job Applications</h3>
-            <p className="text-xs text-gray-400">Review, reject or hire candidates applying from the careers portal</p>
+        <div className="space-y-6">
+          {/* Section 1: Active Job Openings */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center bg-white px-6 py-4 rounded-2xl border border-[#f0ece4] shadow-sm">
+              <div>
+                <h3 className="text-base font-bold text-[#1a1410]">Active Job Openings</h3>
+                <p className="text-xs text-gray-400">Listings visible on the careers page portal</p>
+              </div>
+              <button
+                onClick={() => setShowAddOpeningModal(true)}
+                className="px-3.5 py-1.5 bg-[#8B4949] hover:bg-[#723b3b] text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1.5"
+              >
+                <Plus size={14} /> Add Opening
+              </button>
+            </div>
+
+            {!state.jobOpenings || state.jobOpenings.length === 0 ? (
+              <div className="admin-card text-center py-8 text-gray-400 text-xs">
+                No active job openings listed.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {state.jobOpenings.map(opening => (
+                  <div key={opening.id} className="admin-card border border-[#f0ece4]/80 flex flex-col justify-between hover:border-[#8B4949]/30 transition-all">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <span className="text-[9px] font-bold text-indigo-750 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">{opening.department}</span>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to delete the job opening for ${opening.title}?`)) {
+                              deleteJobOpening(opening.id);
+                            }
+                          }}
+                          className="p-1 text-gray-400 hover:text-red-650 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Remove opening"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                      <h4 className="font-extrabold text-sm text-[#1a1410] mt-2.5">{opening.title}</h4>
+                      <p className="text-[11px] text-gray-500 mt-1 line-clamp-3 leading-relaxed">{opening.description}</p>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between text-[10px] text-gray-400 font-bold">
+                      <span>📍 {opening.location}</span>
+                      <span>⏱️ {opening.type}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Section 2: Submitted Applications */}
+          <div className="space-y-3 pt-2">
+            <div className="admin-card">
+              <h3 className="text-base font-bold text-[#1a1410] mb-1">Received Applications</h3>
+              <p className="text-xs text-gray-400">Review, reject or hire candidates applying from the careers portal</p>
+            </div>
 
           <div className="admin-card !p-0 overflow-hidden">
             <div className="overflow-x-auto">
@@ -912,9 +998,14 @@ export default function RolesPage() {
                         <td>
                           <div className="flex flex-col gap-1 text-xs">
                             {app.resumeUrl ? (
-                              <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="text-[#8B4949] font-bold hover:underline flex items-center gap-1">
-                                📄 View Resume
-                              </a>
+                              <>
+                                <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="text-[#8B4949] font-bold hover:underline flex items-center gap-0.5">
+                                  📄 View Resume
+                                </a>
+                                <a href={app.resumeUrl} download={`Resume-${app.name.replace(/\s+/g, '_')}.pdf`} className="text-green-700 font-bold hover:underline flex items-center gap-0.5">
+                                  📥 Download
+                                </a>
+                              </>
                             ) : (
                               <span className="text-gray-400">No Resume</span>
                             )}
@@ -967,6 +1058,7 @@ export default function RolesPage() {
               </table>
             </div>
           </div>
+          </div>
         </div>
       )}
 
@@ -1006,6 +1098,101 @@ export default function RolesPage() {
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowHireModal(false)} className="flex-1 py-2.5 border border-[#e5e5e5] rounded-xl text-gray-500 font-bold text-xs hover:bg-[#faf8f5]">Cancel</button>
                 <button type="submit" className="flex-1 py-2.5 bg-green-600 text-white rounded-xl font-bold text-xs hover:bg-green-700">Appoint & Welcome</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* ── MODAL: Add Job Opening ── */}
+      {showAddOpeningModal && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 animate-fade-in">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddOpeningModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 admin-scale-in border border-[#f0ece4]">
+            <button onClick={() => setShowAddOpeningModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X size={16} />
+            </button>
+            <h3 className="text-lg font-bold text-[#1a1410] mb-2">Create Job Posting</h3>
+            <p className="text-xs text-gray-400 mb-4">Post a new job opening visible on the public careers page:</p>
+            <form onSubmit={handleAddOpeningSubmit} className="space-y-4">
+              <div>
+                <label className="admin-label">Job Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Senior Frontend Developer"
+                  value={newJobTitle}
+                  onChange={(e) => setNewJobTitle(e.target.value)}
+                  className="admin-input font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="admin-label">Department *</label>
+                  <select
+                    value={newJobDept}
+                    onChange={(e) => setNewJobDept(e.target.value)}
+                    className="admin-select font-semibold"
+                  >
+                    <option value="Creative Design">Creative Design</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Operations & Client Services">Operations & Client Services</option>
+                    <option value="Marketing & Content">Marketing & Content</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-label">Job Type *</label>
+                  <select
+                    value={newJobType}
+                    onChange={(e) => setNewJobType(e.target.value as any)}
+                    className="admin-select font-semibold"
+                  >
+                    <option value="Full-Time">Full-Time</option>
+                    <option value="Part-Time">Part-Time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Internship">Internship</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="admin-label">Location *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Remote / New Delhi"
+                  value={newJobLocation}
+                  onChange={(e) => setNewJobLocation(e.target.value)}
+                  className="admin-input font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="admin-label">Job Description *</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Enter role responsibilities, skill expectations..."
+                  value={newJobDesc}
+                  onChange={(e) => setNewJobDesc(e.target.value)}
+                  className="admin-textarea font-semibold text-xs"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddOpeningModal(false)}
+                  className="flex-1 py-2.5 border border-[#e5e5e5] rounded-xl text-gray-500 font-bold text-xs hover:bg-[#faf8f5]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-[#8B4949] text-white rounded-xl font-bold text-xs hover:bg-[#723b3b]"
+                >
+                  Publish Opening
+                </button>
               </div>
             </form>
           </div>

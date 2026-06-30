@@ -214,6 +214,33 @@ const defaultJobApplications: JobApplication[] = [
   { id: 'APP-103', name: 'Vikram Malhotra', email: 'vikram.m@gmail.com', phone: '+91 96666 98765', position: 'Event Coordinator', experience: '2 Years (On-ground Operations)', portfolioUrl: 'https://linkedin.com/in/vikramm', resumeUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', status: 'Rejected', appliedAt: '2026-06-18' }
 ];
 
+const defaultJobOpenings: JobOpening[] = [
+  {
+    id: 'designer',
+    title: 'Senior Visual Designer',
+    department: 'Creative Design',
+    location: 'Remote / New Delhi',
+    type: 'Full-Time',
+    description: 'Lead visual design workflows for luxury wedding stationery, custom illustrations, and event branding assets. NIFT background is a plus.'
+  },
+  {
+    id: 'engineer',
+    title: 'Frontend React Engineer',
+    department: 'Technology',
+    location: 'Remote',
+    type: 'Full-Time',
+    description: 'Develop responsive event registration engines, ticket verification apps, and custom high-performance event websites using React and Tailwind CSS.'
+  },
+  {
+    id: 'manager',
+    title: 'Event Design Project Manager',
+    department: 'Operations & Client Services',
+    location: 'Remote / Mumbai',
+    type: 'Full-Time',
+    description: 'Coordinate with enterprise clients and our internal design team to manage delivery milestones for event microsites and printed branding collaterals.'
+  }
+];
+
 // ── Mock Team Members ────────────────────────────────────────
 const defaultTeamMembers: TeamMember[] = [
   { id: 'm-1', name: 'Amit Patel', email: 'amit@eventique.in', roleId: 'role-1', status: 'Active', joinedAt: '2026-01-10', salary: 75000, paymentFrequency: 'Monthly', phone: '+91 99999 11111' },
@@ -862,6 +889,9 @@ interface AdminContextType {
   updateJobApplication: (id: string, app: Partial<JobApplication>) => void;
   deleteJobApplication: (id: string) => void;
   hireApplicant: (appId: string, roleId: string) => void;
+  // Job Openings
+  addJobOpening: (opening: Omit<JobOpening, "id">) => void;
+  deleteJobOpening: (id: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | null>(null);
@@ -908,6 +938,7 @@ function buildDefault(): AdminState {
     corporateLeads: defaultCorporateLeads,
     corporateOrders: defaultCorporateOrders,
     jobApplications: defaultJobApplications,
+    jobOpenings: defaultJobOpenings,
   };
 }
 
@@ -1029,7 +1060,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     if (!stored.plannerLeads) stored.plannerLeads = defaultPlannerLeads;
     if (!stored.corporateLeads) stored.corporateLeads = defaultCorporateLeads;
     if (!stored.corporateOrders) stored.corporateOrders = defaultCorporateOrders;
-    if (!stored.jobApplications) stored.jobApplications = defaultJobApplications;
+    if (!stored.jobApplications) {
+      stored.jobApplications = defaultJobApplications;
+    } else {
+      stored.jobApplications = stored.jobApplications.map((x: any) => ({
+        ...x,
+        resumeUrl: x.resumeUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+      }));
+    }
+    if (!stored.jobOpenings) {
+      stored.jobOpenings = defaultJobOpenings;
+    }
 
     return stored;
   });
@@ -1359,6 +1400,32 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         return nextState;
       });
       addActivityLog('Applicant Hired', `Hired applicant ${appId} into the team`, 'success');
+    },
+    addJobOpening: (opening) => {
+      setState(prev => {
+        const newOpening: JobOpening = {
+          ...opening,
+          id: `job-${Date.now().toString().slice(-4)}`
+        };
+        const next = {
+          ...prev,
+          jobOpenings: [...prev.jobOpenings, newOpening]
+        };
+        saveToStorage(next);
+        return next;
+      });
+      addActivityLog('Job Opening Created', `Created new job posting for ${opening.title}`, 'info');
+    },
+    deleteJobOpening: (id) => {
+      setState(prev => {
+        const next = {
+          ...prev,
+          jobOpenings: prev.jobOpenings.filter(x => x.id !== id)
+        };
+        saveToStorage(next);
+        return next;
+      });
+      addActivityLog('Job Opening Deleted', `Removed job posting ${id}`, 'danger');
     },
   };
 

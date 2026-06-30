@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Briefcase, 
   MapPin, 
@@ -15,6 +15,7 @@ import {
   Minus
 } from 'lucide-react';
 import { MandalaDecor, LotusDecor } from '../components/decorative/FloralDecor';
+import { useAdmin } from '../admin/context/AdminContext';
 
 const BENEFITS = [
   {
@@ -39,43 +40,27 @@ const BENEFITS = [
   }
 ];
 
-const POSITIONS = [
-  {
-    id: 'designer',
-    title: 'Senior Visual Designer',
-    department: 'Creative Design',
-    location: 'Remote / New Delhi',
-    type: 'Full-Time',
-    description: 'Lead visual design workflows for luxury wedding stationary, custom illustrations, and event branding assets. NIFT background is a plus.'
-  },
-  {
-    id: 'engineer',
-    title: 'Frontend React Engineer',
-    department: 'Technology',
-    location: 'Remote',
-    type: 'Full-Time',
-    description: 'Develop responsive event registration engines, ticket verification apps, and custom high-performance event websites using React and Tailwind CSS.'
-  },
-  {
-    id: 'manager',
-    title: 'Event Design Project Manager',
-    department: 'Operations & Client Services',
-    location: 'Remote / Mumbai',
-    type: 'Full-Time',
-    description: 'Coordinate with enterprise clients and our internal design team to manage delivery milestones for event microsites and printed branding collaterals.'
-  }
-];
-
 export default function Careers() {
+  const { state, addJobApplication } = useAdmin();
+  const positions = state.jobOpenings || [];
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
-    role: 'Senior Visual Designer',
+    role: '',
     portfolioUrl: '',
     message: '',
     resume: null as File | null
   });
+
+  // Set default role once positions load
+  useEffect(() => {
+    if (positions.length > 0 && !formData.role) {
+      setFormData(prev => ({ ...prev, role: positions[0].title }));
+    }
+  }, [positions, formData.role]);
+
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [activeFaq, setActiveFaq] = useState<string | null>(null);
 
@@ -92,10 +77,19 @@ export default function Careers() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate API submission
-    setTimeout(() => {
-      setIsSubmitted(true);
-    }, 600);
+    addJobApplication({
+      id: `APP-${Date.now().toString().slice(-4)}`,
+      name: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      position: formData.role || (positions[0]?.title || 'Senior Visual Designer'),
+      experience: formData.message || 'Submitted via Careers portal',
+      portfolioUrl: formData.portfolioUrl,
+      resumeUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      status: 'Pending',
+      appliedAt: new Date().toISOString().split('T')[0]
+    });
+    setIsSubmitted(true);
   };
 
   const scrollToApply = (roleTitle?: string) => {
@@ -255,62 +249,68 @@ export default function Careers() {
           </div>
 
           <div className="space-y-4">
-            {POSITIONS.map((pos) => {
-              const isSelected = activeFaq === pos.id;
-              return (
-                <div 
-                  key={pos.id}
-                  className="bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all duration-300 shadow-sm"
-                >
-                  <div className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-bold text-slate-900">{pos.title}</h3>
-                      <div className="flex items-center gap-3 text-xs text-slate-400">
-                        <span className="font-semibold text-slate-500 uppercase tracking-wider font-mono">{pos.department}</span>
-                        <span>•</span>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5" />
-                          <span>{pos.location}</span>
-                        </div>
-                        <span>•</span>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>{pos.type}</span>
+            {positions.length === 0 ? (
+              <div className="text-center py-12 text-slate-400 text-sm border border-dashed border-slate-200 rounded-2xl bg-slate-50/30">
+                No active openings at this moment. Check back later!
+              </div>
+            ) : (
+              positions.map((pos) => {
+                const isSelected = activeFaq === pos.id;
+                return (
+                  <div 
+                    key={pos.id}
+                    className="bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all duration-300 shadow-sm"
+                  >
+                    <div className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-bold text-slate-900">{pos.title}</h3>
+                        <div className="flex items-center gap-3 text-xs text-slate-400">
+                          <span className="font-semibold text-slate-500 uppercase tracking-wider font-mono">{pos.department}</span>
+                          <span>•</span>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5" />
+                            <span>{pos.location}</span>
+                          </div>
+                          <span>•</span>
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{pos.type}</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setActiveFaq(isSelected ? null : pos.id)}
+                          className="px-4 py-2 border border-slate-200 text-slate-650 hover:bg-slate-50 rounded-full text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1"
+                        >
+                          {isSelected ? 'Hide Details' : 'View Details'}
+                        </button>
+                        <button
+                          onClick={() => scrollToApply(pos.title)}
+                          className="px-4 py-2 bg-primary text-white hover:bg-primary/95 rounded-full text-xs font-semibold transition-all cursor-pointer"
+                        >
+                          Apply Now
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setActiveFaq(isSelected ? null : pos.id)}
-                        className="px-4 py-2 border border-slate-200 text-slate-650 hover:bg-slate-50 rounded-full text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1"
-                      >
-                        {isSelected ? 'Hide Details' : 'View Details'}
-                      </button>
-                      <button
-                        onClick={() => scrollToApply(pos.title)}
-                        className="px-4 py-2 bg-primary text-white hover:bg-primary/95 rounded-full text-xs font-semibold transition-all cursor-pointer"
-                      >
-                        Apply Now
-                      </button>
-                    </div>
+                    {isSelected && (
+                      <div className="px-6 pb-6 pt-1 text-sm text-slate-500 leading-relaxed font-light border-t border-slate-100 animate-in fade-in duration-300 space-y-4 bg-slate-50/50">
+                        <p>{pos.description}</p>
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-bold text-slate-450 uppercase tracking-widest">Requirements:</h4>
+                          <ul className="list-disc pl-4 space-y-1 text-xs">
+                            <li>Excellent communication and collaboration skills</li>
+                            <li>Strong obsession with design details and craft quality</li>
+                            <li>Proven capability to execute workflows under deadlines</li>
+                            <li>Prior design agency or tech startup experience is a plus</li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {isSelected && (
-                    <div className="px-6 pb-6 pt-1 text-sm text-slate-500 leading-relaxed font-light border-t border-slate-100 animate-in fade-in duration-300 space-y-4 bg-slate-50/50">
-                      <p>{pos.description}</p>
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-slate-450 uppercase tracking-widest">Requirements:</h4>
-                        <ul className="list-disc pl-4 space-y-1 text-xs">
-                          <li>Excellent communication and collaboration skills</li>
-                          <li>Strong obsession with design details and craft quality</li>
-                          <li>Proven capability to execute workflows under deadlines</li>
-                          <li>Prior design agency or tech startup experience is a plus</li>
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </section>
@@ -398,9 +398,13 @@ export default function Careers() {
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
                     >
-                      <option value="Senior Visual Designer">Senior Visual Designer</option>
-                      <option value="Frontend React Engineer">Frontend React Engineer</option>
-                      <option value="Event Design Project Manager">Event Design Project Manager</option>
+                      {positions.length === 0 ? (
+                        <option value="">No Active Openings</option>
+                      ) : (
+                        positions.map((p) => (
+                          <option key={p.id} value={p.title}>{p.title}</option>
+                        ))
+                      )}
                     </select>
                   </div>
                 </div>
