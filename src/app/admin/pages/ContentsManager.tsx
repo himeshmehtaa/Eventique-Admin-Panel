@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Save, Eye, EyeOff, Clock, Plus, Trash2, ArrowUp, ArrowDown,
   Image as ImageIcon, Link as LinkIcon, FileText, Upload,
-  Calendar, Edit3, X, ChevronRight, Check, GripVertical, Rocket, ExternalLink
+  Calendar, Edit3, X, ChevronRight, Check, GripVertical, Rocket, ExternalLink, Star
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -65,6 +65,9 @@ export default function ContentsManager() {
   const [sectionImages, setSectionImages] = useState<string[]>([]);
   const [layoutStyle, setLayoutStyle] = useState<string>('Split-Image-Right');
   const [sectionDirty, setSectionDirty] = useState(false);
+  const [activeVisualPage, setActiveVisualPage] = useState<'home' | 'about' | 'contact' | 'printed'>('home');
+  const [visualEditMode, setVisualEditMode] = useState<boolean>(true);
+  const [activeVisualSection, setActiveVisualSection] = useState<string | null>(null);
 
   // Dynamic custom fields for section editor
   const [badgeText, setBadgeText] = useState('');
