@@ -435,11 +435,12 @@ export default function Home() {
     { step: '4', title: 'Receive & Share', description: 'Get your invitation and share with guests' },
   ];
 
-  return (
-    <div>
-      {/* Hero Section — Carousel */}
-      {heroBlock?.enabled !== false && (
-        <section className="relative overflow-hidden min-h-[620px] md:min-h-[720px]">
+  const sortedSections = [...state.sections].sort((a, b) => a.order - b.order);
+
+  const renderHero = () => {
+    if (heroBlock?.enabled === false) return null;
+    return (
+      <section className="relative overflow-hidden min-h-[620px] md:min-h-[720px]">
           {/* Floating ambient particles */}
           {[
             { size: 6, left: '8%',  top: '20%', dur: '7s',  del: '0s',   color: 'rgba(139,73,73,0.25)' },
@@ -696,9 +697,11 @@ export default function Home() {
             ))}
           </div>
         </section>
-      )}
+    );
+  };
 
-      {/* Everything You Need Section */}
+  const renderProductShowcase = () => {
+    return (
       <section className="py-24 bg-[#faf8f5] relative overflow-hidden border-b border-gray-100 scroll-animate">
         {/* Floating particles */}
         {[
@@ -820,12 +823,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+    );
+  };
 
-
-
-      {/* Service 5: Printed Luxury Invites (Custom 4-carousel grid layout) */}
-      {printedBlock?.enabled !== false && (
-        <section className="py-28 bg-[#faf8f5] relative overflow-hidden border-b border-gray-100 scroll-animate">
+  const renderPrintedLuxury = () => {
+    if (printedBlock?.enabled === false) return null;
+    return (
+      <section className="py-28 bg-[#faf8f5] relative overflow-hidden border-b border-gray-100 scroll-animate">
           <LotusDecor className="absolute top-16 right-16 w-40 h-40 text-primary opacity-20 pointer-events-none" />
           <MandalaDecor className="absolute bottom-20 left-20 w-56 h-56 text-secondary opacity-15 pointer-events-none" />
 
@@ -999,11 +1003,13 @@ export default function Home() {
             </div>
           </div>
         </section>
-      )}
+    );
+  };
 
-      {/* Categories Section - Browse by Occasion — expanded to ALL services */}
-      {categoriesBlock?.enabled !== false && (
-        <section className="py-24 bg-card relative overflow-hidden scroll-animate">
+  const renderCategories = () => {
+    if (categoriesBlock?.enabled === false) return null;
+    return (
+      <section className="py-24 bg-card relative overflow-hidden scroll-animate">
           <MandalaDecor className="absolute top-10 right-10 w-64 h-64 text-primary opacity-30 animate-rotate-slow" />
           <LotusDecor className="absolute bottom-10 left-10 w-48 h-48 text-secondary opacity-20 animate-float" />
 
@@ -1088,16 +1094,20 @@ export default function Home() {
             </div>
           </div>
         </section>
-      )}
+    );
+  };
 
-      {/* Product Carousel Gallery */}
-      {productCarouselSection?.enabled !== false && (
-        <div className="scroll-animate">
+  const renderProductCarousel = () => {
+    if (productCarouselSection?.enabled === false) return null;
+    return (
+      <div className="scroll-animate">
           <ProductCarousel />
         </div>
-      )}
+    );
+  };
 
-      {/* B2B Corporate Section */}
+  const renderB2BCorporate = () => {
+    return (
       <section className="py-24 bg-white relative overflow-hidden border-b border-gray-100 scroll-animate">
         <style>{`
           @keyframes scan-line {
@@ -1443,10 +1453,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+    );
+  };
 
-      {/* Services Overview — Personal + Corporate */}
-      {servicesBlock?.enabled !== false && (
-        <section className="py-24 bg-muted relative overflow-hidden scroll-animate">
+  const renderServices = () => {
+    if (servicesBlock?.enabled === false) return null;
+    return (
+      <section className="py-24 bg-muted relative overflow-hidden scroll-animate">
           <MandalaDecor className="absolute top-10 left-10 w-48 h-48 text-primary opacity-30 animate-rotate-slow" />
           <LotusDecor className="absolute bottom-10 right-10 w-40 h-40 text-secondary opacity-35 animate-float" />
 
@@ -1491,11 +1504,13 @@ export default function Home() {
             </div>
           </div>
         </section>
-      )}
+    );
+  };
 
-      {/* How It Works — stagger steps + animated number circles */}
-      {howItWorksSection?.enabled !== false && (
-        <section className="py-24 relative overflow-hidden scroll-animate">
+  const renderHowItWorks = () => {
+    if (howItWorksSection?.enabled === false) return null;
+    return (
+      <section className="py-24 relative overflow-hidden scroll-animate">
           <LotusDecor className="absolute top-20 right-20 w-44 h-44 text-accent opacity-35 animate-float" />
           <MandalaDecor className="absolute bottom-20 left-16 w-52 h-52 text-primary opacity-30 animate-rotate-slow" />
           {/* Subtle background orbs */}
@@ -1544,21 +1559,23 @@ export default function Home() {
             </div>
           </div>
         </section>
-      )}
+    );
+  };
 
-      {/* Testimonials Preview — video first (always shown), then text cards */}
-      {testimonialsBlock?.enabled !== false && (() => {
-        const allTestimonials = state.testimonials && state.testimonials.length > 0 ? state.testimonials : defaultTestimonials;
-        const videoOnes = allTestimonials.filter(t => t.videoUrl).slice(0, 3);
-        const textOnes = allTestimonials.filter(t => !t.videoUrl).slice(0, 3);
-        // Hardcoded sample video testimonials as portrait cards with poster imagery when no videos
-        const sampleVideoCards = [
-          { name: 'Priya & Rahul', event: 'Wedding · Mumbai', rating: 5, poster: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&fit=crop', quote: 'The video invitation was stunning! Our guests loved it.' },
-          { name: 'Neha Kapoor', event: 'Baby Shower · Delhi', rating: 5, poster: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&fit=crop', quote: 'Absolutely beautiful work. Highly recommend Eventique!' },
-          { name: 'Amit & Sonia', event: 'Engagement · Pune', rating: 5, poster: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&fit=crop', quote: 'The customization was seamless and the team was so helpful.' },
-        ];
-        return (
-          <section className="py-24 bg-card relative overflow-hidden scroll-animate">
+  const renderTestimonials = () => {
+    if (testimonialsBlock?.enabled === false) {
+      return null;
+    }
+    const allTestimonials = state.testimonials && state.testimonials.length > 0 ? state.testimonials : defaultTestimonials;
+    const videoOnes = allTestimonials.filter(t => t.videoUrl).slice(0, 3);
+    const textOnes = allTestimonials.filter(t => !t.videoUrl).slice(0, 3);
+    const sampleVideoCards = [
+      { name: 'Priya & Rahul', event: 'Wedding · Mumbai', rating: 5, poster: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&fit=crop', quote: 'The video invitation was stunning! Our guests loved it.' },
+      { name: 'Neha Kapoor', event: 'Baby Shower · Delhi', rating: 5, poster: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&fit=crop', quote: 'Absolutely beautiful work. Highly recommend Eventique!' },
+      { name: 'Amit & Sonia', event: 'Engagement · Pune', rating: 5, poster: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&fit=crop', quote: 'The customization was seamless and the team was so helpful.' },
+    ];
+    return (
+      <section className="py-24 bg-card relative overflow-hidden scroll-animate">
             <MandalaDecor className="absolute top-16 left-12 w-48 h-48 text-secondary opacity-30 animate-rotate-slow" />
             <LotusDecor className="absolute bottom-16 right-12 w-36 h-36 text-primary opacity-35 animate-float" />
 
@@ -1664,10 +1681,11 @@ export default function Home() {
               </div>
             </div>
           </section>
-        );
-      })()}
+    );
+  };
 
-      {/* Blog Section */}
+  const renderBlog = () => {
+    return (
       <section className="py-24 bg-gradient-to-b from-[#faf8f5] to-white relative overflow-hidden border-t border-gray-100 scroll-animate">
         {/* Floating micro-particles */}
         {[
@@ -1759,10 +1777,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+    );
+  };
 
-      {/* CTA Section — premium redesign */}
-      {ctaSection?.enabled !== false && (
-        <section className="relative overflow-hidden scroll-animate" style={{ background: 'linear-gradient(135deg, #1a0f0f 0%, #2d1515 30%, #8B4949 65%, #D4AF37 100%)' }}>
+  const renderCta = () => {
+    if (ctaSection?.enabled === false) return null;
+    return (
+      <section className="relative overflow-hidden scroll-animate" style={{ background: 'linear-gradient(135deg, #1a0f0f 0%, #2d1515 30%, #8B4949 65%, #D4AF37 100%)' }}>
           <style>{`
             @keyframes cta-float-orb {
               0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.18; }
@@ -1848,7 +1869,26 @@ export default function Home() {
             </div>
           </div>
         </section>
-      )}
+    );
+  };
+
+  return (
+    <div>
+      {sortedSections.map((sec) => {
+        if (!sec.enabled) return null;
+        if (sec.id === 'hero') return renderHero();
+        if (sec.id === 'product-showcase') return renderProductShowcase();
+        if (sec.id === 'printed-invites') return renderPrintedLuxury();
+        if (sec.id === 'categories') return renderCategories();
+        if (sec.id === 'product-carousel') return renderProductCarousel();
+        if (sec.id === 'services') return renderServices();
+        if (sec.id === 'how-it-works') return renderHowItWorks();
+        if (sec.id === 'testimonials') return renderTestimonials();
+        if (sec.id === 'cta') return renderCta();
+        return null;
+      })}
+      {renderB2BCorporate()}
+      {renderBlog()}
     </div>
   );
 }
