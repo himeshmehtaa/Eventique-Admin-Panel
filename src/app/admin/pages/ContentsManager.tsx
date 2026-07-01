@@ -63,6 +63,7 @@ export default function ContentsManager() {
   const [sectionCtaLink, setSectionCtaLink] = useState('');
   const [showCtaToggle, setShowCtaToggle] = useState(false);
   const [sectionImages, setSectionImages] = useState<string[]>([]);
+  const [layoutStyle, setLayoutStyle] = useState<string>('Split-Image-Right');
   const [sectionDirty, setSectionDirty] = useState(false);
 
   // Dynamic custom fields for section editor
@@ -142,6 +143,7 @@ export default function ContentsManager() {
       setSectionCtaLink(currentBlock.ctaLink ?? '');
       setShowCtaToggle(!!currentBlock.ctaText);
       setSectionImages(currentBlock.images ?? []);
+      setLayoutStyle(currentBlock.layoutStyle ?? 'Split-Image-Right');
 
       // Populate Badge and Footer Text
       setBadgeText(currentBlock.badgeText ?? '');
@@ -208,6 +210,7 @@ export default function ContentsManager() {
       setSectionCtaLink('');
       setShowCtaToggle(false);
       setSectionImages([]);
+      setLayoutStyle('Split-Image-Right');
       setBadgeText('');
       setFooterText('');
       setFeatures([{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
@@ -253,6 +256,7 @@ export default function ContentsManager() {
       ctaText: showCtaToggle ? sectionCtaText || undefined : undefined,
       ctaLink: showCtaToggle ? sectionCtaLink || undefined : undefined,
       images: sectionImages,
+      layoutStyle: layoutStyle || undefined,
       badgeText: badgeText || undefined,
       footerText: footerText || undefined,
       features: features.filter(f => f.title.trim() !== ''),
@@ -830,6 +834,202 @@ export default function ContentsManager() {
                 {/* Form Inputs (Show for non-carousel sections) */}
                 {!isCarouselSection && (
                   <div className="space-y-4">
+                {/* ── LAYOUT & DESIGN PICKER (Show for general/custom sections) ── */}
+                {!['Footer', 'Terms', 'Privacy Policy', 'Refund Policy'].includes(selectedSection) && (
+                  <div className="bg-[#faf8f5] border border-[#f0ece4] rounded-2xl p-5 space-y-4 shadow-xs">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#1a1410]">Section Layout & Live Mockup Preview</h3>
+                        <p className="text-[11px] text-gray-400">Choose how this section renders on the public site and preview it in real-time:</p>
+                      </div>
+                      
+                      {/* Layout Picker buttons */}
+                      {!['FAQ', 'Testimonials', 'Packages', 'Our Services', 'Browse by Occasion', 'Hero'].includes(selectedSection) && (
+                        <div className="flex gap-1.5 bg-white border border-[#e5e5e5] rounded-xl p-1 shadow-sm">
+                          {[
+                            { value: 'Split-Image-Right', label: 'Split (Right Image)' },
+                            { value: 'Split-Image-Left', label: 'Split (Left Image)' },
+                            { value: 'Centered-Accent', label: 'Centered Text' },
+                            { value: 'Minimalist-Banner', label: 'Minimal Banner' }
+                          ].map(layout => (
+                            <button
+                              key={layout.value}
+                              type="button"
+                              onClick={() => { setLayoutStyle(layout.value); setSectionDirty(true); }}
+                              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer border-none ${
+                                layoutStyle === layout.value
+                                  ? 'bg-[#8B4949] text-white shadow-sm'
+                                  : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
+                              }`}
+                            >
+                              {layout.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LIVE INTERACTIVE PREVIEW PANEL */}
+                    <div className="border border-[#e5e5e5] rounded-2xl bg-white p-6 shadow-inner relative overflow-hidden min-h-[220px] flex flex-col justify-center">
+                      <div className="absolute top-2 left-2 text-[9px] bg-gray-100 text-gray-400 font-extrabold uppercase tracking-widest px-2 py-0.5 rounded">
+                        Live Preview (Mockup)
+                      </div>
+
+                      {/* Mock header decoration */}
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                      </div>
+
+                      {(() => {
+                        // Renders based on section layout style
+                        const hasCta = showCtaToggle && sectionCtaText;
+                        const defaultImage = "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=600";
+                        const previewImage = sectionImageUrl || defaultImage;
+
+                        // Render specialized mockup if it's a built-in module
+                        if (selectedSection === 'FAQ') {
+                          return (
+                            <div className="space-y-4 pt-4">
+                              <div className="text-center max-w-md mx-auto">
+                                <span className="text-[10px] font-bold text-[#8B4949] uppercase tracking-wider bg-[#8B4949]/5 px-2 py-0.5 rounded-full">FAQ Section</span>
+                                <h3 className="text-base font-extrabold text-[#1a1410] mt-2">{sectionTitle || 'Frequently Asked Questions'}</h3>
+                                <p className="text-[11px] text-gray-455 mt-1">{sectionSubtitle || 'Got questions? We have got answers.'}</p>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl mx-auto">
+                                {contactFaqs.slice(0, 4).map((f, i) => (
+                                  <div key={i} className="p-3 bg-[#faf8f5] rounded-xl border border-[#f0ece4]">
+                                    <h4 className="text-[11px] font-bold text-[#1a1410]">❓ {f.q || `Sample Question ${i+1}`}</h4>
+                                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">{f.a || 'Sample answer text goes here.'}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (selectedSection === 'Testimonials') {
+                          return (
+                            <div className="space-y-4 pt-4">
+                              <div className="text-center max-w-md mx-auto">
+                                <span className="text-[10px] font-bold text-[#8B4949] uppercase tracking-wider bg-[#8B4949]/5 px-2 py-0.5 rounded-full">Testimonials</span>
+                                <h3 className="text-base font-extrabold text-[#1a1410] mt-2">{sectionTitle || 'What Clients Say'}</h3>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                {[
+                                  { name: 'Priya & Rahul', role: 'Wedding Invite Client', text: 'Absolutely spectacular video invite! Everyone loved it.' },
+                                  { name: 'Kunal Verma', role: 'Corporate Partner', text: 'Top notch service and luxury rigid box packaging.' },
+                                  { name: 'Sneha Shah', role: 'Birthday Invite', text: 'E-Stationery design was very elegant and fast delivery.' }
+                                ].map((t, i) => (
+                                  <div key={i} className="p-3 bg-white rounded-xl border border-[#e5e5e5] shadow-xs flex flex-col justify-between">
+                                    <p className="text-[10px] text-gray-500 italic">"{t.text}"</p>
+                                    <div className="mt-3">
+                                      <h5 className="text-[10px] font-bold text-[#1a1410]">{t.name}</h5>
+                                      <span className="text-[8px] text-gray-400">{t.role}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // General dynamic layout renderer
+                        if (layoutStyle === 'Split-Image-Left') {
+                          return (
+                            <div className="flex flex-col md:flex-row gap-6 items-center pt-4">
+                              <div className="w-full md:w-5/12 flex justify-center">
+                                <img src={previewImage} alt="Preview Left" className="max-h-[160px] rounded-xl object-cover shadow-sm border border-[#e5e5e5]" />
+                              </div>
+                              <div className="w-full md:w-7/12 space-y-2 text-left">
+                                {badgeText && (
+                                  <span className="text-[8px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-2 py-0.5 rounded-full">
+                                    {badgeText}
+                                  </span>
+                                )}
+                                <h3 className="text-base font-extrabold text-[#1a1410] leading-snug">{sectionTitle || 'Section Title'}</h3>
+                                <p className="text-[11px] text-gray-450 font-semibold">{sectionSubtitle || 'Subtitle description goes here.'}</p>
+                                <p className="text-[10px] text-gray-500 leading-relaxed line-clamp-3">{sectionBody || 'Body text description content goes here.'}</p>
+                                {hasCta && (
+                                  <div className="pt-2">
+                                    <span className="inline-block px-4 py-1.5 bg-[#8B4949] text-white font-extrabold text-[10px] rounded-lg shadow-sm">
+                                      {sectionCtaText}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (layoutStyle === 'Centered-Accent') {
+                          return (
+                            <div className="text-center max-w-xl mx-auto space-y-3 pt-4">
+                              {badgeText && (
+                                <span className="inline-block text-[8px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-2 py-0.5 rounded-full">
+                                  {badgeText}
+                                </span>
+                              )}
+                              <h3 className="text-lg font-extrabold text-[#1a1410] leading-snug">{sectionTitle || 'Section Title'}</h3>
+                              <p className="text-[11px] text-gray-455 font-semibold">{sectionSubtitle || 'Subtitle description goes here.'}</p>
+                              <p className="text-[10px] text-gray-500 leading-relaxed max-w-md mx-auto">{sectionBody || 'Body text description content goes here.'}</p>
+                              {hasCta && (
+                                <div className="pt-2">
+                                  <span className="inline-block px-4 py-1.5 bg-[#8B4949] text-white font-extrabold text-[10px] rounded-lg shadow-sm">
+                                    {sectionCtaText}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        if (layoutStyle === 'Minimalist-Banner') {
+                          return (
+                            <div className="bg-[#faf8f5] p-5 rounded-2xl border border-[#f0ece4] flex justify-between items-center flex-wrap gap-4 pt-4">
+                              <div className="space-y-1.5 text-left max-w-sm">
+                                <h3 className="text-sm font-extrabold text-[#1a1410]">{sectionTitle || 'Section Title'}</h3>
+                                <p className="text-[10px] text-gray-500">{sectionSubtitle || 'Subtitle description goes here.'}</p>
+                              </div>
+                              {hasCta && (
+                                <span className="px-4 py-2 bg-[#8B4949] text-white font-extrabold text-[10px] rounded-lg shadow-sm">
+                                  {sectionCtaText}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        // Default: Split-Image-Right
+                        return (
+                          <div className="flex flex-col md:flex-row gap-6 items-center pt-4">
+                            <div className="w-full md:w-7/12 space-y-2 text-left">
+                              {badgeText && (
+                                <span className="text-[8px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-2 py-0.5 rounded-full">
+                                  {badgeText}
+                                </span>
+                              )}
+                              <h3 className="text-base font-extrabold text-[#1a1410] leading-snug">{sectionTitle || 'Section Title'}</h3>
+                              <p className="text-[11px] text-gray-450 font-semibold">{sectionSubtitle || 'Subtitle description goes here.'}</p>
+                              <p className="text-[10px] text-gray-500 leading-relaxed line-clamp-3">{sectionBody || 'Body text description content goes here.'}</p>
+                              {hasCta && (
+                                <div className="pt-2">
+                                  <span className="inline-block px-4 py-1.5 bg-[#8B4949] text-white font-extrabold text-[10px] rounded-lg shadow-sm">
+                                    {sectionCtaText}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="w-full md:w-5/12 flex justify-center">
+                              <img src={previewImage} alt="Preview Right" className="max-h-[160px] rounded-xl object-cover shadow-sm border border-[#e5e5e5]" />
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
                     {selectedSection === 'Footer' && (
                       <div className="space-y-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl p-5 shadow-sm">
                         <h3 className="text-xs font-bold text-[#8B4949] uppercase tracking-wider flex items-center gap-1.5 mb-2">

@@ -830,10 +830,10 @@ export default function Home() {
           <MandalaDecor className="absolute bottom-20 left-20 w-56 h-56 text-secondary opacity-15 pointer-events-none" />
 
           <div className="container mx-auto px-4 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
+            <div className={`grid gap-16 items-center max-w-7xl mx-auto ${printedBlock?.layoutStyle === 'Centered-Accent' ? 'grid-cols-1 text-center' : 'lg:grid-cols-2'}`}>
               
               {/* Left - Visual */}
-              <div className="relative">
+              <div className={`relative ${printedBlock?.layoutStyle === 'Split-Image-Right' ? 'lg:order-last' : ''} ${printedBlock?.layoutStyle === 'Centered-Accent' ? 'max-w-[480px] mx-auto' : ''} ${printedBlock?.layoutStyle === 'Minimalist-Banner' ? 'hidden' : ''}`}>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-4">
                     {/* Image 1 Carousel */}
@@ -927,7 +927,7 @@ export default function Home() {
               </div>
 
               {/* Right - Content */}
-              <div>
+              <div className={`${printedBlock?.layoutStyle === 'Split-Image-Right' ? 'lg:order-first' : ''} ${printedBlock?.layoutStyle === 'Centered-Accent' ? 'flex flex-col items-center text-center' : ''}`}>
                 <div className="inline-flex items-center gap-3 mb-6">
                   <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-primary"></div>
                   <span className="text-sm tracking-[0.2em] uppercase text-primary font-bold">{printedBlock?.badgeText || "Premium Collection"}</span>

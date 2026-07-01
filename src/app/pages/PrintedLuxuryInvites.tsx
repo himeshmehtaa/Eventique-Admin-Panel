@@ -48,9 +48,15 @@ export default function PrintedLuxuryInvites() {
         </div>
 
         <div className="container mx-auto px-4 relative z-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className={`grid gap-12 items-center ${
+            printedBlock?.layoutStyle === 'Centered-Accent' ? 'grid-cols-1 text-center max-w-3xl mx-auto' : 'lg:grid-cols-2'
+          }`}>
             {/* Left Column — Content */}
-            <div className="space-y-8">
+            <div className={`space-y-8 ${
+              printedBlock?.layoutStyle === 'Split-Image-Left' ? 'lg:order-last' : ''
+            } ${
+              printedBlock?.layoutStyle === 'Centered-Accent' ? 'flex flex-col items-center text-center' : ''
+            }`}>
               <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 text-primary rounded-full text-sm border border-primary/20 shadow-sm font-medium">
                 <span>✨ Premium Physical Collections</span>
               </div>
@@ -63,7 +69,7 @@ export default function PrintedLuxuryInvites() {
                 {printedBlock?.body || 'Experience the finest craftsmanship with our premium printed wedding invitations. Each piece is meticulously designed with luxurious materials, exquisite finishes, and attention to detail that makes your invitation unforgettable.'}
               </p>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                 <button
                   onClick={scrollToCollection}
                   className="px-8 py-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all duration-300 hover:shadow-2xl hover:scale-105 inline-flex items-center gap-2 shadow-lg font-medium cursor-pointer"
@@ -80,7 +86,7 @@ export default function PrintedLuxuryInvites() {
               </div>
 
               {/* Quality Features list */}
-              <div className="flex items-center gap-6 flex-wrap pt-4 border-t border-[#f0ebe0]">
+              <div className="flex items-center gap-6 flex-wrap pt-4 border-t border-[#f0ebe0] justify-center lg:justify-start">
                 {[
                   { icon: ShieldCheck, label: 'Handcrafted Finish' },
                   { icon: Award, label: '300gsm Cotton Stock' },
@@ -100,7 +106,13 @@ export default function PrintedLuxuryInvites() {
             </div>
 
             {/* Right Column — Premium Collage Mockup */}
-            <div className="relative flex items-center justify-center lg:justify-end">
+            <div className={`relative flex items-center justify-center ${
+              printedBlock?.layoutStyle === 'Split-Image-Left' ? 'lg:order-first lg:justify-start' : 'lg:justify-end'
+            } ${
+              printedBlock?.layoutStyle === 'Centered-Accent' ? 'mx-auto justify-center max-w-[480px]' : ''
+            } ${
+              printedBlock?.layoutStyle === 'Minimalist-Banner' ? 'hidden' : ''
+            }`}>
               <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 rounded-3xl blur-3xl opacity-60" />
               
               <div className="grid grid-cols-2 gap-4 w-full max-w-[480px] relative z-10">

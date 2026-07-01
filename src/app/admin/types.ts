@@ -204,6 +204,7 @@ export interface ContentBlock {
   ctaText?: string;
   ctaLink?: string;
   images?: string[];
+  layoutStyle?: string;
   
   // Custom section features/badges
   features?: { title: string; desc: string }[];
