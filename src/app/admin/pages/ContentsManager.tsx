@@ -654,7 +654,615 @@ export default function ContentsManager() {
     alert(`Custom section "${cleanName}" added successfully!`);
   };
 
-  return (
+  
+  // ── VISUAL BUILDER RENDER HELPERS ──────────────────────────
+  
+  // Helper to read current field value (draft or context block)
+  const getVisualBlockData = (sectionName: string) => {
+    const block = state.contentBlocks.find(b => b.sectionName === sectionName);
+    if (!block) return {};
+    
+    // If we are currently editing this section, return the live state values
+    const isEditingCurrent = 
+      (sectionName === 'Hero' && activeVisualSection === 'hero') ||
+      (sectionName === 'Explore Designs' && activeVisualSection === 'product-showcase') ||
+      (sectionName === 'Printed Luxury Invites' && (activeVisualSection === 'printed-invites' || activeVisualSection === 'printed')) ||
+      (sectionName === 'Browse by Occasion' && activeVisualSection === 'categories') ||
+      (sectionName === 'Our Services' && activeVisualSection === 'services') ||
+      (sectionName === 'Testimonials' && activeVisualSection === 'testimonials') ||
+      (sectionName === 'CTA' && activeVisualSection === 'cta') ||
+      (sectionName === 'About' && activeVisualSection === 'about') ||
+      (sectionName === 'Contact' && activeVisualSection === 'contact');
+
+    if (isEditingCurrent) {
+      return {
+        title: sectionTitle,
+        subtitle: sectionSubtitle,
+        body: sectionBody,
+        imageUrl: sectionImageUrl,
+        ctaText: sectionCtaText,
+        ctaLink: sectionCtaLink,
+        badgeText: badgeText,
+        layoutStyle: layoutStyle,
+        features: features,
+        images: sectionImages,
+      };
+    }
+
+    return {
+      title: block.title || '',
+      subtitle: block.subtitle || '',
+      body: block.body || '',
+      imageUrl: block.imageUrl || '',
+      ctaText: block.ctaText || '',
+      ctaLink: block.ctaLink || '',
+      badgeText: block.badgeText || '',
+      layoutStyle: block.layoutStyle || 'Split-Image-Right',
+      features: block.features || [],
+      images: block.images || [],
+    };
+  };
+
+  const renderVisualHome = () => {
+    const sorted = [...state.sections].sort((a, b) => a.order - b.order);
+    return (
+      <div className="space-y-20 py-10 px-4 max-w-7xl mx-auto">
+        {sorted.map((sec) => {
+          if (!sec.enabled) return null;
+          
+          const isSelected = activeVisualSection === sec.id;
+          
+          return (
+            <div
+              key={sec.id}
+              onClick={(e) => {
+                if (visualEditMode) {
+                  e.stopPropagation();
+                  setActiveVisualSection(sec.id);
+                  // Populate drawer fields
+                  const data = getVisualBlockData(
+                    sec.id === 'hero' ? 'Hero' 
+                    : sec.id === 'product-showcase' ? 'Explore Designs'
+                    : sec.id === 'printed-invites' ? 'Printed Luxury Invites'
+                    : sec.id === 'categories' ? 'Browse by Occasion'
+                    : sec.id === 'services' ? 'Our Services'
+                    : sec.id === 'testimonials' ? 'Testimonials'
+                    : sec.id === 'cta' ? 'CTA' : ''
+                  );
+                  setSectionTitle(data.title || '');
+                  setSectionSubtitle(data.subtitle || '');
+                  setSectionBody(data.body || '');
+                  setSectionImageUrl(data.imageUrl || '');
+                  setSectionCtaText(data.ctaText || '');
+                  setSectionCtaLink(data.ctaLink || '');
+                  setBadgeText(data.badgeText || '');
+                  setLayoutStyle(data.layoutStyle || 'Split-Image-Right');
+                }
+              }}
+              className={`relative rounded-3xl transition-all duration-300 ${
+                visualEditMode 
+                  ? `border-2 border-dashed p-3 cursor-pointer hover:border-[#8B4949] hover:bg-[#8B4949]/[0.01] ${
+                      isSelected ? 'border-[#8B4949] bg-[#8B4949]/[0.02]' : 'border-transparent'
+                    }`
+                  : ''
+              }`}
+            >
+              {/* Wix hover banner */}
+              {visualEditMode && (
+                <div className="absolute top-2 left-2 z-30 opacity-0 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-[#8B4949] text-white text-[8px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded shadow-md pointer-events-none select-none">
+                  {sec.name} · Click to edit content
+                </div>
+              )}
+
+              {/* Render dynamic section mocks */}
+              {(() => {
+                if (sec.id === 'hero') {
+                  const slides = [
+                    { title: 'Celebrate Every Moment with', highlight: 'Elegance', badge: 'Personalized Invitations', bg: 'from-amber-50 to-[#faf8f5]' },
+                    { title: 'Elegant Premium Rigid Box', highlight: 'Invites', badge: 'Handcrafted Physical Collections', bg: 'from-[#faf0e8] to-[#faf8f5]' },
+                    { title: 'Interactive Custom RSVP', highlight: 'Microsites', badge: 'Event Websites & RSVPs', bg: 'from-[#f0f5f8] to-[#faf8f5]' }
+                  ];
+                  return (
+                    <div className="p-12 bg-gradient-to-br from-amber-50 to-[#faf8f5] rounded-3xl flex items-center justify-between min-h-[300px]">
+                      <div className="space-y-4 max-w-lg">
+                        <span className="inline-block px-3 py-1.5 bg-[#8B4949]/5 text-[#8B4949] rounded-full text-xs font-bold uppercase tracking-wider border border-[#8B4949]/10">
+                          🌸 Personalized Invitations Collection
+                        </span>
+                        <h1 className="text-4xl md:text-5xl font-black text-[#1a1410] leading-tight">
+                          Celebrate Every Moment with <span className="text-[#8B4949] italic">Elegance</span>
+                        </h1>
+                        <p className="text-sm text-gray-500 font-light">
+                          Experience premium luxury design for wedding, birthday, Pooja, and corporate invitations.
+                        </p>
+                        <div className="flex gap-3">
+                          <span className="px-6 py-2.5 bg-[#8B4949] text-white font-extrabold text-xs rounded-xl shadow-md">Explore Collection</span>
+                          <span className="px-6 py-2.5 bg-white border border-gray-250 text-gray-700 font-extrabold text-xs rounded-xl shadow-xs">Request Quote</span>
+                        </div>
+                      </div>
+                      <div className="w-1/3 hidden md:flex justify-end">
+                        <span className="text-6xl animate-bounce">💌</span>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (sec.id === 'product-showcase') {
+                  const data = getVisualBlockData('Explore Designs');
+                  return (
+                    <div className="space-y-8 py-4">
+                      <div className="text-center max-w-md mx-auto space-y-2">
+                        {data.badgeText && (
+                          <span className="inline-block text-[10px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-3 py-1 rounded-full">
+                            {data.badgeText}
+                          </span>
+                        )}
+                        <h2 className="text-3xl font-extrabold text-[#1a1410] tracking-tight">{data.title || 'Explore Collections'}</h2>
+                        <p className="text-sm text-gray-500 leading-relaxed">{data.subtitle || 'Select from our range of invitation formats'}</p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[
+                          { name: 'Video Invites', desc: 'Premium animated loop cards', emoji: '🎬' },
+                          { name: 'Event Websites', desc: 'Interactive guest RSVP portals', emoji: '🌐' },
+                          { name: 'Printed Luxury Invites', desc: 'Handcrafted rigid cotton boards', emoji: '✉️' }
+                        ].map((cat, i) => (
+                          <div key={i} className="p-6 bg-white border border-gray-150 rounded-2xl shadow-xs space-y-2 text-center hover:scale-[1.01] transition-transform">
+                            <span className="text-3xl block mb-2">{cat.emoji}</span>
+                            <h4 className="text-sm font-bold text-[#1a1410]">{cat.name}</h4>
+                            <p className="text-[11px] text-gray-500">{cat.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (sec.id === 'printed-invites') {
+                  const data = getVisualBlockData('Printed Luxury Invites');
+                  const pImage = data.imageUrl || "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=600";
+                  const layout = data.layoutStyle || 'Split-Image-Right';
+
+                  if (layout === 'Split-Image-Left') {
+                    return (
+                      <div className="flex flex-col md:flex-row gap-8 items-center py-6">
+                        <div className="w-full md:w-5/12 flex justify-center">
+                          <img src={pImage} alt="Mock Left" className="max-h-[220px] rounded-2xl object-cover border shadow-md" />
+                        </div>
+                        <div className="w-full md:w-7/12 space-y-4 text-left">
+                          {data.badgeText && (
+                            <span className="inline-block text-[10px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-3 py-1 rounded-full">
+                              {data.badgeText}
+                            </span>
+                          )}
+                          <h2 className="text-3xl font-extrabold text-[#1a1410] tracking-tight">{data.title || 'Printed Luxury'}</h2>
+                          <p className="text-sm text-gray-500 leading-relaxed">{data.body || 'Bespoke rigid envelopes and gold foil borders...'}</p>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (layout === 'Centered-Accent') {
+                    return (
+                      <div className="text-center max-w-2xl mx-auto space-y-4 py-6">
+                        {data.badgeText && (
+                          <span className="inline-block text-[10px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-3 py-1 rounded-full">
+                            {data.badgeText}
+                          </span>
+                        )}
+                        <h2 className="text-3xl font-extrabold text-[#1a1410] tracking-tight">{data.title || 'Printed Luxury'}</h2>
+                        <p className="text-sm text-gray-500 leading-relaxed">{data.body || 'Bespoke rigid envelopes and gold foil borders...'}</p>
+                      </div>
+                    );
+                  }
+
+                  if (layout === 'Minimalist-Banner') {
+                    return (
+                      <div className="bg-[#faf8f5] p-6 rounded-2xl border border-gray-150 flex justify-between items-center max-w-4xl mx-auto">
+                        <div className="space-y-1">
+                          <h3 className="text-base font-bold text-[#1a1410]">{data.title || 'Printed Luxury'}</h3>
+                          <p className="text-xs text-gray-500">{data.subtitle || 'Elegant rigid cards'}</p>
+                        </div>
+                        <span className="text-xs font-bold text-[#8B4949]">Order Samples Now →</span>
+                      </div>
+                    );
+                  }
+
+                  // Default: Split-Image-Right
+                  return (
+                    <div className="flex flex-col md:flex-row gap-8 items-center py-6">
+                      <div className="w-full md:w-7/12 space-y-4 text-left">
+                        {data.badgeText && (
+                          <span className="inline-block text-[10px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-3 py-1 rounded-full">
+                            {data.badgeText}
+                          </span>
+                        )}
+                        <h2 className="text-3xl font-extrabold text-[#1a1410] tracking-tight">{data.title || 'Printed Luxury'}</h2>
+                        <p className="text-sm text-gray-500 leading-relaxed">{data.body || 'Bespoke rigid envelopes and gold foil borders...'}</p>
+                      </div>
+                      <div className="w-full md:w-5/12 flex justify-center">
+                        <img src={pImage} alt="Mock Right" className="max-h-[220px] rounded-2xl object-cover border shadow-md" />
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (sec.id === 'categories') {
+                  const data = getVisualBlockData('Browse by Occasion');
+                  return (
+                    <div className="space-y-6">
+                      <div className="text-center max-w-xs mx-auto space-y-1">
+                        <h3 className="text-xl font-bold text-[#1a1410]">{data.title || 'Browse by Occasion'}</h3>
+                        <p className="text-xs text-gray-400">{data.subtitle || 'Custom Occasion collections'}</p>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {['Wedding', 'Anniversary', 'Engagement', 'Birthday'].map(occ => (
+                          <div key={occ} className="aspect-[4/3] rounded-2xl bg-gray-100 flex items-center justify-center relative overflow-hidden">
+                            <span className="absolute inset-0 bg-black/45 z-10" />
+                            <span className="relative z-20 text-white font-extrabold text-sm">{occ}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (sec.id === 'product-carousel') {
+                  return (
+                    <div className="space-y-3">
+                      <p className="text-xs uppercase font-extrabold text-gray-400 tracking-wider">🌟 Popular Design Highlights</p>
+                      <div className="grid grid-cols-4 gap-4">
+                        {[
+                          'https://images.unsplash.com/photo-1519741497674-611481863552?w=300',
+                          'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=300',
+                          'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=300',
+                          'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300'
+                        ].map((src, idx) => (
+                          <div key={idx} className="aspect-[3/4] bg-[#faf8f5] rounded-xl overflow-hidden border">
+                            <img src={src} className="w-full h-full object-cover" alt="Product" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (sec.id === 'services') {
+                  const data = getVisualBlockData('Our Services');
+                  return (
+                    <div className="space-y-6">
+                      <div className="text-center max-w-md mx-auto">
+                        <h3 className="text-2xl font-extrabold text-[#1a1410]">{data.title || 'Our Services'}</h3>
+                        <p className="text-xs text-gray-400 mt-1">{data.subtitle || 'Complete invite packages'}</p>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        {['Digital Cards', 'Video Invites', 'RSVP Websites', 'Custom Stationery', 'Premium Gifts'].map((ser, i) => (
+                          <div key={i} className="p-4 bg-white border border-gray-150 rounded-xl text-center shadow-xs">
+                            <span className="text-2xl">⚡</span>
+                            <h5 className="text-xs font-bold text-[#1a1410] mt-2">{ser}</h5>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (sec.id === 'how-it-works') {
+                  return (
+                    <div className="space-y-6">
+                      <h4 className="text-lg font-bold text-center text-[#1a1410]">Our Four-Step Process</h4>
+                      <div className="grid grid-cols-4 gap-6 text-center">
+                        {['1. Select Design', '2. Personalize', '3. Approve Proof', '4. Secure Delivery'].map((step, i) => (
+                          <div key={i} className="space-y-2">
+                            <div className="w-10 h-10 rounded-full bg-[#8B4949]/10 text-[#8B4949] mx-auto flex items-center justify-center text-xs font-bold">
+                              {i + 1}
+                            </div>
+                            <p className="text-xs font-bold text-gray-600">{step}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (sec.id === 'testimonials') {
+                  return (
+                    <div className="space-y-6">
+                      <h4 className="text-lg font-bold text-center text-[#1a1410]">❤️ What Clients Say</h4>
+                      <div className="grid grid-cols-2 gap-6">
+                        {[
+                          { name: 'Riya & Amit', review: 'The rigid wedding box was breathtaking and gold foil was perfect.' },
+                          { name: 'Karan Shah', review: 'Beautiful animations, very fast revisions and supportive team.' }
+                        ].map((t, idx) => (
+                          <div key={idx} className="p-5 bg-[#faf8f5] border rounded-2xl shadow-xs">
+                            <div className="flex text-amber-400 gap-0.5 mb-2"><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /></div>
+                            <p className="text-xs text-gray-500 italic">"{t.review}"</p>
+                            <h6 className="text-xs font-bold text-gray-600 mt-2">{t.name}</h6>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (sec.id === 'cta') {
+                  const data = getVisualBlockData('CTA');
+                  return (
+                    <div className="p-10 bg-gradient-to-r from-[#2d1515] via-[#8B4949] to-[#D4AF37] text-white rounded-3xl text-center space-y-4">
+                      <h2 className="text-3xl font-black tracking-tight">{data.title || 'Create Something Unforgettable'}</h2>
+                      <p className="text-xs text-white/70 max-w-md mx-auto">
+                        Ready to design the invitations for your dream celebration? Reach out to us today.
+                      </p>
+                      {data.ctaText && (
+                        <span className="inline-block px-5 py-2 bg-white text-[#8B4949] font-extrabold text-xs rounded-xl shadow-md">
+                          {data.ctaText}
+                        </span>
+                      )}
+                    </div>
+                  );
+                }
+
+                return null;
+              })()}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderVisualAbout = () => {
+    const data = getVisualBlockData('About');
+    const isSelected = activeVisualSection === 'about';
+    return (
+      <div
+        onClick={() => {
+          if (visualEditMode) {
+            setActiveVisualSection('about');
+            setSectionTitle(data.title || '');
+            setSectionBody(data.body || '');
+          }
+        }}
+        className={`py-12 px-6 max-w-5xl mx-auto space-y-12 relative rounded-3xl border-2 border-dashed ${
+          visualEditMode 
+            ? `cursor-pointer hover:border-[#8B4949] hover:bg-[#8B4949]/[0.01] ${isSelected ? 'border-[#8B4949] bg-[#8B4949]/[0.02]' : 'border-transparent'}`
+            : 'border-transparent'
+        }`}
+      >
+        {visualEditMode && (
+          <div className="absolute top-2 left-2 z-30 bg-[#8B4949] text-white text-[8px] font-extrabold uppercase px-2 py-0.5 rounded animate-pulse pointer-events-none">
+            About Section · Click to Edit
+          </div>
+        )}
+        <div className="text-center space-y-4">
+          <span className="text-xs font-bold tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-3 py-1 rounded-full">🌺 STUDIO COLLECTION</span>
+          <h1 className="text-4xl font-extrabold text-[#1a1410]">{data.title || 'The Story of Eventique'}</h1>
+          <p className="text-sm text-gray-500 max-w-xl mx-auto leading-relaxed">{data.body || 'Where tradition meets modern design...'}</p>
+        </div>
+
+        {/* Founder Row */}
+        <div className="grid md:grid-cols-2 gap-8 bg-[#faf8f5] p-6 rounded-2xl border border-gray-150 items-center">
+          <div className="space-y-3">
+            <h3 className="text-lg font-bold text-[#8B4949]">Founder &amp; Vision</h3>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              We design and print invitations with alumni of NIFT &amp; IIT, delivering premium rigid boxes worldwide.
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <span className="text-8xl">👑</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderVisualContact = () => {
+    const data = getVisualBlockData('Contact');
+    const isSelected = activeVisualSection === 'contact';
+    return (
+      <div
+        onClick={() => {
+          if (visualEditMode) {
+            setActiveVisualSection('contact');
+            setSectionTitle(data.title || '');
+            setSectionSubtitle(data.subtitle || '');
+          }
+        }}
+        className={`py-12 px-6 max-w-5xl mx-auto space-y-12 relative rounded-3xl border-2 border-dashed ${
+          visualEditMode 
+            ? `cursor-pointer hover:border-[#8B4949] hover:bg-[#8B4949]/[0.01] ${isSelected ? 'border-[#8B4949] bg-[#8B4949]/[0.02]' : 'border-transparent'}`
+            : 'border-transparent'
+        }`}
+      >
+        {visualEditMode && (
+          <div className="absolute top-2 left-2 z-30 bg-[#8B4949] text-white text-[8px] font-extrabold uppercase px-2 py-0.5 rounded animate-pulse pointer-events-none">
+            Contact Section · Click to Edit
+          </div>
+        )}
+        <div className="text-center space-y-4">
+          <span className="text-xs font-bold tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-3 py-1 rounded-full">📞 TALK TO US</span>
+          <h1 className="text-4xl font-extrabold text-[#1a1410]">{data.title || "Let's Create Together"}</h1>
+          <p className="text-sm text-gray-500 max-w-xl mx-auto leading-relaxed">{data.subtitle || 'Ask questions or customize rigid prints'}</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 text-center">
+          {['WhatsApp Support', 'Phone Call', 'Studio Mail'].map(cType => (
+            <div key={cType} className="p-5 bg-white border rounded-xl shadow-xs">
+              <span className="text-2xl">💬</span>
+              <h4 className="text-xs font-bold mt-2">{cType}</h4>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderVisualPrinted = () => {
+    const data = getVisualBlockData('Printed Luxury Invites');
+    const isSelected = activeVisualSection === 'printed';
+    return (
+      <div
+        onClick={() => {
+          if (visualEditMode) {
+            setActiveVisualSection('printed');
+            setSectionTitle(data.title || '');
+            setSectionBody(data.body || '');
+            setSectionImageUrl(data.imageUrl || '');
+            setLayoutStyle(data.layoutStyle || 'Split-Image-Right');
+            setBadgeText(data.badgeText || '');
+          }
+        }}
+        className={`py-12 px-6 max-w-5xl mx-auto space-y-12 relative rounded-3xl border-2 border-dashed ${
+          visualEditMode 
+            ? `cursor-pointer hover:border-[#8B4949] hover:bg-[#8B4949]/[0.01] ${isSelected ? 'border-[#8B4949] bg-[#8B4949]/[0.02]' : 'border-transparent'}`
+            : 'border-transparent'
+        }`}
+      >
+        {visualEditMode && (
+          <div className="absolute top-2 left-2 z-30 bg-[#8B4949] text-white text-[8px] font-extrabold uppercase px-2 py-0.5 rounded animate-pulse pointer-events-none">
+            Printed Page Header · Click to Edit
+          </div>
+        )}
+        <div className="flex flex-col md:flex-row gap-8 items-center">
+          <div className="w-full md:w-7/12 space-y-4 text-left">
+            <h1 className="text-4xl font-extrabold text-[#1a1410]">{data.title || 'Printed Luxury Invites'}</h1>
+            <p className="text-sm text-gray-500 leading-relaxed">{data.body || 'Meticulously crafted boxes...'}</p>
+          </div>
+          <div className="w-full md:w-5/12 flex justify-center">
+            <img src={data.imageUrl || "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=600"} className="max-h-[180px] rounded-xl object-cover border" alt="Printed preview" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderVisualFormInputs = () => {
+    if (!activeVisualSection) return null;
+    const isHero = activeVisualSection === 'hero';
+    const isShowcase = activeVisualSection === 'product-showcase';
+    const isPrinted = ['printed-invites', 'printed'].includes(activeVisualSection);
+    const isCta = activeVisualSection === 'cta';
+
+    return (
+      <div className="space-y-4 text-left">
+        {/* Title */}
+        {activeVisualSection !== 'hero' && (
+          <div>
+            <label className="admin-label">Header Title Text</label>
+            <input
+              type="text"
+              className="admin-input text-xs"
+              value={sectionTitle}
+              onChange={(e) => { setSectionTitle(e.target.value); setSectionDirty(true); }}
+            />
+          </div>
+        )}
+
+        {/* Subtitle / Description */}
+        {!['hero', 'cta'].includes(activeVisualSection) && (
+          <div>
+            <label className="admin-label">Subtitle Description</label>
+            <input
+              type="text"
+              className="admin-input text-xs"
+              value={sectionSubtitle}
+              onChange={(e) => { setSectionSubtitle(e.target.value); setSectionDirty(true); }}
+            />
+          </div>
+        )}
+
+        {/* Body Text */}
+        {isPrinted && (
+          <div>
+            <label className="admin-label">Luxury Description Paragraph</label>
+            <textarea
+              rows={4}
+              className="admin-textarea text-xs"
+              value={sectionBody}
+              onChange={(e) => { setSectionBody(e.target.value); setSectionDirty(true); }}
+            />
+          </div>
+        )}
+
+        {/* Layout style */}
+        {isPrinted && (
+          <div>
+            <label className="admin-label">Visual Layout Option</label>
+            <select
+              className="admin-input text-xs cursor-pointer"
+              value={layoutStyle}
+              onChange={(e) => { setLayoutStyle(e.target.value); setSectionDirty(true); }}
+            >
+              <option value="Split-Image-Right">Split Layout (Right Image)</option>
+              <option value="Split-Image-Left">Split Layout (Left Image)</option>
+              <option value="Centered-Accent">Centered Text &amp; Banner</option>
+              <option value="Minimalist-Banner">Minimal Banner (Hide visual)</option>
+            </select>
+          </div>
+        )}
+
+        {/* Image picker */}
+        {isPrinted && (
+          <div>
+            <label className="admin-label">Section Collage Image / Design</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                className="admin-input text-xs flex-1"
+                value={sectionImageUrl}
+                onChange={(e) => { setSectionImageUrl(e.target.value); setSectionDirty(true); }}
+                placeholder="Image URL"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setPickerTarget('section');
+                  setShowMediaPicker(true);
+                }}
+                className="px-3 py-2 bg-gray-50 border rounded-xl text-xs hover:bg-gray-100 cursor-pointer font-bold"
+              >
+                Browse
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Hero Slides Info */}
+        {isHero && (
+          <div className="p-3 bg-[#faf8f5] border rounded-xl space-y-1.5">
+            <h5 className="text-xs font-bold text-[#8B4949]">Hero Slides Config</h5>
+            <p className="text-[10px] text-gray-500 leading-relaxed">
+              Hero slideshow layout details (titles, badges, custom highlights) are fully synced and editable under the central slides editor.
+            </p>
+          </div>
+        )}
+
+        {/* CTA Button config */}
+        {isCta && (
+          <div className="grid grid-cols-2 gap-3 p-3 bg-[#faf8f5] border rounded-xl">
+            <div>
+              <label className="admin-label">Button Text</label>
+              <input
+                type="text"
+                className="admin-input text-xs bg-white"
+                value={sectionCtaText}
+                onChange={(e) => { setSectionCtaText(e.target.value); setSectionDirty(true); }}
+              />
+            </div>
+            <div>
+              <label className="admin-label">Button Link</label>
+              <input
+                type="text"
+                className="admin-input text-xs bg-white"
+                value={sectionCtaLink}
+                onChange={(e) => { setSectionCtaLink(e.target.value); setSectionDirty(true); }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+return (
     <div className="space-y-6 admin-animate-in">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -710,1316 +1318,118 @@ export default function ContentsManager() {
         </button>
       </div>
 
-      {/* ── TAB 1: WEBSITE SECTIONS ──────────────────────────────── */}
+            {/* ── TAB 1: WEBSITE SECTIONS (VISUAL WYSIWYG EDITOR) ── */}
       {activeTab === 'sections' && (
-        <div
-          className="admin-card !p-0 overflow-hidden flex flex-col md:flex-row shadow-sm border border-[#e5e5e5]"
-          style={{ minHeight: '560px' }}
-        >
-          {/* Side Nav */}
-          <aside
-            style={{
-              width: '220px',
-              minWidth: '220px',
-              background: '#fcfaf7',
-              borderRight: '1px solid #e5e5e5',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              height: 'auto',
-              minHeight: '560px'
-            }}
-            className="admin-scrollbar"
-          >
-            <div style={{ overflowY: 'auto', flexGrow: 1 }}>
-              <div style={{ padding: '1.25rem 1rem 0.5rem', borderBottom: '1px solid #f0ebe2' }}>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Sections List
-                </p>
-              </div>
-              <ul style={{ padding: '0.5rem' }} className="space-y-0.5">
-                {(() => {
-                  const ordered = [...state.contentBlocks].sort((a, b) => {
-                    const idxA = SECTION_NAMES.indexOf(a.sectionName as any);
-                    const idxB = SECTION_NAMES.indexOf(b.sectionName as any);
-                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                    if (idxA !== -1) return -1;
-                    if (idxB !== -1) return 1;
-                    return a.sectionName.localeCompare(b.sectionName);
-                  });
-                  return ordered.map((b) => {
-                    const name = b.sectionName;
-                    const isActive = selectedSection === name;
-                    return (
-                      <li key={b.id}>
-                        <button
-                          onClick={() => setSelectedSection(name)}
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border-none cursor-pointer transition-all text-left text-xs font-semibold"
-                          style={{
-                            fontFamily: "'Bricolage Grotesque', 'Inter', system-ui, sans-serif",
-                            background: isActive ? '#8B4949' : 'transparent',
-                            color: isActive ? '#ffffff' : '#555',
-                          }}
-                        >
-                          <span className="truncate">{name}</span>
-                          <span
-                            className="w-2 h-2 rounded-full flex-shrink-0 ml-2"
-                            style={{ background: b.enabled ? '#4A7C59' : '#aaa' }}
-                          />
-                        </button>
-                      </li>
-                    );
-                  });
-                })()}
-              </ul>
+        <div className="flex flex-col relative bg-[#faf8f5] border border-[#e5e5e5] rounded-3xl overflow-hidden shadow-sm" style={{ minHeight: '680px' }}>
+          
+          {/* Top Sticky Bar */}
+          <div className="sticky top-0 z-40 bg-white border-b border-[#e5e5e5] px-6 py-3.5 flex items-center justify-between flex-wrap gap-4 shadow-sm font-sans">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Active Page:</span>
+              <select
+                className="px-3 py-1.5 bg-[#faf8f5] border border-[#e5e5e5] rounded-xl text-xs font-bold text-[#1a1410] focus:ring-1 focus:ring-[#8B4949] focus:outline-none cursor-pointer"
+                value={activeVisualPage}
+                onChange={(e) => {
+                  setActiveVisualPage(e.target.value as any);
+                  setActiveVisualSection(null);
+                }}
+              >
+                <option value="home">🏠 Home Page</option>
+                <option value="about">ℹ️ About Page</option>
+                <option value="contact">📞 Contact Page</option>
+                <option value="printed">📃 Printed Luxury Page</option>
+              </select>
             </div>
 
-            <div style={{ padding: '0.75rem 0.5rem', borderTop: '1px solid #f0ebe2', background: '#faf8f5' }}>
+            {/* Mode Switcher */}
+            <div className="flex gap-1.5 bg-[#faf8f5] border border-[#e5e5e5] rounded-xl p-1 shadow-xs">
               <button
                 type="button"
-                onClick={() => setShowCustomSectionModal(true)}
-                className="w-full flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl bg-white border border-[#8B4949]/30 hover:border-[#8B4949] text-[#8B4949] hover:bg-[#8B4949]/5 text-xs font-semibold cursor-pointer transition-all shadow-sm"
+                onClick={() => { setVisualEditMode(true); setActiveVisualSection(null); }}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border-none ${
+                  visualEditMode
+                    ? 'bg-[#8B4949] text-white shadow-sm'
+                    : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
+                }`}
               >
-                <Plus size={12} /> Add Custom Section
+                ✏️ Edit Mode
+              </button>
+              <button
+                type="button"
+                onClick={() => { setVisualEditMode(false); setActiveVisualSection(null); }}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border-none ${
+                  !visualEditMode
+                    ? 'bg-[#8B4949] text-white shadow-sm'
+                    : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
+                }`}
+              >
+                👁️ Preview Mode
               </button>
             </div>
-          </aside>
 
-          {/* Edit Panel */}
-          <div className="flex-1 bg-white p-7 overflow-y-auto admin-scrollbar space-y-6">
-            {currentBlock ? (
-              <>
-                {/* Panel Title & Visibility */}
-                <div className="flex items-center justify-between border-b border-[#f0f0f0] pb-4 flex-wrap gap-3">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-bold text-[#1a1410] flex items-center gap-2">
-                      {selectedSection} Settings
-                      {sectionDirty && (
-                        <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" title="Unsaved changes" />
-                      )}
-                    </h2>
-                    {currentBlock.isCustomSection && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm(`Are you sure you want to delete the custom section "${selectedSection}"?`)) {
-                            deleteContentBlock(currentBlock.id);
-                            setSelectedSection(SECTION_NAMES[0]);
-                          }
-                        }}
-                        className="text-[10px] text-red-500 hover:text-white bg-red-50 hover:bg-red-600 px-2 py-1 rounded-lg border border-red-200 hover:border-red-600 cursor-pointer flex items-center gap-1 transition-all"
-                        title="Delete Custom Section"
-                      >
-                        <Trash2 size={10} /> Delete Section
-                      </button>
-                    )}
+            {/* Save indicator & action */}
+            <div className="flex items-center gap-3">
+              {sectionDirty && (
+                <span className="text-[10px] text-[#b08d23] bg-[#D4AF37]/10 border border-[#D4AF37]/25 px-2 py-0.5 rounded font-bold animate-pulse">
+                  Unsaved Changes*
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={handleSectionSave}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#8B4949] text-white text-xs font-bold rounded-xl shadow-md hover:scale-[1.02] hover:bg-[#723a3a] transition-all cursor-pointer"
+              >
+                <Save size={12} /> Save Page Changes
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-1 relative min-h-[580px]">
+            {/* ── MAIN WEBSITE CANVAS (100% full visual preview) ── */}
+            <div className="flex-1 overflow-y-auto admin-scrollbar bg-white" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+              {activeVisualPage === 'home' && renderVisualHome()}
+              {activeVisualPage === 'about' && renderVisualAbout()}
+              {activeVisualPage === 'contact' && renderVisualContact()}
+              {activeVisualPage === 'printed' && renderVisualPrinted()}
+            </div>
+
+            {/* ── SLEEK FLOATING DRAWER (Right sidebar, slides in on click) ── */}
+            {activeVisualSection && (
+              <div
+                className="w-[380px] border-l border-[#e5e5e5] bg-white h-full shadow-2xl flex flex-col justify-between flex-shrink-0 admin-animate-in"
+                style={{ height: 'calc(100vh - 280px)', position: 'sticky', top: 0 }}
+              >
+                {/* Drawer Header */}
+                <div className="p-5 border-b border-[#f0f0f0] flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-black text-[#1a1410]" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+                      Edit Section Contents
+                    </h3>
+                    <p className="text-[10px] text-gray-400 mt-0.5">Customize texts, images, and layout style</p>
                   </div>
-                  <div className="flex items-center gap-2.5 bg-[#faf8f5] px-3 py-1.5 rounded-xl border border-[#e5e5e5]/50">
-                    <span className="text-xs text-gray-500 font-semibold select-none">
-                      {currentBlock.enabled ? 'Section Visible' : 'Section Hidden'}
-                    </span>
-                    <button
-                      onClick={handleSectionToggle}
-                      className={`admin-toggle ${currentBlock.enabled ? 'active' : ''}`}
-                      title={currentBlock.enabled ? 'Hide Section' : 'Show Section'}
-                    />
-                    {currentBlock.enabled ? (
-                      <Eye size={15} className="text-[#4A7C59]" />
-                    ) : (
-                      <EyeOff size={15} className="text-[#aaa]" />
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveVisualSection(null)}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X size={15} />
+                  </button>
                 </div>
 
-                {/* Form Inputs (Show for non-carousel sections) */}
-                {!isCarouselSection && (
-                  <div className="space-y-4">
-                {/* ── LAYOUT & DESIGN PICKER (Show for general/custom sections) ── */}
-                {!['Footer', 'Terms', 'Privacy Policy', 'Refund Policy'].includes(selectedSection) && (
-                  <div className="bg-[#faf8f5] border border-[#f0ece4] rounded-2xl p-5 space-y-4 shadow-xs">
-                    <div className="flex justify-between items-center flex-wrap gap-2">
-                      <div>
-                        <h3 className="text-sm font-bold text-[#1a1410]">Section Layout & Live Mockup Preview</h3>
-                        <p className="text-[11px] text-gray-400">Choose how this section renders on the public site and preview it in real-time:</p>
-                      </div>
-                      
-                      {/* Layout Picker buttons */}
-                      {!['FAQ', 'Testimonials', 'Packages', 'Our Services', 'Browse by Occasion', 'Hero'].includes(selectedSection) && (
-                        <div className="flex gap-1.5 bg-white border border-[#e5e5e5] rounded-xl p-1 shadow-sm">
-                          {[
-                            { value: 'Split-Image-Right', label: 'Split (Right Image)' },
-                            { value: 'Split-Image-Left', label: 'Split (Left Image)' },
-                            { value: 'Centered-Accent', label: 'Centered Text' },
-                            { value: 'Minimalist-Banner', label: 'Minimal Banner' }
-                          ].map(layout => (
-                            <button
-                              key={layout.value}
-                              type="button"
-                              onClick={() => { setLayoutStyle(layout.value); setSectionDirty(true); }}
-                              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer border-none ${
-                                layoutStyle === layout.value
-                                  ? 'bg-[#8B4949] text-white shadow-sm'
-                                  : 'text-gray-500 hover:text-[#8B4949] hover:bg-[#f5f0e8]'
-                              }`}
-                            >
-                              {layout.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                {/* Drawer Scrollable Content Form */}
+                <div className="flex-1 overflow-y-auto admin-scrollbar p-5 space-y-4">
+                  {renderVisualFormInputs()}
+                </div>
 
-                    {/* LIVE INTERACTIVE PREVIEW PANEL */}
-                    <div className="border border-[#e5e5e5] rounded-2xl bg-white p-6 shadow-inner relative overflow-hidden min-h-[220px] flex flex-col justify-center">
-                      <div className="absolute top-2 left-2 text-[9px] bg-gray-100 text-gray-400 font-extrabold uppercase tracking-widest px-2 py-0.5 rounded">
-                        Live Preview (Mockup)
-                      </div>
-
-                      {/* Mock header decoration */}
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                      </div>
-
-                      {(() => {
-                        // Renders based on section layout style
-                        const hasCta = showCtaToggle && sectionCtaText;
-                        const defaultImage = "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=600";
-                        const previewImage = sectionImageUrl || defaultImage;
-
-                        // Render specialized mockup if it's a built-in module
-                        if (selectedSection === 'FAQ') {
-                          return (
-                            <div className="space-y-4 pt-4">
-                              <div className="text-center max-w-md mx-auto">
-                                <span className="text-[10px] font-bold text-[#8B4949] uppercase tracking-wider bg-[#8B4949]/5 px-2 py-0.5 rounded-full">FAQ Section</span>
-                                <h3 className="text-base font-extrabold text-[#1a1410] mt-2">{sectionTitle || 'Frequently Asked Questions'}</h3>
-                                <p className="text-[11px] text-gray-455 mt-1">{sectionSubtitle || 'Got questions? We have got answers.'}</p>
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl mx-auto">
-                                {contactFaqs.slice(0, 4).map((f, i) => (
-                                  <div key={i} className="p-3 bg-[#faf8f5] rounded-xl border border-[#f0ece4]">
-                                    <h4 className="text-[11px] font-bold text-[#1a1410]">❓ {f.q || `Sample Question ${i+1}`}</h4>
-                                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">{f.a || 'Sample answer text goes here.'}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        if (selectedSection === 'Testimonials') {
-                          return (
-                            <div className="space-y-4 pt-4">
-                              <div className="text-center max-w-md mx-auto">
-                                <span className="text-[10px] font-bold text-[#8B4949] uppercase tracking-wider bg-[#8B4949]/5 px-2 py-0.5 rounded-full">Testimonials</span>
-                                <h3 className="text-base font-extrabold text-[#1a1410] mt-2">{sectionTitle || 'What Clients Say'}</h3>
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                {[
-                                  { name: 'Priya & Rahul', role: 'Wedding Invite Client', text: 'Absolutely spectacular video invite! Everyone loved it.' },
-                                  { name: 'Kunal Verma', role: 'Corporate Partner', text: 'Top notch service and luxury rigid box packaging.' },
-                                  { name: 'Sneha Shah', role: 'Birthday Invite', text: 'E-Stationery design was very elegant and fast delivery.' }
-                                ].map((t, i) => (
-                                  <div key={i} className="p-3 bg-white rounded-xl border border-[#e5e5e5] shadow-xs flex flex-col justify-between">
-                                    <p className="text-[10px] text-gray-500 italic">"{t.text}"</p>
-                                    <div className="mt-3">
-                                      <h5 className="text-[10px] font-bold text-[#1a1410]">{t.name}</h5>
-                                      <span className="text-[8px] text-gray-400">{t.role}</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        // General dynamic layout renderer
-                        if (layoutStyle === 'Split-Image-Left') {
-                          return (
-                            <div className="flex flex-col md:flex-row gap-6 items-center pt-4">
-                              <div className="w-full md:w-5/12 flex justify-center">
-                                <img src={previewImage} alt="Preview Left" className="max-h-[160px] rounded-xl object-cover shadow-sm border border-[#e5e5e5]" />
-                              </div>
-                              <div className="w-full md:w-7/12 space-y-2 text-left">
-                                {badgeText && (
-                                  <span className="text-[8px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-2 py-0.5 rounded-full">
-                                    {badgeText}
-                                  </span>
-                                )}
-                                <h3 className="text-base font-extrabold text-[#1a1410] leading-snug">{sectionTitle || 'Section Title'}</h3>
-                                <p className="text-[11px] text-gray-450 font-semibold">{sectionSubtitle || 'Subtitle description goes here.'}</p>
-                                <p className="text-[10px] text-gray-500 leading-relaxed line-clamp-3">{sectionBody || 'Body text description content goes here.'}</p>
-                                {hasCta && (
-                                  <div className="pt-2">
-                                    <span className="inline-block px-4 py-1.5 bg-[#8B4949] text-white font-extrabold text-[10px] rounded-lg shadow-sm">
-                                      {sectionCtaText}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        if (layoutStyle === 'Centered-Accent') {
-                          return (
-                            <div className="text-center max-w-xl mx-auto space-y-3 pt-4">
-                              {badgeText && (
-                                <span className="inline-block text-[8px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-2 py-0.5 rounded-full">
-                                  {badgeText}
-                                </span>
-                              )}
-                              <h3 className="text-lg font-extrabold text-[#1a1410] leading-snug">{sectionTitle || 'Section Title'}</h3>
-                              <p className="text-[11px] text-gray-455 font-semibold">{sectionSubtitle || 'Subtitle description goes here.'}</p>
-                              <p className="text-[10px] text-gray-500 leading-relaxed max-w-md mx-auto">{sectionBody || 'Body text description content goes here.'}</p>
-                              {hasCta && (
-                                <div className="pt-2">
-                                  <span className="inline-block px-4 py-1.5 bg-[#8B4949] text-white font-extrabold text-[10px] rounded-lg shadow-sm">
-                                    {sectionCtaText}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-
-                        if (layoutStyle === 'Minimalist-Banner') {
-                          return (
-                            <div className="bg-[#faf8f5] p-5 rounded-2xl border border-[#f0ece4] flex justify-between items-center flex-wrap gap-4 pt-4">
-                              <div className="space-y-1.5 text-left max-w-sm">
-                                <h3 className="text-sm font-extrabold text-[#1a1410]">{sectionTitle || 'Section Title'}</h3>
-                                <p className="text-[10px] text-gray-500">{sectionSubtitle || 'Subtitle description goes here.'}</p>
-                              </div>
-                              {hasCta && (
-                                <span className="px-4 py-2 bg-[#8B4949] text-white font-extrabold text-[10px] rounded-lg shadow-sm">
-                                  {sectionCtaText}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        }
-
-                        // Default: Split-Image-Right
-                        return (
-                          <div className="flex flex-col md:flex-row gap-6 items-center pt-4">
-                            <div className="w-full md:w-7/12 space-y-2 text-left">
-                              {badgeText && (
-                                <span className="text-[8px] font-extrabold uppercase tracking-widest text-[#8B4949] bg-[#8B4949]/5 px-2 py-0.5 rounded-full">
-                                  {badgeText}
-                                </span>
-                              )}
-                              <h3 className="text-base font-extrabold text-[#1a1410] leading-snug">{sectionTitle || 'Section Title'}</h3>
-                              <p className="text-[11px] text-gray-450 font-semibold">{sectionSubtitle || 'Subtitle description goes here.'}</p>
-                              <p className="text-[10px] text-gray-500 leading-relaxed line-clamp-3">{sectionBody || 'Body text description content goes here.'}</p>
-                              {hasCta && (
-                                <div className="pt-2">
-                                  <span className="inline-block px-4 py-1.5 bg-[#8B4949] text-white font-extrabold text-[10px] rounded-lg shadow-sm">
-                                    {sectionCtaText}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="w-full md:w-5/12 flex justify-center">
-                              <img src={previewImage} alt="Preview Right" className="max-h-[160px] rounded-xl object-cover shadow-sm border border-[#e5e5e5]" />
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                )}
-                    {selectedSection === 'Footer' && (
-                      <div className="space-y-4 bg-[#faf8f5] border border-[#f0ece4] rounded-2xl p-5 shadow-sm">
-                        <h3 className="text-xs font-bold text-[#8B4949] uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                          <span className="w-1.5 h-3 rounded-full bg-[#8B4949]" /> Footer Design Content
-                        </h3>
-                        <div>
-                          <label className="admin-label">Brand Tagline</label>
-                          <textarea
-                            className="admin-textarea bg-white text-xs"
-                            rows={2}
-                            value={footerBrandTagline}
-                            onChange={(e) => { setFooterBrandTagline(e.target.value); setSectionDirty(true); }}
-                            placeholder="e.g. Personalized digital e-invites for every celebration..."
-                          />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="admin-label">Contact Phone</label>
-                            <input
-                              type="text"
-                              className="admin-input bg-white text-xs"
-                              value={footerPhone}
-                              onChange={(e) => { setFooterPhone(e.target.value); setSectionDirty(true); }}
-                              placeholder="e.g. +91 98765 43210"
-                            />
-                          </div>
-                          <div>
-                            <label className="admin-label">Contact Email</label>
-                            <input
-                              type="text"
-                              className="admin-input bg-white text-xs"
-                              value={footerEmail}
-                              onChange={(e) => { setFooterEmail(e.target.value); setSectionDirty(true); }}
-                              placeholder="e.g. hello@eventique.in"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="border-t border-[#f0ece4] pt-4 mt-3">
-                          <label className="admin-label block mb-2 text-xs font-bold text-[#1a1410]">Social Media Links</label>
-                          <div className="grid grid-cols-2 gap-3">
-                            {footerSocials.map((soc, idx) => (
-                              <div key={soc.platform} className="bg-white p-2 rounded-xl border border-[#e5e5e5] flex items-center gap-2 shadow-xs">
-                                <span className="text-[10px] font-bold capitalize text-gray-500 w-16">{soc.platform}</span>
-                                <input
-                                  type="text"
-                                  className="admin-input !border-none p-0 focus:ring-0 text-[11px] text-gray-600 bg-transparent flex-grow"
-                                  value={soc.url}
-                                  onChange={(e) => {
-                                    const updated = [...footerSocials];
-                                    updated[idx].url = e.target.value;
-                                    setFooterSocials(updated);
-                                    setSectionDirty(true);
-                                  }}
-                                  placeholder={`e.g. https://${soc.platform}.com/...`}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {hasTitle && (
-                      <div>
-                        <label className="admin-label">Section Title</label>
-                        <input
-                          type="text"
-                          className="admin-input"
-                          value={sectionTitle}
-                          onChange={handleSectionFieldChange(setSectionTitle)}
-                          placeholder="e.g. Royal Wedding Video Invite..."
-                        />
-                      </div>
-                    )}
-
-                    {hasSubtitle && (
-                      <div>
-                        <label className="admin-label">Subtitle / Short description</label>
-                        <input
-                          type="text"
-                          className="admin-input"
-                          value={sectionSubtitle}
-                          onChange={handleSectionFieldChange(setSectionSubtitle)}
-                          placeholder="e.g. Stunning animations that tell your love story..."
-                        />
-                      </div>
-                    )}
-
-                    {/* Badge and Footer Text editors */}
-                    {['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection) && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="admin-label">Section Badge Text</label>
-                          <input
-                            type="text"
-                            className="admin-input"
-                            value={badgeText}
-                            onChange={handleSectionFieldChange(setBadgeText)}
-                            placeholder="e.g. Personalized Portals..."
-                          />
-                        </div>
-                        <div>
-                          <label className="admin-label">Section Footer Text</label>
-                          <input
-                            type="text"
-                            className="admin-input"
-                            value={footerText}
-                            onChange={handleSectionFieldChange(setFooterText)}
-                            placeholder="e.g. Starting from ₹4,999 onwards..."
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {hasBody && (
-                      <div>
-                        <label className="admin-label">Body Content / Details</label>
-                        <textarea
-                          className="admin-textarea"
-                          value={sectionBody}
-                          onChange={handleSectionFieldChange(setSectionBody)}
-                          placeholder="Enter full body text..."
-                          rows={6}
-                        />
-                      </div>
-                    )}
-
-                    {/* Features list editor */}
-                    {(['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection) || (isCustom && customType === 'grid')) && (
-                      <div className="bg-[#faf8f5] border border-[#f0ece4] rounded-2xl p-5 space-y-4">
-                        <div>
-                          <label className="admin-label !mb-1 text-sm font-semibold text-[#1a1410]">Section Features List (Up to 3 Items)</label>
-                          <p className="text-xs text-gray-400">Configure key highlights showing under this homepage block.</p>
-                        </div>
-                        <div className="space-y-4">
-                          {features.map((feature, fIdx) => (
-                            <div key={fIdx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-2.5 shadow-sm">
-                              <p className="text-[10px] uppercase font-bold text-gray-400">Feature Item {fIdx + 1}</p>
-                              <div className="space-y-2">
-                                <div>
-                                  <label className="text-[10px] font-semibold text-gray-500">Feature Title</label>
-                                  <input
-                                    type="text"
-                                    className="admin-input bg-white text-xs px-2.5 py-1.5"
-                                    value={feature.title}
-                                    onChange={(e) => {
-                                      const updated = [...features];
-                                      updated[fIdx] = { ...updated[fIdx], title: e.target.value };
-                                      setFeatures(updated);
-                                      setSectionDirty(true);
-                                    }}
-                                    placeholder="e.g. Quick Personalization"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-semibold text-gray-500">Feature Description</label>
-                                  <textarea
-                                    className="admin-textarea bg-white text-xs p-2.5"
-                                    rows={2}
-                                    value={feature.desc}
-                                    onChange={(e) => {
-                                      const updated = [...features];
-                                      updated[fIdx] = { ...updated[fIdx], desc: e.target.value };
-                                      setFeatures(updated);
-                                      setSectionDirty(true);
-                                    }}
-                                    placeholder="Describe this highlight detail..."
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Image / Design Upload Row */}
-                    {hasImage && (
-                      <div>
-                        <label className="admin-label">Section Design Image / Preview</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {/* Preview */}
-                          <div className="border border-[#e5e5e5] rounded-2xl bg-[#faf8f5] p-3 flex items-center justify-center min-h-[160px] relative overflow-hidden">
-                            {sectionImageUrl ? (
-                              <>
-                                <img src={sectionImageUrl} alt="Design Preview" className="max-h-[140px] rounded-lg object-contain" />
-                                <button
-                                  type="button"
-                                  onClick={() => { setSectionImageUrl(''); setSectionDirty(true); }}
-                                  className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black transition-colors"
-                                >
-                                  <X size={13} />
-                                </button>
-                              </>
-                            ) : (
-                              <div className="text-center text-gray-400 space-y-1 select-none">
-                                <ImageIcon size={26} className="mx-auto text-gray-300" />
-                                <p className="text-xs">No design image selected</p>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex flex-col justify-center gap-3">
-                            <button
-                              type="button"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="admin-btn admin-btn-outline flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                              <Upload size={14} /> Upload New Design
-                            </button>
-                            <input
-                              ref={fileInputRef}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleSectionImageUpload}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => { setPickerTarget('section'); setShowMediaPicker(true); }}
-                              className="admin-btn admin-btn-outline flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                              <ImageIcon size={14} /> Pick from Media Library
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Call-to-Action (CTA) Config */}
-                    {hasCta && (
-                      <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-[#1a1410]">Enable Action (CTA) Button</span>
-                          <button
-                            onClick={() => { setShowCtaToggle(!showCtaToggle); setSectionDirty(true); }}
-                            className={`admin-toggle ${showCtaToggle ? 'active' : ''}`}
-                          />
-                        </div>
-
-                        {showCtaToggle && (
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                            <div>
-                              <label className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Button Text</label>
-                              <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={sectionCtaText}
-                                onChange={handleSectionFieldChange(setSectionCtaText)}
-                                placeholder="e.g. Explore Designs"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Link Redirect Path</label>
-                              <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={sectionCtaLink}
-                                onChange={handleSectionFieldChange(setSectionCtaLink)}
-                                placeholder="e.g. /explore"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Section Image Gallery */}
-                    {['Explore Designs', 'Video Invites', 'Event Websites', 'Stationery', 'Printed Luxury Invites'].includes(selectedSection) && (
-                      <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                        <div>
-                          <label className="admin-label !mb-1 text-sm font-semibold text-[#1a1410]">Section Image Gallery (Carousel Slides)</label>
-                          <p className="text-xs text-gray-400">Manage multiple images displayed as an interactive carousel in this section on the homepage.</p>
-                        </div>
-                        
-                        {/* Thumbnail Grid */}
-                        {sectionImages.length > 0 ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                            {sectionImages.map((url, imgIdx) => (
-                              <div key={imgIdx} className="relative aspect-square border border-[#e5e5e5] rounded-xl overflow-hidden bg-white group shadow-sm">
-                                <img src={url} alt={`Slide ${imgIdx + 1}`} className="w-full h-full object-cover" />
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSectionImages(sectionImages.filter((_, idx) => idx !== imgIdx));
-                                    setSectionDirty(true);
-                                  }}
-                                  className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors"
-                                  title="Remove image"
-                                >
-                                  <X size={12} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-6 border border-dashed border-[#e5e5e5] rounded-2xl bg-white text-gray-400">
-                            <ImageIcon size={24} className="mx-auto mb-1 text-gray-300" />
-                            <p className="text-xs">No images in gallery yet</p>
-                          </div>
-                        )}
-                        
-                        {/* Add Buttons */}
-                        <div className="flex flex-wrap gap-2.5">
-                          <button
-                            type="button"
-                            onClick={() => galleryFileInputRef.current?.click()}
-                            className="admin-btn admin-btn-outline admin-btn-sm flex items-center gap-1.5 cursor-pointer text-xs font-semibold px-3 py-1.5"
-                          >
-                            <Upload size={13} /> Upload Image File
-                          </button>
-                          <input
-                            ref={galleryFileInputRef}
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={handleGalleryImageUpload}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => { setPickerTarget('gallery'); setShowMediaPicker(true); }}
-                            className="admin-btn admin-btn-outline admin-btn-sm flex items-center gap-1.5 cursor-pointer text-xs font-semibold px-3 py-1.5"
-                          >
-                            <ImageIcon size={13} /> Pick from Media Library
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* About Custom Sections */}
-                    {selectedSection === 'About' && (
-                      <div className="space-y-6 border-t border-[#f0f0f0] pt-6">
-                        <h3 className="text-sm font-bold text-[#8B4949] uppercase tracking-wider">About Page Subsections</h3>
-                        
-                        {/* Milestones Editor */}
-                        <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <h4 className="font-semibold text-xs text-gray-700">Milestones (Our Journey So Far)</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {aboutMilestones.map((milestone, idx) => (
-                              <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-2.5 shadow-sm">
-                                <p className="text-[10px] uppercase font-bold text-gray-400">Milestone {idx + 1}</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Value (e.g. 2000+)</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs px-2.5 py-1.5"
-                                      value={milestone.number}
-                                      onChange={(e) => {
-                                        const updated = [...aboutMilestones];
-                                        updated[idx].number = e.target.value;
-                                        setAboutMilestones(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Label (e.g. Happy Clients)</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs px-2.5 py-1.5"
-                                      value={milestone.label}
-                                      onChange={(e) => {
-                                        const updated = [...aboutMilestones];
-                                        updated[idx].label = e.target.value;
-                                        setAboutMilestones(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-semibold text-gray-500">Icon Name</label>
-                                  <select
-                                    className="admin-input bg-white text-xs px-2.5 py-1.5"
-                                    value={milestone.iconName}
-                                    onChange={(e) => {
-                                      const updated = [...aboutMilestones];
-                                      updated[idx].iconName = e.target.value;
-                                      setAboutMilestones(updated);
-                                      setSectionDirty(true);
-                                    }}
-                                  >
-                                    <option value="Users">Users</option>
-                                    <option value="PenTool">Pen Tool</option>
-                                    <option value="Star">Star</option>
-                                    <option value="Clock">Clock</option>
-                                  </select>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Values Editor */}
-                        <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <h4 className="font-semibold text-xs text-gray-700">What Drives Us (Values)</h4>
-                          <div className="space-y-4">
-                            {aboutValues.map((val, idx) => (
-                              <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-3 shadow-sm">
-                                <p className="text-[10px] uppercase font-bold text-gray-400">Value Card {idx + 1}</p>
-                                <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                                  <div className="md:col-span-2">
-                                    <label className="text-[10px] font-semibold text-gray-500">Icon / Emoji</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={val.icon}
-                                      onChange={(e) => {
-                                        const updated = [...aboutValues];
-                                        updated[idx].icon = e.target.value;
-                                        setAboutValues(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="md:col-span-10">
-                                    <label className="text-[10px] font-semibold text-gray-500">Title</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={val.title}
-                                      onChange={(e) => {
-                                        const updated = [...aboutValues];
-                                        updated[idx].title = e.target.value;
-                                        setAboutValues(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-semibold text-gray-500">Description</label>
-                                  <textarea
-                                    className="admin-textarea bg-white text-xs p-2.5"
-                                    rows={2}
-                                    value={val.desc}
-                                    onChange={(e) => {
-                                      const updated = [...aboutValues];
-                                      updated[idx].desc = e.target.value;
-                                      setAboutValues(updated);
-                                      setSectionDirty(true);
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Story Points Editor */}
-                        <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <h4 className="font-semibold text-xs text-gray-700">Story Points</h4>
-                          <div className="space-y-4">
-                            {aboutStoryPoints.map((point, idx) => (
-                              <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-3 shadow-sm">
-                                <p className="text-[10px] uppercase font-bold text-gray-400">Story Point {idx + 1}</p>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Title</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={point.title}
-                                      onChange={(e) => {
-                                        const updated = [...aboutStoryPoints];
-                                        updated[idx].title = e.target.value;
-                                        setAboutStoryPoints(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Icon Name</label>
-                                    <select
-                                      className="admin-input bg-white text-xs"
-                                      value={point.iconName}
-                                      onChange={(e) => {
-                                        const updated = [...aboutStoryPoints];
-                                        updated[idx].iconName = e.target.value;
-                                        setAboutStoryPoints(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    >
-                                      <option value="Flame">Flame</option>
-                                      <option value="Globe">Globe</option>
-                                      <option value="Layers">Layers</option>
-                                      <option value="TrendingUp">Trending Up</option>
-                                    </select>
-                                  </div>
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Color (Hex/CSS)</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={point.color}
-                                      onChange={(e) => {
-                                        const updated = [...aboutStoryPoints];
-                                        updated[idx].color = e.target.value;
-                                        setAboutStoryPoints(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-semibold text-gray-500">Body Text</label>
-                                  <textarea
-                                    className="admin-textarea bg-white text-xs p-2.5"
-                                    rows={2}
-                                    value={point.text}
-                                    onChange={(e) => {
-                                      const updated = [...aboutStoryPoints];
-                                      updated[idx].text = e.target.value;
-                                      setAboutStoryPoints(updated);
-                                      setSectionDirty(true);
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Founder Editor */}
-                        <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <h4 className="font-semibold text-xs text-gray-700">Founder Details</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <label className="admin-label text-xs">Founder Name</label>
-                              <input
-                                  type="text"
-                                  className="admin-input bg-white"
-                                  value={founderName}
-                                  onChange={(e) => { setFounderName(e.target.value); setSectionDirty(true); }}
-                              />
-                            </div>
-                            <div>
-                              <label className="admin-label text-xs">Role Title</label>
-                              <input
-                                  type="text"
-                                  className="admin-input bg-white"
-                                  value={founderRole}
-                                  onChange={(e) => { setFounderRole(e.target.value); setSectionDirty(true); }}
-                              />
-                            </div>
-                            <div>
-                              <label className="admin-label text-xs">Education/Alumni Info</label>
-                              <input
-                                  type="text"
-                                  className="admin-input bg-white"
-                                  value={founderEducation}
-                                  onChange={(e) => { setFounderEducation(e.target.value); setSectionDirty(true); }}
-                              />
-                            </div>
-                            <div>
-                              <label className="admin-label text-xs">Founder Photo URL</label>
-                              <input
-                                  type="text"
-                                  className="admin-input bg-white"
-                                  value={founderImage}
-                                  onChange={(e) => { setFounderImage(e.target.value); setSectionDirty(true); }}
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="admin-label text-xs">Founder Bio/Quote</label>
-                            <textarea
-                                className="admin-textarea bg-white"
-                                rows={3}
-                                value={founderBio}
-                                onChange={(e) => { setFounderBio(e.target.value); setSectionDirty(true); }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Team Editor */}
-                        <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-xs text-gray-700">Leadership Team Members</h4>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setAboutTeam([...aboutTeam, { name: '', role: '', education: '', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' }]);
-                                setSectionDirty(true);
-                              }}
-                              className="admin-btn admin-btn-outline admin-btn-sm text-xs font-semibold px-3 py-1 flex items-center gap-1 cursor-pointer bg-transparent"
-                            >
-                              <Plus size={12} /> Add Member
-                            </button>
-                          </div>
-
-                          <div className="space-y-4">
-                            {aboutTeam.map((member, idx) => (
-                              <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-3 relative shadow-sm">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setAboutTeam(aboutTeam.filter((_, i) => i !== idx));
-                                    setSectionDirty(true);
-                                  }}
-                                  className="absolute top-2 right-2 w-6 h-6 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors border-none cursor-pointer"
-                                  title="Remove Team Member"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
-                                <p className="text-[10px] uppercase font-bold text-gray-400">Team Member {idx + 1}</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Name</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={member.name}
-                                      onChange={(e) => {
-                                        const updated = [...aboutTeam];
-                                        updated[idx].name = e.target.value;
-                                        setAboutTeam(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Role</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={member.role}
-                                      onChange={(e) => {
-                                        const updated = [...aboutTeam];
-                                        updated[idx].role = e.target.value;
-                                        setAboutTeam(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Education/College</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={member.education}
-                                      onChange={(e) => {
-                                        const updated = [...aboutTeam];
-                                        updated[idx].education = e.target.value;
-                                        setAboutTeam(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Photo URL</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={member.image}
-                                      onChange={(e) => {
-                                        const updated = [...aboutTeam];
-                                        updated[idx].image = e.target.value;
-                                        setAboutTeam(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Contact Custom Sections */}
-                    {selectedSection === 'Contact' && (
-                      <div className="space-y-6 border-t border-[#f0f0f0] pt-6">
-                        <h3 className="text-sm font-bold text-[#8B4949] uppercase tracking-wider">Contact Page Subsections</h3>
-
-                        {/* Contact Cards Editor */}
-                        <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <h4 className="font-semibold text-xs text-gray-700">Contact Information Cards</h4>
-                          <div className="space-y-4">
-                            {contactDetails.map((detail, idx) => (
-                              <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-3 shadow-sm">
-                                <p className="text-[10px] uppercase font-bold text-gray-400">{detail.type.toUpperCase()} Card</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Title</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={detail.title}
-                                      onChange={(e) => {
-                                        const updated = [...contactDetails];
-                                        updated[idx].title = e.target.value;
-                                        setContactDetails(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-[10px] font-semibold text-gray-500">Subtitle / Detail description</label>
-                                    <input
-                                      type="text"
-                                      className="admin-input bg-white text-xs"
-                                      value={detail.subtitle}
-                                      onChange={(e) => {
-                                        const updated = [...contactDetails];
-                                        updated[idx].subtitle = e.target.value;
-                                        setContactDetails(updated);
-                                        setSectionDirty(true);
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-semibold text-gray-500">Value (e.g. Phone number, Email, Address)</label>
-                                  <input
-                                    type="text"
-                                    className="admin-input bg-white text-xs"
-                                    value={detail.value}
-                                    onChange={(e) => {
-                                      const updated = [...contactDetails];
-                                      updated[idx].value = e.target.value;
-                                      setContactDetails(updated);
-                                      setSectionDirty(true);
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* FAQs Editor */}
-                        <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-xs text-gray-700">Contact Page FAQs Accordion</h4>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactFaqs([...contactFaqs, { q: '', a: '' }]);
-                                setSectionDirty(true);
-                              }}
-                              className="admin-btn admin-btn-outline admin-btn-sm text-xs font-semibold px-3 py-1 flex items-center gap-1 cursor-pointer bg-transparent"
-                            >
-                              <Plus size={12} /> Add FAQ
-                            </button>
-                          </div>
-
-                          <div className="space-y-4">
-                            {contactFaqs.map((faq, idx) => (
-                              <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-3 relative shadow-sm">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setContactFaqs(contactFaqs.filter((_, i) => i !== idx));
-                                    setSectionDirty(true);
-                                  }}
-                                  className="absolute top-2 right-2 w-6 h-6 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors border-none cursor-pointer"
-                                  title="Remove FAQ"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
-                                <p className="text-[10px] uppercase font-bold text-gray-400">FAQ Question {idx + 1}</p>
-                                <div>
-                                  <label className="text-[10px] font-semibold text-gray-500">Question</label>
-                                  <input
-                                    type="text"
-                                    className="admin-input bg-white text-xs font-semibold"
-                                    value={faq.q}
-                                    onChange={(e) => {
-                                      const updated = [...contactFaqs];
-                                      updated[idx].q = e.target.value;
-                                      setContactFaqs(updated);
-                                      setSectionDirty(true);
-                                    }}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-semibold text-gray-500">Answer</label>
-                                  <textarea
-                                    className="admin-textarea bg-white text-xs p-2.5"
-                                    rows={3}
-                                    value={faq.a}
-                                    onChange={(e) => {
-                                      const updated = [...contactFaqs];
-                                      updated[idx].a = e.target.value;
-                                      setContactFaqs(updated);
-                                      setSectionDirty(true);
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* CTA Info Editor */}
-                        <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                          <h4 className="font-semibold text-xs text-gray-700">Bottom CTA Box Details</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <label className="admin-label text-xs">CTA Main Title</label>
-                              <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={contactCtaInfo.title}
-                                onChange={(e) => {
-                                  setContactCtaInfo({ ...contactCtaInfo, title: e.target.value });
-                                  setSectionDirty(true);
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <label className="admin-label text-xs">CTA Highlighted Subtitle</label>
-                              <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={contactCtaInfo.subtitle}
-                                onChange={(e) => {
-                                  setContactCtaInfo({ ...contactCtaInfo, subtitle: e.target.value });
-                                  setSectionDirty(true);
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <label className="admin-label text-xs">WhatsApp Query Message</label>
-                              <input
-                                type="text"
-                                className="admin-input bg-white"
-                                value={contactCtaInfo.whatsappText}
-                                onChange={(e) => {
-                                  setContactCtaInfo({ ...contactCtaInfo, whatsappText: e.target.value });
-                                  setSectionDirty(true);
-                                }}
-                                placeholder="e.g. Hi! I have a question about..."
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="admin-label text-xs">CTA Paragraph Detail</label>
-                            <textarea
-                              className="admin-textarea bg-white"
-                              rows={3}
-                              value={contactCtaInfo.detail}
-                              onChange={(e) => {
-                                setContactCtaInfo({ ...contactCtaInfo, detail: e.target.value });
-                                setSectionDirty(true);
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {isCustom && customType === 'faq' && (
-                      <div className="bg-[#faf8f5] rounded-2xl p-5 border border-[#e5e5e5]/50 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-semibold text-xs text-gray-700">FAQ Accordion Items</h4>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setContactFaqs([...contactFaqs, { q: 'New Question?', a: 'New Answer content...' }]);
-                              setSectionDirty(true);
-                            }}
-                            className="admin-btn admin-btn-outline admin-btn-sm text-xs font-semibold px-3 py-1 flex items-center gap-1 cursor-pointer bg-transparent shadow-xs"
-                          >
-                            <Plus size={12} /> Add FAQ Item
-                          </button>
-                        </div>
-                        <div className="space-y-4">
-                          {contactFaqs.map((faq, idx) => (
-                            <div key={idx} className="bg-white p-4 rounded-xl border border-[#e5e5e5] space-y-3 relative shadow-sm">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setContactFaqs(contactFaqs.filter((_, i) => i !== idx));
-                                  setSectionDirty(true);
-                                }}
-                                className="absolute top-2 right-2 w-6 h-6 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors border-none cursor-pointer"
-                                title="Remove FAQ"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                              <p className="text-[10px] uppercase font-bold text-gray-400 font-mono">FAQ {idx + 1}</p>
-                              <div>
-                                <label className="text-[10px] font-semibold text-gray-500">Question</label>
-                                <input
-                                  type="text"
-                                  className="admin-input bg-white text-xs font-semibold"
-                                  value={faq.q}
-                                  onChange={(e) => {
-                                    const updated = [...contactFaqs];
-                                    updated[idx].q = e.target.value;
-                                    setContactFaqs(updated);
-                                    setSectionDirty(true);
-                                  }}
-                                />
-                              </div>
-                              <div>
-                                <label className="text-[10px] font-semibold text-gray-500">Answer</label>
-                                <textarea
-                                  className="admin-textarea bg-white text-xs p-2.5"
-                                  rows={2}
-                                  value={faq.a}
-                                  onChange={(e) => {
-                                    const updated = [...contactFaqs];
-                                    updated[idx].a = e.target.value;
-                                    setContactFaqs(updated);
-                                    setSectionDirty(true);
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Footer Save Operations */}
-                    <div className="border-t border-[#f0f0f0] pt-5 flex items-center gap-3">
-                      <button
-                        onClick={handleSectionSave}
-                        disabled={!sectionDirty}
-                        className="admin-btn admin-btn-primary flex items-center gap-2 shadow-sm"
-                        style={{ opacity: sectionDirty ? 1 : 0.5, cursor: sectionDirty ? 'pointer' : 'not-allowed' }}
-                      >
-                        <Save size={15} /> Save Section Content
-                      </button>
-                      {currentBlock.lastUpdated && (
-                        <span className="text-xs text-gray-400 flex items-center gap-1">
-                          <Clock size={12} /> Last updated: {currentBlock.lastUpdated}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Embedded Specific Item Managers */}
-                {isCarouselSection && (
-                  <div className="pt-2">
-                    <h3 className="text-base font-bold text-[#1a1410] mb-4">Manage Carousel Slides</h3>
-                    <HeroSlidesManager sectionId={selectedSection} />
-                  </div>
-                )}
-
-                {selectedSection === 'Packages' && (
-                  <div className="border-t border-[#f0f0f0] pt-6">
-                    <h3 className="text-base font-bold text-[#1a1410] mb-4">Manage Package Cards</h3>
-                    <PackagesManager />
-                  </div>
-                )}
-
-                {selectedSection === 'FAQ' && (
-                  <div className="border-t border-[#f0f0f0] pt-6">
-                    <h3 className="text-base font-bold text-[#1a1410] mb-4">Manage FAQ Questions</h3>
-                    <FAQsManager />
-                  </div>
-                )}
-
-                {selectedSection === 'Browse by Occasion' && (
-                  <div className="border-t border-[#f0f0f0] pt-6">
-                    <h3 className="text-base font-bold text-[#1a1410] mb-4">Manage Occasions / Categories</h3>
-                    <CategoriesManager />
-                  </div>
-                )}
-
-                {selectedSection === 'Our Services' && (
-                  <div className="border-t border-[#f0f0f0] pt-6">
-                    <h3 className="text-base font-bold text-[#1a1410] mb-4">Manage Services Cards</h3>
-                    <ServicesManager />
-                  </div>
-                )}
-
-                {selectedSection === 'Testimonials' && (
-                  <div className="border-t border-[#f0f0f0] pt-6">
-                    <h3 className="text-base font-bold text-[#1a1410] mb-4">Manage Client Testimonials</h3>
-                    <TestimonialsManager />
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="admin-empty">
-                <p>Select a section on the left sidebar to start editing.</p>
+                {/* Drawer Footer Status */}
+                <div className="p-4 bg-[#faf8f5] border-t border-[#f0f0f0] flex items-center justify-between text-[10px] text-gray-400 font-semibold select-none font-mono">
+                  <span>Syncs live on canvas</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
+                </div>
               </div>
             )}
           </div>
+
         </div>
       )}
 
